@@ -5,5 +5,3 @@ coverage/
 *.db
 *.db-journal
 .env
-storage-local/*
-!storage-local/.gitkeep

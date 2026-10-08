@@ -22,7 +22,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "db:migrate": "npm --workspace apps/api run db:migrate",
     "db:seed": "npm --workspace apps/api run db:seed",
-    "audit": "npm --workspace apps/api run audit"
+    "audit": "npm --workspace apps/api run audit",
+    "contract": "tsx scripts/check-contract.mts"
   },
   "devDependencies": {
     "eslint": "^9.12.0",

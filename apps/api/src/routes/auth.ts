@@ -3,7 +3,7 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import { loginSchema, registerSchema, refreshSchema } from '@lms/validation';
 import { newId, nowIso } from '@lms/shared';
 import { execute, queryAll, queryFirst } from '../db.js';
-import { hashPassword, randomToken, sha256Hex, signAccessToken, verifyAccessToken, verifyPassword } from '../crypto.js';
+import { hashPassword, randomToken, sha256Hex, signAccessToken, verifyPassword } from '../crypto.js';
 import { created, fail, ok } from '../respond.js';
 import { requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
@@ -222,10 +222,5 @@ auth.post('/verify-email', async (c) => {
   await execute(db, 'UPDATE email_verifications SET verified_at = ? WHERE id = ?', nowIso(), row.id);
   return ok(c, { verified: true });
 });
-
-// Helper used by tests to verify tokens without email provider.
-export async function verifyTokenForTest(secret: string, token: string) {
-  return verifyAccessToken(secret, token);
-}
 
 export default auth;
