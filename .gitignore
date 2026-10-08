@@ -1,6 +1,7 @@
 .data/
 node_modules/
 dist/
+coverage/
 *.db
 *.db-journal
 .env
