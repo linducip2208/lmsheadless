@@ -4,6 +4,7 @@ import { newId, nowIso } from '@lms/shared';
 import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
+import { audit } from '../auditlog.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -19,8 +20,24 @@ function canTeach(user: AuthUser, orgId: string): boolean {
   return r === 'super_admin' || r === 'organization_admin' || r === 'teacher' || r === 'staff';
 }
 
-courses.get('/courses', requireAuth(), async (c) => {
+// Courses assigned to the current instructor (teachers see their own work).
+courses.get('/instructor/courses', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const orgId = new URL(c.req.url).searchParams.get('organization_id');
+  const assigned = await queryAll(db,
+    'SELECT co.* FROM courses co JOIN course_instructors ci ON ci.course_id = co.id WHERE ci.user_id = ? AND co.deleted_at IS NULL ORDER BY co.created_at DESC', user.id);
+  if (assigned.length || !orgId) return ok(c, assigned);
+  // Fallback: org admins see all org courses here.
+  const role = orgRole(user, orgId);
+  if (role === 'super_admin' || role === 'organization_admin') {
+    const all = await queryAll(db, 'SELECT * FROM courses WHERE organization_id = ? AND deleted_at IS NULL ORDER BY created_at DESC', orgId);
+    return ok(c, all);
+  }
+  return ok(c, assigned);
+});
+
+courses.get('/courses', requireAuth(), async (c) => {  const user = c.get('user') as AuthUser;
   const url = new URL(c.req.url);
   const page = Math.max(1, Number(url.searchParams.get('page') ?? '1') || 1);
   const perPage = Math.min(100, Math.max(1, Number(url.searchParams.get('per_page') ?? '20') || 20));
@@ -55,13 +72,16 @@ courses.post('/courses', requireAuth(), async (c) => {
   if (!canTeach(user, parsed.data.organization_id)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const id = newId();
   const now = nowIso();
+  const slug = (parsed.data.slug ?? parsed.data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')).slice(0, 120) || `course-${Date.now().toString(36)}`;
   try {
-    await execute(c.get('db'), 'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, thumbnail_url, price, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    await execute(c.get('db'), 'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, thumbnail_url, price, created_by, created_at, updated_at, slug, visibility, start_at, end_at, enrollment_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       id, parsed.data.organization_id, parsed.data.category_id ?? null, parsed.data.code, parsed.data.title,
-      parsed.data.description ?? null, parsed.data.status ?? 'draft', parsed.data.thumbnail_url ?? null, parsed.data.price ?? 0, user.id, now, now);
+      parsed.data.description ?? null, parsed.data.status ?? 'draft', parsed.data.thumbnail_url ?? null, parsed.data.price ?? 0, user.id, now, now,
+      slug, parsed.data.visibility ?? 'private', parsed.data.start_at ?? null, parsed.data.end_at ?? null, parsed.data.enrollment_mode ?? 'open');
   } catch {
     return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
   }
+  await audit(c, 'course.created', { entity: 'course', entityId: id, organizationId: parsed.data.organization_id });
   return created(c, { id });
 });
 
@@ -81,11 +101,17 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
   if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
-  const allowed: Record<string, (v: unknown) => string | number | null> = {    title: (v) => (typeof v === 'string' && v.length >= 2 && v.length <= 200 ? v : ''),
+  const allowed: Record<string, (v: unknown) => string | number | null> = {
+    title: (v) => (typeof v === 'string' && v.length >= 2 && v.length <= 200 ? v : ''),
     description: (v) => (typeof v === 'string' ? String(v).slice(0, 10000) : ''),
     status: (v) => (v === 'draft' || v === 'published' || v === 'archived' ? (v as string) : ''),
     thumbnail_url: (v) => (typeof v === 'string' ? v.slice(0, 1000) : ''),
     price: (v) => (typeof v === 'number' && v >= 0 ? v : ''),
+    slug: (v) => (typeof v === 'string' && /^[a-z0-9-]{2,120}$/.test(v) ? v : ''),
+    visibility: (v) => (v === 'private' || v === 'public' || v === 'unlisted' ? (v as string) : ''),
+    start_at: (v) => (typeof v === 'string' && v.length <= 64 ? v : ''),
+    end_at: (v) => (typeof v === 'string' && v.length <= 64 ? v : ''),
+    enrollment_mode: (v) => (v === 'open' || v === 'approval' || v === 'closed' ? (v as string) : ''),
   };
   const sets: string[] = [];
   const params: (string | number | null)[] = [];
@@ -101,6 +127,9 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
   sets.push('updated_at = ?');
   params.push(nowIso(), c.req.param('id'));
   await execute(db, `UPDATE courses SET ${sets.join(', ')} WHERE id = ?`, ...params);
+  if (body.status === 'published') {
+    await audit(c, 'course.published', { entity: 'course', entityId: c.req.param('id'), organizationId: orgId });
+  }
   return ok(c, { updated: true });
 });
 
@@ -166,10 +195,10 @@ courses.post('/courses/sections/:sectionId/lessons', requireAuth(), async (c) =>
   }
   const nid = newId();
   const now = nowIso();
-  await execute(db, 'INSERT INTO lessons (id, section_id, course_id, title, content_type, body, video_url, resource_url, position, duration_minutes, is_free_preview, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  await execute(db, 'INSERT INTO lessons (id, section_id, course_id, title, content_type, body, video_url, resource_url, position, duration_minutes, is_free_preview, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     nid, c.req.param('sectionId'), sec.course_id, parsed.data.title, parsed.data.content_type, parsed.data.body ?? null,
     parsed.data.video_url ?? null, parsed.data.resource_url ?? null, parsed.data.position ?? 0, parsed.data.duration_minutes ?? 0,
-    parsed.data.is_free_preview ? 1 : 0, now, now);
+    parsed.data.is_free_preview ? 1 : 0, parsed.data.status ?? 'published', now, now);
   return created(c, { id: nid });
 });
 
@@ -261,6 +290,116 @@ courses.get('/courses/:id/progress', requireAuth(), async (c) => {
   const cp = await queryFirst(db, 'SELECT * FROM course_progress WHERE course_id = ? AND student_id = ?', c.req.param('id'), studentId);
   const lessons = await queryAll(db, 'SELECT l.id, l.title, COALESCE(lp.is_completed, 0) as is_completed FROM lessons l LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.student_id = ? WHERE l.course_id = ? ORDER BY l.position ASC', studentId, c.req.param('id'));
   return ok(c, { progress: cp, lessons });
+});
+
+// ---- Section management (rename / reorder / delete) ----
+courses.patch('/courses/sections/:sectionId', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const sec = await queryFirst<{ course_id: string }>(db, 'SELECT course_id FROM course_sections WHERE id = ?', c.req.param('sectionId'));
+  if (!sec) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await courseOrg(db, sec.course_id);
+  if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as { title?: string; position?: number } | null;
+  if (!body) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  const sets: string[] = [];
+  const params: (string | number)[] = [];
+  if (typeof body.title === 'string' && body.title.length >= 1 && body.title.length <= 200) { sets.push('title = ?'); params.push(body.title); }
+  if (typeof body.position === 'number' && Number.isInteger(body.position) && body.position >= 0 && body.position <= 10000) { sets.push('position = ?'); params.push(body.position); }
+  if (!sets.length) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  sets.push('updated_at = ?');
+  params.push(nowIso(), c.req.param('sectionId'));
+  await execute(db, `UPDATE course_sections SET ${sets.join(', ')} WHERE id = ?`, ...params);
+  return ok(c, { updated: true });
+});
+
+courses.delete('/courses/sections/:sectionId', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const sec = await queryFirst<{ course_id: string }>(db, 'SELECT course_id FROM course_sections WHERE id = ?', c.req.param('sectionId'));
+  if (!sec) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await courseOrg(db, sec.course_id);
+  if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(db, 'DELETE FROM course_sections WHERE id = ?', c.req.param('sectionId'));
+  return ok(c, { deleted: true });
+});
+
+courses.post('/courses/:id/sections/reorder', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const orgId = await courseOrg(db, c.req.param('id'));
+  if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as { ordered_ids?: string[] } | null;
+  if (!body?.ordered_ids || !Array.isArray(body.ordered_ids) || body.ordered_ids.length > 500) {
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  }
+  const existing = await queryAll<{ id: string }>(db, 'SELECT id FROM course_sections WHERE course_id = ?', c.req.param('id'));
+  const valid = new Set(existing.map((s) => s.id));
+  // Only accept IDs that belong to this course (prevents cross-course writes).
+  const ordered = body.ordered_ids.filter((id) => typeof id === 'string' && valid.has(id));
+  let pos = 0;
+  for (const id of ordered) {
+    await execute(db, 'UPDATE course_sections SET position = ?, updated_at = ? WHERE id = ?', pos++, nowIso(), id);
+  }
+  return ok(c, { reordered: ordered.length });
+});
+
+// ---- Lesson management (edit / reorder / delete) ----
+courses.patch('/lessons/:lessonId', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const lesson = await queryFirst<{ course_id: string }>(db, 'SELECT course_id FROM lessons WHERE id = ?', c.req.param('lessonId'));
+  if (!lesson) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await courseOrg(db, lesson.course_id);
+  if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!body) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  const sets: string[] = [];
+  const params: (string | number | null)[] = [];
+  if (typeof body.title === 'string' && body.title.length >= 1 && body.title.length <= 200) { sets.push('title = ?'); params.push(body.title); }
+  if (typeof body.body === 'string' && body.body.length <= 50000) { sets.push('body = ?'); params.push(body.body); }
+  if (typeof body.video_url === 'string' && body.video_url.length <= 2000 && (body.video_url === '' || /^https?:\/\//.test(body.video_url))) { sets.push('video_url = ?'); params.push(body.video_url || null); }
+  if (typeof body.resource_url === 'string' && body.resource_url.length <= 2000) { sets.push('resource_url = ?'); params.push(body.resource_url || null); }
+  if (body.status === 'draft' || body.status === 'published') { sets.push('status = ?'); params.push(body.status); }
+  if (typeof body.position === 'number' && Number.isInteger(body.position) && body.position >= 0 && body.position <= 10000) { sets.push('position = ?'); params.push(body.position); }
+  if (typeof body.duration_minutes === 'number' && Number.isInteger(body.duration_minutes) && body.duration_minutes >= 0) { sets.push('duration_minutes = ?'); params.push(body.duration_minutes); }
+  if (!sets.length) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  sets.push('updated_at = ?');
+  params.push(nowIso(), c.req.param('lessonId'));
+  await execute(db, `UPDATE lessons SET ${sets.join(', ')} WHERE id = ?`, ...params);
+  return ok(c, { updated: true });
+});
+
+courses.delete('/lessons/:lessonId', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const lesson = await queryFirst<{ course_id: string }>(db, 'SELECT course_id FROM lessons WHERE id = ?', c.req.param('lessonId'));
+  if (!lesson) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await courseOrg(db, lesson.course_id);
+  if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(db, 'DELETE FROM lessons WHERE id = ?', c.req.param('lessonId'));
+  return ok(c, { deleted: true });
+});
+
+courses.post('/courses/sections/:sectionId/lessons/reorder', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const sec = await queryFirst<{ course_id: string }>(db, 'SELECT course_id FROM course_sections WHERE id = ?', c.req.param('sectionId'));
+  if (!sec) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await courseOrg(db, sec.course_id);
+  if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as { ordered_ids?: string[] } | null;
+  if (!body?.ordered_ids || !Array.isArray(body.ordered_ids) || body.ordered_ids.length > 1000) {
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  }
+  const existing = await queryAll<{ id: string }>(db, 'SELECT id FROM lessons WHERE section_id = ?', c.req.param('sectionId'));
+  const valid = new Set(existing.map((l) => l.id));
+  const ordered = body.ordered_ids.filter((id) => typeof id === 'string' && valid.has(id));
+  let pos = 0;
+  for (const id of ordered) {
+    await execute(db, 'UPDATE lessons SET position = ?, updated_at = ? WHERE id = ?', pos++, nowIso(), id);
+  }
+  return ok(c, { reordered: ordered.length });
 });
 
 export default courses;

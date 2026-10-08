@@ -8,9 +8,9 @@ import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
 const orgs = new Hono<{ Variables: AppVars }>();
-orgs.use('*', requireAuth());
 
-orgs.get('/', async (c) => {
+
+orgs.get('/', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');
   if (user.isSuperAdmin) {
@@ -23,7 +23,7 @@ orgs.get('/', async (c) => {
   return ok(c, rows);
 });
 
-orgs.post('/', async (c) => {
+orgs.post('/', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   if (!user.isSuperAdmin) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const body = await c.req.json().catch(() => null);
@@ -39,7 +39,7 @@ orgs.post('/', async (c) => {
   return created(c, { id });
 });
 
-orgs.get('/:id', async (c) => {
+orgs.get('/:id', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
@@ -48,7 +48,7 @@ orgs.get('/:id', async (c) => {
   return ok(c, row);
 });
 
-orgs.get('/:id/members', async (c) => {
+orgs.get('/:id/members', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
@@ -58,7 +58,7 @@ orgs.get('/:id/members', async (c) => {
   return ok(c, rows);
 });
 
-orgs.post('/:id/members', async (c) => {
+orgs.post('/:id/members', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   const role = orgRole(user, id);
@@ -80,7 +80,7 @@ function guard(user: AuthUser, orgId: string, write: boolean): string | null {
   return null;
 }
 
-orgs.get('/:id/academic-years', async (c) => {
+orgs.get('/:id/academic-years', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
@@ -88,7 +88,7 @@ orgs.get('/:id/academic-years', async (c) => {
   return ok(c, rows);
 });
 
-orgs.post('/:id/academic-years', async (c) => {
+orgs.post('/:id/academic-years', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   const g = guard(user, id, true);
@@ -102,7 +102,7 @@ orgs.post('/:id/academic-years', async (c) => {
   return created(c, { id: nid });
 });
 
-orgs.get('/:id/terms', async (c) => {
+orgs.get('/:id/terms', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
@@ -110,7 +110,7 @@ orgs.get('/:id/terms', async (c) => {
   return ok(c, rows);
 });
 
-orgs.post('/:id/terms', async (c) => {
+orgs.post('/:id/terms', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   const g = guard(user, id, true);
@@ -124,7 +124,7 @@ orgs.post('/:id/terms', async (c) => {
   return created(c, { id: nid });
 });
 
-orgs.get('/:id/classes', async (c) => {
+orgs.get('/:id/classes', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
@@ -132,7 +132,7 @@ orgs.get('/:id/classes', async (c) => {
   return ok(c, rows);
 });
 
-orgs.post('/:id/classes', async (c) => {
+orgs.post('/:id/classes', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   const g = guard(user, id, true);
@@ -146,7 +146,7 @@ orgs.post('/:id/classes', async (c) => {
   return created(c, { id: nid });
 });
 
-orgs.post('/classes/:classId/members', async (c) => {
+orgs.post('/classes/:classId/members', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');
   const cls = await queryFirst<{ organization_id: string }>(db, 'SELECT organization_id FROM classes WHERE id = ?', c.req.param('classId'));
@@ -160,7 +160,7 @@ orgs.post('/classes/:classId/members', async (c) => {
   return created(c, { added: true });
 });
 
-orgs.get('/:id/subjects', async (c) => {
+orgs.get('/:id/subjects', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
@@ -172,7 +172,7 @@ orgs.get('/:id/subjects', async (c) => {
   return ok(c, rows, paginationMeta(total, page, perPage));
 });
 
-orgs.post('/:id/subjects', async (c) => {
+orgs.post('/:id/subjects', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   const g = guard(user, id, true);

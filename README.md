@@ -1,100 +1,144 @@
-# LMS Headless — Production-ready headless LMS
+# LMS Headless
 
-Cloudflare-native: **Workers + Hono + D1 + R2 + KV**, TypeScript strict, REST `/api/v1`,
-Tabler admin (local bundle), student SPA, Flutter-compatible API.
+**An API-first, Cloudflare-native Learning Management System.**
+Web + PWA portals, a Flutter-ready REST API, multi-organization tenants, white-label branding.
 
-## Prerequisites
+## What is LMS Headless
 
-- Node.js 20+ (uses built-in `node:sqlite` for local dev; no native builds)
-- npm 10+
+A modern LMS for **schools, academies, training centers, universities and companies**.
+Everything important is a REST call under `/api/v1`; the web portals are thin,
+purpose-built clients — one per role — so a Flutter Android/iOS app can consume
+the exact same API.
 
-## Installation
+- 👩‍💼 **Admin panel** — organizations, users, roles & permissions, course builder, quizzes, assignments & grading, attendance, grades, announcements, certificates, files, reports, settings, audit log
+- 👩‍🏫 **Teacher panel** — assigned courses, lesson/quiz/assignment authoring, grading queue, attendance recording, student progress
+- 🧑‍🎓 **Student portal (PWA)** — courses, lesson player, quizzes, assignment submission, discussions, grades, certificates, offline queue + sync
+- 👪 **Parent portal** — linked children only: progress, grades, attendance, announcements
+- 🌐 **Public website** — landing, features, solutions, pricing, docs, contact, public certificate verification
+- 🔌 **REST API** — `/api/v1`, OpenAPI at `/api/v1/openapi.json`, human docs at `/api/v1/docs`
+
+No fake metrics. No fake integrations. Email/push delivery needs your own
+credentials — the architecture is built in, nothing is pretended.
+
+## Screens (portals)
+
+| Portal | Dev URL | Purpose |
+|---|---|---|
+| Public website | http://localhost:5177 | Landing, pricing, docs, `/verify/:number` |
+| Admin | http://localhost:5173 | Full organization management |
+| Teacher | http://localhost:5175 | Teaching workflow |
+| Student | http://localhost:5174 | Learning workflow (installable PWA) |
+| Parent | http://localhost:5176 | Child monitoring |
+| API | http://localhost:8787 | REST + OpenAPI + docs |
+
+## Roles
+
+`super_admin` · `organization_admin` · `teacher` · `student` · `parent` · `staff`
+— 29 granular permissions (`users.view`, `courses.publish`, `quiz.grade`,
+`certificates.issue`, …), enforced **server-side** on every request.
+Frontend menus are convenience only, never security.
+
+## Architecture
+
+```
+Web + PWA portals ──→ REST /api/v1 ──→ Hono on Cloudflare Workers
+                                            ├── D1 (SQLite locally)
+                                            ├── R2 (local disk in dev)
+                                            └── KV rate limits (memory fallback)
+```
+
+Details: `docs/architecture.md`, `docs/cloudflare.md`.
+
+## Quickstart (local development)
 
 ```bash
 npm install
-```
-
-## Development
-
-```bash
-npm run db:migrate   # create ./.data/lms.db from migrations/
+npm run db:migrate   # builds ./.data/lms.db from migrations/
 npm run db:seed      # demo org + users + course + quiz + assignment
-npm run dev          # API on http://localhost:8787
-npm run dev:admin    # admin on http://localhost:5173 (proxies /api)
-npm run dev:student  # student on http://localhost:5174
+npm run dev          # API on :8787
+npm run dev:admin    # Admin on :5173 (also: dev:teacher :5175, dev:student :5174, ...)
 ```
 
-Demo logins (password `Password123!` or `$SEED_DEMO_PASSWORD`):
+Demo accounts (password `Password123!`, overridable via `SEED_DEMO_PASSWORD`;
+**dev/demo only, never production**):
 `superadmin@example.com`, `admin@example.com`, `teacher@example.com`,
 `student@example.com`, `parent@example.com`, `staff@example.com`.
 
-## Database
+First-run setup is also available via `POST /api/v1/setup` (locked afterwards).
 
-- `migrations/*.sql` — SQLite/D1-compatible, ordered `001..006`.
+## SQLite / D1 / R2 / KV
+
+- `migrations/001–007` — SQLite/D1-compatible, ordered; column patches are idempotent.
 - Local: file at `$DATABASE_PATH` (default `./.data/lms.db`), `PRAGMA foreign_keys=ON`.
-- Prod: Cloudflare D1. Wrangler config in `apps/api/wrangler.toml`.
+- Production: Cloudflare D1 (`apps/api/wrangler.toml`).
+- Files: local disk in dev, R2 in production (`STORAGE_DRIVER=local|r2`).
+- Rate limiting: KV in production, memory fallback locally.
 
-```bash
-# local D1-style
-wrangler d1 execute lms-headless --local --file=./migrations/001_core.sql
-# production
-wrangler d1 migrations apply lms-headless --remote
-wrangler deploy
-```
+Deployment: `docs/deployment.md`.
 
-## Environment
+## Environment variables
 
-Copy `.env.example` to `.env`. Never commit secrets. Key vars:
-`JWT_SECRET` (≥32 chars), `DATABASE_PATH`, `STORAGE_DRIVER=local|r2`,
-`STORAGE_LOCAL_DIR`, `R2_*`, Cloudflare IDs, `RATE_LIMIT_*`.
-
-## Tests / quality
-
-```bash
-npm test            # vitest (auth, RBAC, tenant isolation, IDOR, courses, quiz, assignments, attendance, certs, validation)
-npm run typecheck
-npm run lint
-npm run build
-npm run audit       # static audit: migrations, FK/indexes, secrets, CDN, envelope
-```
+Copy `.env.example` to `.env`. Never commit secrets. Key vars: `JWT_SECRET`
+(≥32 chars), `DATABASE_PATH`, `STORAGE_DRIVER`, `ALLOWED_ORIGINS` (comma-separated;
+localhost is allowed in dev, nothing else by default), `COOKIE_SECURE=1` in
+production, `SEED_DEMO_PASSWORD`.
 
 ## API
 
-Base `/api/v1`, envelope `{success, data, meta}` / `{success:false, error:{code,message}}`,
-pagination `?page&per_page&q&sort&order`, `X-Request-Id`, OpenAPI at
-`/api/v1/openapi.json`, human docs at `/api/v1/docs`.
+Uniform envelope `{success, data, meta}` / `{success:false, error:{code,message}}`,
+pagination (`page, per_page, q, sort, order`), `X-Request-Id`, `Idempotency-Key`
+support on writes (safe offline retries), Zod validation on every write endpoint.
 
-Auth: `POST /auth/register|login|refresh|logout`, `GET /auth/me`,
-password forgot/reset architecture, email verification architecture.
-JWT access (15 min) + rotating opaque refresh (30 d, sha256-stored).
+Auth: `POST /auth/register|login?cookie=1|refresh|logout`, `GET /auth/me`,
+sessions list/revoke, password change, forgot/reset + email-verification
+architecture. Short JWT access (15 min, in-memory on web) + rotating opaque
+refresh (httpOnly cookie on web, header flow for Flutter/tests).
 
-## Storage
+Full reference: `docs/api.md` · Flutter guide: `docs/flutter.md`.
 
-`StorageProvider` abstraction (`apps/api/src/storage.ts`): local FS dev,
-R2 production. Validates MIME/extension/size (25 MB), server-generated keys,
-no path traversal, auth before upload. Serve downloads only after authorization.
+## PWA
 
-## Cloudflare
+Admin, teacher, student, parent and web apps ship `manifest.webmanifest`,
+versioned service workers, generated icons and offline pages. Only the app shell
+and explicitly public endpoints (OpenAPI, branding, certificate verification)
+are cached — private data is never cached. Pending student actions queue locally
+and sync with idempotency keys when back online. Push architecture is ready
+(subscriptions API + VAPID config); delivery needs your keys. See `docs/pwa.md`.
 
-`apps/api/wrangler.toml` has Workers + commented D1/R2/KV blocks — fill IDs,
-uncomment, then `wrangler deploy`. R2: create bucket `lms-storage`, bind `STORAGE`.
-KV: create namespace, bind `KV` (rate-limit backing; falls back to memory locally).
+## White-label & multi-organization
 
-## Structure
+Each organization configures name, logo, colors, footer and support info via
+`PUT /api/v1/organizations/:id`; public-safe branding at
+`GET /api/v1/organizations/:id/branding`. Tenant isolation is tested
+(org-vs-org, user-vs-user, parent scoping). See `docs/white-label.md`,
+`docs/multi-organization.md`.
 
+## Testing
+
+```bash
+npm test            # 40 tests: auth, RBAC matrix, tenant isolation, IDOR,
+                    # courses, quiz (scoring/expiry/limits), assignments,
+                    # attendance, certificates, files, setup, search,
+                    # idempotency, CORS, rate limiting, PWA assets, OpenAPI honesty
+npm run typecheck
+npm run lint
+npm run build
+npm run audit       # migrations, FK/indexes, secrets, CDN, envelope, PWA assets
 ```
-apps/api        Hono REST API (Workers + node dev server)
-apps/admin      Tabler admin SPA (local bundle, hash router)
-apps/student    Student SPA
-packages/types|validation|shared
-migrations/     001..006 SQL
-docs/           architecture, deployment, api notes
-```
 
-## Decisions (ADRs)
+## Security
 
-- IDs: `TEXT UUIDv7ish (randomUUID)` — portable across SQLite/D1, no autoincrement coupling.
-- Timestamps: ISO-8601 TEXT — D1/SQLite compatible, locale formatting on clients.
-- Auth crypto: WebCrypto PBKDF2 + HMAC JWT — zero native deps, Workers-compatible.
-- DB layer: D1-shaped interface (`prepare/bind/all/first/run`) with `node:sqlite` adapter locally.
-- Soft delete only for users/courses/classes/orgs; transactional tables hard-delete via cascade.
+Threat model and controls: `SECURITY.md` (+ `docs/security.md`).
+OWASP-style coverage is tested in `apps/api/test/security.test.ts`.
+
+## Customization, product & license
+
+- Customize: `docs/customization.md` · Product sheet: `PRODUCT.md`
+- Contributing: `CONTRIBUTING.md` · Changelog: `CHANGELOG.md`
+- **License: see `LICENSE`. Final commercial terms must be selected by the product owner.**
+
+## Documentation index
+
+`docs/api.md` · `architecture.md` · `cloudflare.md` · `customization.md` ·
+`deployment.md` · `flutter.md` · `multi-organization.md` · `pwa.md` ·
+`security.md` · `white-label.md`

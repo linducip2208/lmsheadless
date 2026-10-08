@@ -53,6 +53,11 @@ export const courseSchema = z.object({
   status: courseStatus.optional(),
   thumbnail_url: z.string().max(1000).optional(),
   price: z.number().min(0).max(100000000).optional(),
+  slug: z.string().min(2).max(120).regex(/^[a-z0-9-]+$/).optional(),
+  visibility: z.enum(['private', 'public', 'unlisted']).optional(),
+  start_at: z.string().max(64).optional(),
+  end_at: z.string().max(64).optional(),
+  enrollment_mode: z.enum(['open', 'approval', 'closed']).optional(),
 });
 
 export const sectionSchema = z.object({
@@ -71,6 +76,7 @@ export const lessonSchema = z.object({
   position: z.number().int().min(0).max(10000).optional(),
   duration_minutes: z.number().int().min(0).max(100000).optional(),
   is_free_preview: z.boolean().optional(),
+  status: z.enum(['draft', 'published']).optional(),
 });
 
 export const quizSchema = z.object({
@@ -81,6 +87,7 @@ export const quizSchema = z.object({
   passing_score: z.number().min(0).max(100),
   max_attempts: z.number().int().min(1).max(100).optional(),
   time_limit_minutes: z.number().int().min(0).max(10080).optional(),
+  shuffle_questions: z.boolean().optional(),
 });
 
 export const questionSchema = z.object({
@@ -102,6 +109,9 @@ export const assignmentSchema = z.object({
   description: z.string().max(10000).optional(),
   due_at: z.string().max(64).optional(),
   max_score: z.number().min(0).max(10000),
+  allow_resubmit: z.boolean().optional(),
+  allowed_types: z.string().max(500).optional(),
+  max_size_bytes: z.number().int().min(1024).max(262144000).optional(),
 });
 
 export const submissionGradeSchema = z.object({

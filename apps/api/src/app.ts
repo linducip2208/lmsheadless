@@ -5,7 +5,10 @@ import orgs from './routes/orgs.js';
 import courses from './routes/courses.js';
 import assess from './routes/assessment.js';
 import ops from './routes/ops.js';
+import platform from './routes/platform.js';
 import { authOptional, language, rateLimit, requestId } from './middleware/common.js';
+import { cors } from './middleware/cors.js';
+import { idempotency } from './middleware/idempotency.js';
 import type { AppEnv, AppVars } from './types.js';
 import type { D1Like } from './db.js';
 import { openApiDocument } from './openapi.js';
@@ -20,8 +23,10 @@ export function createApp(env: AppEnv, db: D1Like) {
     c.set('env', env);
     await next();
   });
+  app.use('*', cors());
   app.use('/api/*', rateLimit());
   app.use('/api/*', authOptional());
+  app.use('/api/*', idempotency());
 
   app.get('/health', (c) => c.json({ success: true, data: { status: 'ok', time: new Date().toISOString() } }));
   app.get('/api/v1/openapi.json', (c) => c.json(openApiDocument()));
@@ -35,6 +40,7 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.route('/api/v1', courses);
   app.route('/api/v1', assess);
   app.route('/', ops);
+  app.route('/', platform);
 
   app.notFound((c) => c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Route not found' } }, 404));
   app.onError((err, c) => {

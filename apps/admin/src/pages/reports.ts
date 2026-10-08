@@ -1,0 +1,31 @@
+import { call, loadingHtml, errorHtml, currentOrgId } from '../lib.js';
+
+export async function renderReports(el: HTMLElement): Promise<void> {
+  const orgId = currentOrgId();
+  if (!orgId) { el.innerHTML = '<div class="alert alert-warning">Select an organization first.</div>'; return; }
+  el.innerHTML = loadingHtml();
+  try {
+    const [summary, completion, attendance, teachers] = await Promise.all([
+      call<Record<string, number>>('/api/v1/reports/organization-summary', {}, { organization_id: orgId }),
+      call<{ title: string; enrolled: number; completed: number; completion_rate: number; avg_progress: number }[]>('/api/v1/reports/completion', {}, { organization_id: orgId }),
+      call<{ sessions: number; students: { name: string; attendance_pct: number; recorded: number }[] }>('/api/v1/reports/attendance', {}, { organization_id: orgId }),
+      call<{ name: string; courses: number; submissions_graded: number }[]>('/api/v1/reports/teacher-activity', {}, { organization_id: orgId }),
+    ]);
+    const bar = (pct: number) => `<div class="progress" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${Math.min(100, pct)}%"></div></div>`;
+    el.innerHTML = `<div class="row row-cards">
+      <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Overview</h3></div><div class="card-body">
+      ${[['Students', summary.students], ['Teachers', summary.teachers], ['Courses', summary.courses], ['Enrollments', summary.enrollments], ['Avg progress', `${Math.round(Number(summary.avg_progress ?? 0))}%`], ['Avg quiz score', Math.round(Number(summary.avg_quiz_score ?? 0))]].map(([l, v]) => `<div class="d-flex justify-content-between border-bottom py-1"><span>${l}</span><strong>${v}</strong></div>`).join('')}
+      </div></div>
+      <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Teacher activity</h3></div><div class="card-body">
+      ${teachers.map((t) => `<div class="d-flex justify-content-between border-bottom py-1"><span>${t.name}</span><span class="text-muted">${t.courses} courses · ${t.submissions_graded} graded</span></div>`).join('') || '<p class="text-muted">No teachers.</p>'}
+      </div></div></div>
+      <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Completion by course</h3></div><div class="card-body">
+      ${completion.map((c) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${c.title}</span><span class="text-muted">${c.completion_rate}%</span></div>${bar(c.completion_rate)}</div>`).join('') || '<p class="text-muted">No data.</p>'}
+      </div></div></div>
+      <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Attendance (${attendance.sessions} sessions)</h3></div><div class="card-body">
+      ${attendance.students.slice(0, 20).map((s) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${s.name}</span><span class="text-muted">${s.attendance_pct}%</span></div>${bar(s.attendance_pct)}</div>`).join('') || '<p class="text-muted">No data.</p>'}
+      </div></div></div></div>`;
+  } catch (e) {
+    el.innerHTML = errorHtml(e);
+  }
+}

@@ -9,9 +9,9 @@ import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
 const users = new Hono<{ Variables: AppVars }>();
-users.use('*', requireAuth());
 
-users.get('/', async (c) => {
+
+users.get('/', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const url = new URL(c.req.url);
   const page = Math.max(1, Number(url.searchParams.get('page') ?? '1') || 1);
@@ -40,7 +40,7 @@ users.get('/', async (c) => {
   return ok(c, rows, paginationMeta(total, page, perPage));
 });
 
-users.post('/', async (c) => {
+users.post('/', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const body = await c.req.json().catch(() => null);
   const parsed = userCreateSchema.safeParse(body);
@@ -72,7 +72,7 @@ users.post('/', async (c) => {
   return created(c, { id });
 });
 
-users.get('/:id', async (c) => {
+users.get('/:id', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');
   const row = await queryFirst(db, 'SELECT id, email, name, status, locale, timezone, last_login_at, created_at FROM users WHERE id = ? AND deleted_at IS NULL', c.req.param('id'));
@@ -85,7 +85,7 @@ users.get('/:id', async (c) => {
   return ok(c, row);
 });
 
-users.patch('/:id', async (c) => {
+users.patch('/:id', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const body = (await c.req.json().catch(() => null)) as { name?: string; locale?: string; timezone?: string; status?: string } | null;
   if (!body) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
@@ -111,7 +111,7 @@ users.patch('/:id', async (c) => {
   return ok(c, { updated: true });
 });
 
-users.delete('/:id', async (c) => {
+users.delete('/:id', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   if (!user.isSuperAdmin) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   await execute(c.get('db'), 'UPDATE users SET deleted_at = ? WHERE id = ?', nowIso(), c.req.param('id'));
@@ -119,7 +119,7 @@ users.delete('/:id', async (c) => {
 });
 
 // Parent links: link a parent user to a student user within an org.
-users.post('/:id/parent-links', async (c) => {
+users.post('/:id/parent-links', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const body = (await c.req.json().catch(() => null)) as { student_id?: string; organization_id?: string } | null;
   if (!body?.student_id || !body?.organization_id) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
@@ -130,7 +130,7 @@ users.post('/:id/parent-links', async (c) => {
   return created(c, { linked: true });
 });
 
-users.get('/:id/linked-students', async (c) => {
+users.get('/:id/linked-students', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const parentId = c.req.param('id');
   if (parentId !== user.id && !user.isSuperAdmin) {

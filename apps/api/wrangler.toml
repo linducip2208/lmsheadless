@@ -4,6 +4,9 @@ compatibility_date = "2024-09-25"
 
 [vars]
 DEFAULT_LANG = "en"
+# Production: set exact origins, e.g. ALLOWED_ORIGINS = "https://admin.example.com,https://app.example.com"
+ALLOWED_ORIGINS = ""
+COOKIE_SECURE = "1"
 
 # Local D1 (create with: wrangler d1 create lms-headless)
 # [[d1_databases]]

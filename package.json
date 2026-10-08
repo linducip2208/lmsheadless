@@ -1,6 +1,6 @@
 {
   "name": "lms-headless",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Production-ready headless LMS (Cloudflare-native: Workers + D1 + R2 + KV)",
   "workspaces": [
@@ -10,7 +10,10 @@
   "scripts": {
     "dev": "npm --workspace apps/api run dev",
     "dev:admin": "npm --workspace apps/admin run dev",
+    "dev:teacher": "npm --workspace apps/teacher run dev",
     "dev:student": "npm --workspace apps/student run dev",
+    "dev:parent": "npm --workspace apps/parent run dev",
+    "dev:web": "npm --workspace apps/web run dev",
     "build": "npm run build --workspaces --if-present",
     "test": "npm --workspace apps/api run test",
     "test:coverage": "npm --workspace apps/api run test:coverage",

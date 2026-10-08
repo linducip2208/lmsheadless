@@ -12,6 +12,8 @@ interface WorkerBindings {
   RATE_LIMIT_MAX?: string;
   RATE_LIMIT_WINDOW_MS?: string;
   R2_PUBLIC_BASE_URL?: string;
+  ALLOWED_ORIGINS?: string;
+  COOKIE_SECURE?: string;
 }
 
 function buildEnv(platformEnv: WorkerBindings, db: D1Like): AppEnv {
@@ -29,6 +31,8 @@ function buildEnv(platformEnv: WorkerBindings, db: D1Like): AppEnv {
     R2_PUBLIC_BASE_URL: platformEnv.R2_PUBLIC_BASE_URL,
     RATE_LIMIT_MAX: Number(platformEnv.RATE_LIMIT_MAX ?? 120),
     RATE_LIMIT_WINDOW_MS: Number(platformEnv.RATE_LIMIT_WINDOW_MS ?? 60_000),
+    ALLOWED_ORIGINS: platformEnv.ALLOWED_ORIGINS,
+    COOKIE_SECURE: platformEnv.COOKIE_SECURE === '1',
   };
 }
 

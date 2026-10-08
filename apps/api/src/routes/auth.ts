@@ -1,14 +1,18 @@
 import { Hono } from 'hono';
+import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import { loginSchema, registerSchema, refreshSchema } from '@lms/validation';
 import { newId, nowIso } from '@lms/shared';
 import { execute, queryAll, queryFirst } from '../db.js';
 import { hashPassword, randomToken, sha256Hex, signAccessToken, verifyAccessToken, verifyPassword } from '../crypto.js';
 import { created, fail, ok } from '../respond.js';
 import { requireAuth } from '../middleware/common.js';
-import type { AppVars } from '../types.js';
+import { audit } from '../auditlog.js';
+import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
 const auth = new Hono<{ Variables: AppVars }>();
+
+const REFRESH_COOKIE = 'lms_refresh';
 
 auth.post('/register', async (c) => {
   const body = await c.req.json().catch(() => null);
@@ -68,12 +72,21 @@ auth.post('/login', async (c) => {
   const refresh = randomToken();
   const exp = new Date(Date.now() + 30 * 86400_000).toISOString();
   await execute(db, 'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)', newId(), row.id, await sha256Hex(refresh), exp, now);
+  if (c.req.query('cookie') === '1') {
+    setCookie(c, REFRESH_COOKIE, refresh, {
+      httpOnly: true, sameSite: 'Lax', path: '/', maxAge: 30 * 86400,
+      ...(c.get('env').COOKIE_SECURE ? { secure: true } : {}),
+    });
+  }
+  await audit(c, 'auth.login', { entity: 'user', entityId: row.id });
   return ok(c, { access_token: token, refresh_token: refresh, user: { id: row.id, email: row.email, name: row.name, memberships } });
 });
 
 auth.post('/refresh', async (c) => {
   const body = await c.req.json().catch(() => null);
-  const parsed = refreshSchema.safeParse(body);
+  const cookieToken = getCookie(c, REFRESH_COOKIE);
+  const candidate = (body as { refresh_token?: string } | null)?.refresh_token ?? cookieToken;
+  const parsed = refreshSchema.safeParse({ refresh_token: candidate ?? '' });
   if (!parsed.success) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), parsed.error.flatten());
   const db = c.get('db');
   const hash = await sha256Hex(parsed.data.refresh_token);
@@ -90,21 +103,76 @@ auth.post('/refresh', async (c) => {
   const refresh = randomToken();
   const exp = new Date(Date.now() + 30 * 86400_000).toISOString();
   await execute(db, 'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)', newId(), user.id, await sha256Hex(refresh), exp, nowIso());
+  if (cookieToken || c.req.query('cookie') === '1') {
+    setCookie(c, REFRESH_COOKIE, refresh, {
+      httpOnly: true, sameSite: 'Lax', path: '/', maxAge: 30 * 86400,
+      ...(c.get('env').COOKIE_SECURE ? { secure: true } : {}),
+    });
+  }
   return ok(c, { access_token: token, refresh_token: refresh });
 });
 
 auth.post('/logout', async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  const rt = (body as { refresh_token?: string })?.refresh_token;
+  const rt = (body as { refresh_token?: string })?.refresh_token ?? getCookie(c, REFRESH_COOKIE);
   if (rt) {
     await execute(c.get('db'), 'UPDATE refresh_tokens SET revoked_at = ? WHERE token_hash = ?', nowIso(), await sha256Hex(rt));
   }
+  deleteCookie(c, REFRESH_COOKIE, { path: '/' });
+  await audit(c, 'auth.logout', {});
   return ok(c, { logged_out: true });
 });
 
 auth.get('/me', requireAuth(), async (c) => {
   const user = c.get('user');
   return ok(c, { user });
+});
+
+// Active refresh sessions for the current user (revocation support).
+auth.get('/sessions', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const rows = await queryAll<{ id: string; created_at: string; expires_at: string }>(
+    c.get('db'),
+    'SELECT id, created_at, expires_at FROM refresh_tokens WHERE user_id = ? AND revoked_at IS NULL AND expires_at > ? ORDER BY created_at DESC',
+    user.id, nowIso()
+  );
+  return ok(c, rows);
+});
+
+auth.delete('/sessions/:id', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const row = await queryFirst<{ user_id: string }>(c.get('db'), 'SELECT user_id FROM refresh_tokens WHERE id = ?', c.req.param('id'));
+  if (!row) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  if (row.user_id !== user.id) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(c.get('db'), 'UPDATE refresh_tokens SET revoked_at = ? WHERE id = ?', nowIso(), c.req.param('id'));
+  await audit(c, 'auth.session_revoked', { entity: 'refresh_token', entityId: c.req.param('id') });
+  return ok(c, { revoked: true });
+});
+
+auth.post('/sessions/revoke-all', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  await execute(c.get('db'), 'UPDATE refresh_tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL', nowIso(), user.id);
+  deleteCookie(c, REFRESH_COOKIE, { path: '/' });
+  await audit(c, 'auth.sessions_revoked_all', {});
+  return ok(c, { revoked_all: true });
+});
+
+auth.post('/password/change', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const body = (await c.req.json().catch(() => null)) as { current_password?: string; new_password?: string } | null;
+  if (!body?.current_password || !body?.new_password || body.new_password.length < 8 || body.new_password.length > 128) {
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  }
+  const db = c.get('db');
+  const row = await queryFirst<{ password_hash: string }>(db, 'SELECT password_hash FROM users WHERE id = ?', user.id);
+  if (!row || !(await verifyPassword(body.current_password, row.password_hash))) {
+    return fail(c, 401, 'INVALID_CREDENTIALS', t('invalid_credentials', c.get('lang')));
+  }
+  await execute(db, 'UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?', await hashPassword(body.new_password), nowIso(), user.id);
+  // Invalidate all other sessions; keep it simple and revoke all.
+  await execute(db, 'UPDATE refresh_tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL', nowIso(), user.id);
+  await audit(c, 'auth.password_changed', { entity: 'user', entityId: user.id });
+  return ok(c, { changed: true });
 });
 
 auth.post('/password/forgot', async (c) => {

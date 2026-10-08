@@ -21,6 +21,8 @@ const env: AppEnv = {
   STORAGE_LOCAL_DIR: process.env.STORAGE_LOCAL_DIR ?? './.data/uploads',
   RATE_LIMIT_MAX: Number(process.env.RATE_LIMIT_MAX ?? 200),
   RATE_LIMIT_WINDOW_MS: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60_000),
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS,
+  COOKIE_SECURE: process.env.COOKIE_SECURE === '1',
 };
 
 const app = createApp(env, db);

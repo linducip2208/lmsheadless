@@ -22,6 +22,8 @@ export interface AppEnv {
   R2_PUBLIC_BASE_URL?: string;
   RATE_LIMIT_MAX?: number;
   RATE_LIMIT_WINDOW_MS?: number;
+  ALLOWED_ORIGINS?: string;
+  COOKIE_SECURE?: boolean;
   R2?: {
     put(key: string, body: ArrayBuffer, opts?: { contentType?: string }): Promise<unknown>;
     get(key: string): Promise<{ body: ReadableStream | null; contentType?: string } | null>;

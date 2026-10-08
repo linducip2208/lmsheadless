@@ -47,19 +47,27 @@ async function main() {
   await execute(db, 'INSERT INTO parent_links (id, parent_id, student_id, organization_id, created_at) VALUES (?, ?, ?, ?, ?)', newId(), parentId, studentId, orgId, now);
 
   const perms = ['users.read', 'users.write', 'courses.read', 'courses.write', 'grades.write', 'attendance.write', 'reports.read'];
-  for (const p of perms) {
+  void perms;
+  const { PERMISSIONS, ROLE_PERMISSIONS } = await import('./permissions.js');
+  for (const p of PERMISSIONS) {
+    await execute(db, 'INSERT OR IGNORE INTO permissions (id, key, description, created_at) VALUES (?, ?, ?, ?)', p.key, p.key, p.description, now);
+  }
+  // Legacy keys kept for backward compatibility with older installs.
+  for (const p of ['users.read', 'users.write', 'courses.read', 'courses.write', 'grades.write', 'attendance.write', 'reports.read']) {
     await execute(db, 'INSERT OR IGNORE INTO permissions (id, key, created_at) VALUES (?, ?, ?)', p, p, now);
   }
-  const rolePerms: Record<string, string[]> = {
-    super_admin: perms,
-    organization_admin: perms,
-    teacher: ['courses.read', 'courses.write', 'grades.write', 'attendance.write', 'reports.read'],
-    student: ['courses.read'],
-    parent: ['courses.read', 'reports.read'],
-    staff: ['courses.read', 'reports.read', 'attendance.write'],
-  };
-  for (const [role, list] of Object.entries(rolePerms)) {
+  for (const [role, list] of Object.entries(ROLE_PERMISSIONS)) {
     for (const p of list) await execute(db, 'INSERT OR IGNORE INTO role_permissions (role, permission_id) VALUES (?, ?)', role, p);
+  }
+  const defaultSettings: [string, string][] = [
+    ['setup_completed', 'true'],
+    ['app_name', 'LMS Headless'],
+    ['default_locale', 'en'],
+    ['default_timezone', 'Asia/Jakarta'],
+    ['registration_enabled', 'true'],
+  ];
+  for (const [k, v] of defaultSettings) {
+    await execute(db, 'INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES (?, ?, ?)', k, v, now);
   }
 
   const ayId = newId();

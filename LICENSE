@@ -1,0 +1,15 @@
+# LMS Headless — License Notice
+
+The final commercial licensing terms for this product have **not** been selected
+yet and must be chosen by the **product owner** before any sale or distribution.
+
+Until then:
+
+- No license is granted for redistribution, resale, or production use by third parties.
+- Internal development and evaluation use only.
+- Do not remove this file. Do not claim MIT/Apache/GPL/commercial rights that
+  have not been granted.
+
+When ready, the product owner should replace this file with the chosen license
+text (e.g. a commercial EULA, subscription terms, or an OSI-approved license)
+and update `PRODUCT.md`, `README.md` and `package.json` accordingly.
