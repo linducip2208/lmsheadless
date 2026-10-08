@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node"],
+    "paths": {
+      "@lms/shared": ["../../packages/shared/src/index.ts"],
+      "@lms/validation": ["../../packages/validation/src/index.ts"],
+      "@lms/types": ["../../packages/types/src/index.ts"]
+    }
+  },
+  "include": ["src", "test"]
+}

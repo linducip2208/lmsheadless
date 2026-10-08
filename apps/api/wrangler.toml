@@ -1,0 +1,26 @@
+name = "lms-headless-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-25"
+
+[vars]
+DEFAULT_LANG = "en"
+
+# Local D1 (create with: wrangler d1 create lms-headless)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "lms-headless"
+# database_id = "replace-with-real-id"
+# migrations_dir = "../../migrations"
+
+# Production file storage
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "lms-storage"
+
+# Cache / rate-limit backing store
+# [[kv_namespaces]]
+# binding = "KV"
+# id = "replace-with-real-id"
+
+[dev]
+port = 8787

@@ -1,0 +1,30 @@
+{
+  "name": "lms-headless",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-ready headless LMS (Cloudflare-native: Workers + D1 + R2 + KV)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace apps/api run dev",
+    "dev:admin": "npm --workspace apps/admin run dev",
+    "dev:student": "npm --workspace apps/student run dev",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm --workspace apps/api run test",
+    "test:coverage": "npm --workspace apps/api run test:coverage",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:migrate": "npm --workspace apps/api run db:migrate",
+    "db:seed": "npm --workspace apps/api run db:seed",
+    "audit": "npm --workspace apps/api run audit"
+  },
+  "devDependencies": {
+    "eslint": "^9.12.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.71.1"
+  }
+}
