@@ -27,7 +27,7 @@ banks.get('/question-banks', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const orgId = new URL(c.req.url).searchParams.get('organization_id');
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(c.get('db'), 'SELECT * FROM question_banks WHERE organization_id = ? ORDER BY created_at DESC', orgId);
+  const rows = await queryAll(c.get('db'), 'SELECT * FROM question_banks WHERE organization_id = ? ORDER BY created_at DESC LIMIT 200', orgId);
   return ok(c, rows);
 });
 

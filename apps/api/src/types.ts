@@ -22,6 +22,7 @@ export interface AppEnv {
   R2_PUBLIC_BASE_URL?: string;
   RATE_LIMIT_MAX?: number;
   RATE_LIMIT_WINDOW_MS?: number;
+  AUTH_RATE_LIMIT_MAX?: number;
   ALLOWED_ORIGINS?: string;
   COOKIE_SECURE?: boolean;
   R2?: {

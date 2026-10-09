@@ -27,13 +27,14 @@ export function language() {
 // In-memory fallback rate limiter. In production with KV binding, counts are stored in KV.
 const buckets = new Map<string, { count: number; reset: number }>();
 
-export function rateLimit() {
+export function rateLimit(opts: { prefix?: string; max?: number; windowMs?: number } = {}) {
+  const prefix = opts.prefix ?? 'rl';
   return createMiddleware<{ Variables: AppVars }>(async (c, next) => {
     const env = c.get('env');
-    const max = env.RATE_LIMIT_MAX ?? 120;
-    const win = env.RATE_LIMIT_WINDOW_MS ?? 60_000;
+    const max = opts.max ?? (prefix === 'auth' ? (env.AUTH_RATE_LIMIT_MAX ?? 60) : (env.RATE_LIMIT_MAX ?? 120));
+    const win = opts.windowMs ?? env.RATE_LIMIT_WINDOW_MS ?? 60_000;
     const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'local';
-    const key = `rl:${ip}:${Math.floor(Date.now() / win)}`;
+    const key = `${prefix}:${ip}:${Math.floor(Date.now() / win)}`;
     if (env.KV) {
       const raw = await env.KV.get(key);
       const count = (raw ? Number(raw) : 0) + 1;

@@ -166,7 +166,7 @@ courses.get('/courses/:id/sections', requireAuth(), async (c) => {
   const db = c.get('db');
   const orgId = await courseOrg(db, c.req.param('id'));
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(db, 'SELECT * FROM course_sections WHERE course_id = ? ORDER BY position ASC', c.req.param('id'));
+  const rows = await queryAll(db, 'SELECT * FROM course_sections WHERE course_id = ? ORDER BY position ASC LIMIT 1000', c.req.param('id'));
   return ok(c, rows);
 });
 
@@ -193,7 +193,7 @@ courses.get('/courses/sections/:sectionId/lessons', requireAuth(), async (c) => 
   if (!sec) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const orgId = await courseOrg(db, sec.course_id);
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(db, 'SELECT * FROM lessons WHERE section_id = ? ORDER BY position ASC', c.req.param('sectionId'));
+  const rows = await queryAll(db, 'SELECT * FROM lessons WHERE section_id = ? ORDER BY position ASC LIMIT 1000', c.req.param('sectionId'));
   return ok(c, rows);
 });
 
@@ -285,10 +285,10 @@ courses.get('/courses/:id/enrollments', requireAuth(), async (c) => {
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const role = orgRole(user, orgId);
   if (role === 'student') {
-    const rows = await queryAll(db, 'SELECT * FROM enrollments WHERE course_id = ? AND student_id = ?', c.req.param('id'), user.id);
+    const rows = await queryAll(db, 'SELECT * FROM enrollments WHERE course_id = ? AND student_id = ? LIMIT 200', c.req.param('id'), user.id);
     return ok(c, rows);
   }
-  const rows = await queryAll(db, 'SELECT e.*, u.name as student_name FROM enrollments e JOIN users u ON u.id = e.student_id WHERE e.course_id = ?', c.req.param('id'));
+  const rows = await queryAll(db, 'SELECT e.*, u.name as student_name FROM enrollments e JOIN users u ON u.id = e.student_id WHERE e.course_id = ? LIMIT 500', c.req.param('id'));
   return ok(c, rows);
 });
 

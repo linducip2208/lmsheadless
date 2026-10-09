@@ -17,6 +17,7 @@ import { authOptional, language, rateLimit, requestId } from './middleware/commo
 import { cors } from './middleware/cors.js';
 import { idempotency } from './middleware/idempotency.js';
 import { maintenance } from './middleware/maintenance.js';
+import { securityHeaders } from './middleware/headers.js';
 import type { AppEnv, AppVars } from './types.js';
 import type { D1Like } from './db.js';
 import { openApiDocument } from './openapi.js';
@@ -32,8 +33,13 @@ export function createApp(env: AppEnv, db: D1Like) {
     await next();
   });
   app.use('*', cors());
+  app.use('*', securityHeaders());
   app.use('/api/*', rateLimit());
   app.use('/api/*', authOptional());
+  // Stricter bucket for credential-abuse targets (brute force, enumeration).
+  app.use('/api/v1/auth/login', rateLimit({ prefix: 'auth' }));
+  app.use('/api/v1/auth/register', rateLimit({ prefix: 'auth' }));
+  app.use('/api/v1/auth/refresh', rateLimit({ prefix: 'auth' }));
   app.use('/api/*', maintenance());
   app.use('/api/*', idempotency());
 

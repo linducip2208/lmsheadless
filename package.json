@@ -1,6 +1,6 @@
 {
   "name": "lms-headless",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "description": "Production-ready headless LMS (Cloudflare-native: Workers + D1 + R2 + KV)",
   "workspaces": [
@@ -16,6 +16,7 @@
     "dev:web": "npm --workspace apps/web run dev",
     "build": "npm run build --workspaces --if-present",
     "test": "npm --workspace apps/api run test",
+    "test:e2e": "npm --workspace apps/web run test:e2e",
     "test:coverage": "npm --workspace apps/api run test:coverage",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",

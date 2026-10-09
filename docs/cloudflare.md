@@ -13,3 +13,10 @@
 statically — the SQLite adapter loads via `process.getBuiltinModule` only when
 called, which never happens on Workers. `wrangler.toml` ships with D1/R2/KV
 blocks commented until real IDs exist; no account secrets are in the repo.
+
+## D1 engine verification (2026-10-09)
+
+All 15 migrations were applied with `wrangler d1 execute --local` against the
+real D1 engine: **success**, all tables created. Foreign keys enforced
+(bogus enrollment → `SQLITE_CONSTRAINT_FOREIGNKEY`) and `ALTER TABLE … ADD
+COLUMN` works (column-patch strategy confirmed production-safe).

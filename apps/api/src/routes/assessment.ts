@@ -68,7 +68,7 @@ assess.get('/quizzes', requireAuth(), async (c) => {
   if (!courseId) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), { course_id: 'required' });
   const orgId = await courseOrg(db, courseId);
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(db, 'SELECT * FROM quizzes WHERE course_id = ? ORDER BY created_at DESC', courseId);
+  const rows = await queryAll(db, 'SELECT * FROM quizzes WHERE course_id = ? ORDER BY created_at DESC LIMIT 200', courseId);
   return ok(c, rows);
 });
 
@@ -113,7 +113,7 @@ assess.get('/quizzes/:id/questions', requireAuth(), async (c) => {
   const db = c.get('db');
   const orgId = await quizOrg(db, c.req.param('id'));
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const questions = await queryAll<{ id: string; type: string; prompt: string; points: number; position: number; difficulty: string }>(db, 'SELECT id, type, prompt, points, position, difficulty FROM questions WHERE quiz_id = ? ORDER BY position ASC', c.req.param('id'));
+  const questions = await queryAll<{ id: string; type: string; prompt: string; points: number; position: number; difficulty: string }>(db, 'SELECT id, type, prompt, points, position, difficulty FROM questions WHERE quiz_id = ? ORDER BY position ASC LIMIT 1000', c.req.param('id'));
   const role = orgRole(user, orgId);
   const isStudent = role === 'student';
   const quiz = await queryFirst<{ shuffle_questions: number; answer_release: string }>(db, 'SELECT shuffle_questions, answer_release FROM quizzes WHERE id = ?', c.req.param('id'));
@@ -305,7 +305,7 @@ assess.get('/assignments', requireAuth(), async (c) => {
   const db = c.get('db');
   const orgId = await courseOrg(db, courseId);
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(db, 'SELECT * FROM assignments WHERE course_id = ? ORDER BY created_at DESC', courseId);
+  const rows = await queryAll(db, 'SELECT * FROM assignments WHERE course_id = ? ORDER BY created_at DESC LIMIT 200', courseId);
   return ok(c, rows);
 });
 
@@ -317,11 +317,11 @@ assess.get('/assignments/:id/submissions', requireAuth(), async (c) => {
   if (!canAccessOrg(user, asg.organization_id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const role = orgRole(user, asg.organization_id);
   if (role === 'student') {
-    const rows = await queryAll(db, 'SELECT * FROM submissions WHERE assignment_id = ? AND student_id = ?', c.req.param('id'), user.id);
+    const rows = await queryAll(db, 'SELECT * FROM submissions WHERE assignment_id = ? AND student_id = ? LIMIT 200', c.req.param('id'), user.id);
     return ok(c, rows);
   }
   if (role === 'parent') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-  const rows = await queryAll(db, 'SELECT s.*, u.name as student_name FROM submissions s JOIN users u ON u.id = s.student_id WHERE s.assignment_id = ? ORDER BY s.submitted_at DESC', c.req.param('id'));
+  const rows = await queryAll(db, 'SELECT s.*, u.name as student_name FROM submissions s JOIN users u ON u.id = s.student_id WHERE s.assignment_id = ? ORDER BY s.submitted_at DESC LIMIT 500', c.req.param('id'));
   return ok(c, rows);
 });
 
@@ -397,7 +397,7 @@ assess.get('/grades', requireAuth(), async (c) => {
         if (!link) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
       }
     }
-    const rows = await queryAll(db, 'SELECT * FROM grades WHERE course_id = ? AND student_id = ? ORDER BY created_at DESC', courseId, studentId);
+    const rows = await queryAll(db, 'SELECT * FROM grades WHERE course_id = ? AND student_id = ? ORDER BY created_at DESC LIMIT 500', courseId, studentId);
     return ok(c, rows);
   }
   // All grades for a student across teacher's org courses: teachers only.

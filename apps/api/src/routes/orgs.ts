@@ -14,7 +14,7 @@ orgs.get('/', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');
   if (user.isSuperAdmin) {
-    const rows = await queryAll(db, 'SELECT * FROM organizations WHERE deleted_at IS NULL ORDER BY created_at DESC');
+    const rows = await queryAll(db, 'SELECT * FROM organizations WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 500');
     return ok(c, rows);
   }
   const ids = user.memberships.map((m) => m.organization_id);
@@ -53,7 +53,7 @@ orgs.get('/:id/members', requireAuth(), async (c) => {
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(c.get('db'),
-    'SELECT u.id, u.email, u.name, om.role FROM organization_members om JOIN users u ON u.id = om.user_id WHERE om.organization_id = ? AND u.deleted_at IS NULL',
+    'SELECT u.id, u.email, u.name, om.role FROM organization_members om JOIN users u ON u.id = om.user_id WHERE om.organization_id = ? AND u.deleted_at IS NULL LIMIT 1000',
     id);
   return ok(c, rows);
 });
@@ -84,7 +84,7 @@ orgs.get('/:id/academic-years', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(c.get('db'), 'SELECT * FROM academic_years WHERE organization_id = ? ORDER BY start_date DESC', id);
+  const rows = await queryAll(c.get('db'), 'SELECT * FROM academic_years WHERE organization_id = ? ORDER BY start_date DESC LIMIT 500', id);
   return ok(c, rows);
 });
 
@@ -106,7 +106,7 @@ orgs.get('/:id/terms', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(c.get('db'), 'SELECT * FROM terms WHERE organization_id = ? ORDER BY start_date DESC', id);
+  const rows = await queryAll(c.get('db'), 'SELECT * FROM terms WHERE organization_id = ? ORDER BY start_date DESC LIMIT 500', id);
   return ok(c, rows);
 });
 
@@ -128,7 +128,7 @@ orgs.get('/:id/classes', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
   if (!canAccessOrg(user, id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(c.get('db'), 'SELECT * FROM classes WHERE organization_id = ? AND deleted_at IS NULL ORDER BY created_at DESC', id);
+  const rows = await queryAll(c.get('db'), 'SELECT * FROM classes WHERE organization_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 500', id);
   return ok(c, rows);
 });
 

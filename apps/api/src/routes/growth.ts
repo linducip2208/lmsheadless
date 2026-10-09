@@ -314,7 +314,7 @@ growth.get('/org-units', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const orgId = new URL(c.req.url).searchParams.get('organization_id');
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(c.get('db'), 'SELECT * FROM org_units WHERE organization_id = ? ORDER BY name ASC', orgId);
+  const rows = await queryAll(c.get('db'), 'SELECT * FROM org_units WHERE organization_id = ? ORDER BY name ASC LIMIT 500', orgId);
   return ok(c, rows);
 });
 

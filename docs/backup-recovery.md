@@ -23,3 +23,11 @@
 Quarterly: restore D1 backup to a staging database, run migrations, boot the
 API, run `npm test`, and verify login + catalog + certificate verification.
 Record the drill date and result in the ops log.
+
+### Drill log
+
+- **2026-10-09 (local drill, SQLite)**: copied live DB to `drill-backup.db`,
+  deleted live DB, rebuilt via `db:migrate` + `db:seed` (001→015 applied),
+  then restored the backup copy as live, booted the API, verified student
+  login and 404-safe certificate verification. Result: **PASS**.
+

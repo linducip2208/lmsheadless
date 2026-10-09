@@ -1,6 +1,21 @@
 # Implementation status (October 2026)
 
-## Shipped in 1.3.0 (this release)
+## Shipped in 1.4.0 (this release)
+
+- Browser E2E suite (Playwright, chromium headless shell): home + ID toggle,
+  catalog-vs-live-API, honest verify page, OpenAPI sanity — 4/4 green locally;
+  `npm run test:e2e`, separate `e2e.yml` CI job.
+- D1 engine verification: all 15 migrations applied via `wrangler d1 execute
+  --local`, FK enforcement + ALTER confirmed (see `docs/cloudflare.md`).
+- Security headers middleware (`nosniff`, strict referrer policy; no global
+  frame-blocking to protect the sandboxed SCORM player).
+- Tiered rate limits: stricter auth bucket (60/min default, `AUTH_RATE_LIMIT_MAX`).
+- Pagination bounds audit: every collection endpoint now carries an explicit
+  `LIMIT` (200–1000 by scope).
+- Backup/restore drill executed locally with evidence (`docs/backup-recovery.md`).
+- API versioning & deprecation policy (`docs/api-versioning.md`).
+
+## Shipped in 1.3.0
 
 - Custom role mapping (`PUT /roles/:role/permissions`, super_admin-only,
   catalog-validated) with enforcement reading the database (static catalog is

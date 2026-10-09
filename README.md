@@ -129,7 +129,7 @@ documented in `docs/white-label.md`). Tenant isolation is tested
 ## Testing
 
 ```bash
-npm test            # 68+ tests: auth, RBAC matrix, tenant isolation, IDOR,
+npm test            # 73+ tests: auth, RBAC matrix, tenant isolation, IDOR,
                     # courses, quiz (scoring/expiry/limits/pools/manual),
                     # assignments, attendance, certificates, files, setup, search,
                     # idempotency, CORS, rate limiting, authoring, banks, cohorts,
@@ -140,6 +140,7 @@ npm run lint
 npm run build
 npm run audit       # migrations, FK/indexes, secrets, CDN, envelope, RBAC, PWA, guards
 npm run contract    # every frontend API path resolves to a backend route
+npm run test:e2e    # Playwright browser tests (needs seeded dev DB)
 ```
 
 ## Security
@@ -161,4 +162,4 @@ OWASP-style coverage is tested in `apps/api/test/security.test.ts`.
 `commerce.md` · `scorm.md` · `ai.md` · `exercises.md` · `backup-recovery.md` ·
 `troubleshooting.md` · `competitive-benchmark.md` · `feature-gap-matrix.md` ·
 `implementation-status.md` · `production-readiness.md` · `upgrade-guide.md` ·
-`capability-matrix.md`
+`capability-matrix.md` · `api-versioning.md`

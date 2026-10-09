@@ -44,7 +44,7 @@ cohorts.get('/cohorts', requireAuth(), async (c) => {
     const rows = await queryAll(c.get('db'), 'SELECT co.* FROM cohorts co JOIN cohort_members cm ON cm.cohort_id = co.id WHERE co.organization_id = ? AND cm.user_id = ?', orgId, user.id);
     return ok(c, rows);
   }
-  const rows = await queryAll(c.get('db'), 'SELECT * FROM cohorts WHERE organization_id = ? ORDER BY created_at DESC', orgId);
+  const rows = await queryAll(c.get('db'), 'SELECT * FROM cohorts WHERE organization_id = ? ORDER BY created_at DESC LIMIT 500', orgId);
   return ok(c, rows);
 });
 
@@ -127,7 +127,7 @@ cohorts.get('/programs', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const orgId = new URL(c.req.url).searchParams.get('organization_id');
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(c.get('db'), 'SELECT * FROM programs WHERE organization_id = ? ORDER BY created_at DESC', orgId);
+  const rows = await queryAll(c.get('db'), 'SELECT * FROM programs WHERE organization_id = ? ORDER BY created_at DESC LIMIT 500', orgId);
   return ok(c, rows);
 });
 

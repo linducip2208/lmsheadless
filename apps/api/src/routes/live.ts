@@ -84,7 +84,7 @@ live.post('/live-sessions/:id/cancel', requireAuth(), async (c) => {
   if (!sess || !canTeach(user, sess.organization_id)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   await execute(db, "UPDATE live_sessions SET status = 'cancelled', updated_at = ? WHERE id = ?", nowIso(), c.req.param('id'));
   // Notify registrants through the notification center.
-  const regs = await queryAll<{ user_id: string; title: string }>(db, 'SELECT r.user_id, s.title FROM live_registrations r JOIN live_sessions s ON s.id = r.session_id WHERE r.session_id = ?', c.req.param('id'));
+  const regs = await queryAll<{ user_id: string; title: string }>(db, 'SELECT r.user_id, s.title FROM live_registrations r JOIN live_sessions s ON s.id = r.session_id WHERE r.session_id = ? LIMIT 1000', c.req.param('id'));
   for (const reg of regs) {
     await execute(db, 'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)', newId(), reg.user_id, 'Live session cancelled', `Cancelled: ${reg.title}`.slice(0, 1000), nowIso());
   }

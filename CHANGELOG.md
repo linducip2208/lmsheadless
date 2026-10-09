@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.0 — Final hardening release
+
+Added:
+
+- Playwright browser E2E (4 tests green) + CI job
+- D1-local engine verification (migrations, FK, ALTER)
+- Security headers, tiered auth rate limiting
+- Pagination bounds on all collections, robustness tests
+- Backup/restore drill with evidence, API versioning policy
+
 ## 1.3.0 — Governance & performance release
 
 Added:

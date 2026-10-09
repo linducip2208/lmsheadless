@@ -1,0 +1,22 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - run: npx playwright install --only-shell chromium --with-deps
+        working-directory: apps/web
+      - run: npm run test:e2e

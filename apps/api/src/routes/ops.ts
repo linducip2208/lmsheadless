@@ -87,7 +87,7 @@ ops.get('/api/v1/certificates', requireAuth(), async (c) => {
   if (studentId !== user.id && orgRole(user, url.searchParams.get('organization_id') ?? '') === 'student') {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   }
-  const rows = await queryAll(db, 'SELECT * FROM certificates WHERE student_id = ? ORDER BY issued_at DESC', studentId);
+  const rows = await queryAll(db, 'SELECT * FROM certificates WHERE student_id = ? ORDER BY issued_at DESC LIMIT 200', studentId);
   // Tenant check: requester must share org or be owner/super.
   const filtered: unknown[] = [];
   for (const r of rows) {
@@ -217,7 +217,7 @@ ops.get('/api/v1/discussions', requireAuth(), async (c) => {
   const db = c.get('db');
   const course = await queryFirst<{ organization_id: string }>(db, 'SELECT organization_id FROM courses WHERE id = ?', courseId);
   if (!course || !canAccessOrg(user, course.organization_id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const threads = await queryAll(db, 'SELECT * FROM discussion_threads WHERE course_id = ? ORDER BY created_at DESC', courseId);
+  const threads = await queryAll(db, 'SELECT * FROM discussion_threads WHERE course_id = ? ORDER BY created_at DESC LIMIT 200', courseId);
   return ok(c, threads);
 });
 
@@ -245,7 +245,7 @@ ops.get('/api/v1/discussions/:threadId/replies', requireAuth(), async (c) => {
   if (!course || !canAccessOrg(user, course.organization_id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const role = orgRole(user, course.organization_id);
   const showHidden = role !== 'student' && role !== 'parent';
-  const rows = await queryAll(db, `SELECT * FROM discussion_replies WHERE thread_id = ? ${showHidden ? '' : 'AND is_hidden = 0'} ORDER BY created_at ASC`, c.req.param('threadId'));
+  const rows = await queryAll(db, `SELECT * FROM discussion_replies WHERE thread_id = ? ${showHidden ? '' : 'AND is_hidden = 0'} ORDER BY created_at ASC LIMIT 500`, c.req.param('threadId'));
   return ok(c, rows);
 });
 
@@ -333,7 +333,7 @@ ops.get('/api/v1/reports/completion', requireAuth(), async (c) => {
   const role = orgRole(user, orgId);
   if (role === 'student' || role === 'parent') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const db = c.get('db');
-  const courses = await queryAll<{ id: string; title: string; code: string }>(db, 'SELECT id, title, code FROM courses WHERE organization_id = ? AND deleted_at IS NULL ORDER BY title ASC', orgId);
+  const courses = await queryAll<{ id: string; title: string; code: string }>(db, 'SELECT id, title, code FROM courses WHERE organization_id = ? AND deleted_at IS NULL ORDER BY title ASC LIMIT 500', orgId);
   // Single-pass aggregates (no per-course queries).
   const stats = await queryAll<{ course_id: string; enrolled: number; completed: number; avg_p: number | null }>(db,
     `SELECT course_id, COUNT(*) as enrolled,
