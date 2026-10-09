@@ -95,17 +95,19 @@ cohorts.get('/cohorts/:id/progress', requireAuth(), async (c) => {
   const role = orgRole(user, cohort.organization_id);
   if (role === 'student' || role === 'parent') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const members = await queryAll<{ user_id: string; name: string }>(db, "SELECT cm.user_id, u.name FROM cohort_members cm JOIN users u ON u.id = cm.user_id WHERE cm.cohort_id = ? AND cm.role = 'student'", c.req.param('id'));
-  const courses = await queryAll<{ course_id: string }>(db, 'SELECT course_id FROM cohort_courses WHERE cohort_id = ?', c.req.param('id'));
-  const out: unknown[] = [];
-  for (const m of members) {
-    let sum = 0;
-    for (const course of courses) {
-      const p = await queryFirst<{ progress_percent: number | null }>(db, 'SELECT progress_percent FROM enrollments WHERE course_id = ? AND student_id = ?', course.course_id, m.user_id);
-      sum += p?.progress_percent ?? 0;
-    }
-    out.push({ student_id: m.user_id, name: m.name, avg_progress: courses.length ? Math.round((sum / courses.length) * 100) / 100 : 0 });
-  }
-  return ok(c, { courses: courses.length, students: out });
+  const courseCount = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM cohort_courses WHERE cohort_id = ?', c.req.param('id')))?.n ?? 0;
+  // Single aggregated query (no N+1 over members × courses).
+  const avgs = await queryAll<{ student_id: string; avg_p: number | null }>(db,
+    `SELECT e.student_id, AVG(e.progress_percent) as avg_p FROM enrollments e
+     JOIN cohort_courses cc ON cc.course_id = e.course_id
+     WHERE cc.cohort_id = ? GROUP BY e.student_id`, c.req.param('id'));
+  const avgMap = new Map(avgs.map((a) => [a.student_id, a.avg_p ?? 0]));
+  const out = members.map((m) => ({
+    student_id: m.user_id,
+    name: m.name,
+    avg_progress: courseCount ? Math.round((Number(avgMap.get(m.user_id) ?? 0)) * 100) / 100 : 0,
+  }));
+  return ok(c, { courses: courseCount, students: out });
 });
 
 // ---------- Programs / learning paths ----------
@@ -153,17 +155,28 @@ cohorts.get('/programs/:id', requireAuth(), async (c) => {
   const program = await queryFirst<{ organization_id: string; name: string }>(db, 'SELECT organization_id, name FROM programs WHERE id = ?', c.req.param('id'));
   if (!program || !canAccessOrg(user, program.organization_id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const courses = await queryAll(db, 'SELECT pc.*, co.title as course_title FROM program_courses pc JOIN courses co ON co.id = pc.course_id WHERE pc.program_id = ? ORDER BY pc.position ASC', c.req.param('id'));
-  // Learner view: annotate lock state per prerequisite chain.
-  const annotated: unknown[] = [];
-  const completed = new Set<string>();
-  for (const pc of courses as { course_id: string; prerequisite_program_course_id: string | null }[]) {
-    const enr = await queryFirst<{ status: string }>(db, 'SELECT status FROM enrollments WHERE course_id = ? AND student_id = ?', pc.course_id, user.id);
-    const locked = pc.prerequisite_program_course_id
-      ? !(await queryFirst(db, 'SELECT e.id FROM enrollments e JOIN program_courses pc2 ON pc2.course_id = e.course_id WHERE pc2.id = ? AND e.student_id = ? AND e.status = ?', pc.prerequisite_program_course_id, user.id, 'completed'))
-      : false;
-    if (enr?.status === 'completed') completed.add(pc.course_id);
-    annotated.push({ ...(pc as object), enrollment_status: enr?.status ?? null, locked });
+  // Batch the learner's enrollments once (no per-course queries).
+  const courseIds = (courses as { course_id: string }[]).map((x) => x.course_id);
+  const enrMap = new Map<string, string>();
+  if (courseIds.length) {
+    const enrs = await queryAll<{ course_id: string; status: string }>(db,
+      `SELECT course_id, status FROM enrollments WHERE student_id = ? AND course_id IN (${courseIds.map(() => '?').join(',')})`, user.id, ...courseIds);
+    for (const e of enrs) enrMap.set(e.course_id, e.status);
   }
+  // Prerequisite program-course ids completed by this learner (single query).
+  const preIds = (courses as { prerequisite_program_course_id: string | null }[]).map((x) => x.prerequisite_program_course_id).filter((x): x is string => !!x);
+  const preDone = new Set<string>();
+  if (preIds.length) {
+    const rows = await queryAll<{ pcid: string }>(db,
+      `SELECT pc2.id as pcid FROM enrollments e JOIN program_courses pc2 ON pc2.course_id = e.course_id
+       WHERE pc2.id IN (${preIds.map(() => '?').join(',')}) AND e.student_id = ? AND e.status = 'completed'`, ...preIds, user.id);
+    for (const r of rows) preDone.add(r.pcid);
+  }
+  const annotated = (courses as { course_id: string; prerequisite_program_course_id: string | null }[]).map((pc) => ({
+    ...(pc as object),
+    enrollment_status: enrMap.get(pc.course_id) ?? null,
+    locked: pc.prerequisite_program_course_id ? !preDone.has(pc.prerequisite_program_course_id) : false,
+  }));
   return ok(c, { program, courses: annotated });
 });
 

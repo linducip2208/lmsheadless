@@ -334,13 +334,20 @@ ops.get('/api/v1/reports/completion', requireAuth(), async (c) => {
   if (role === 'student' || role === 'parent') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const db = c.get('db');
   const courses = await queryAll<{ id: string; title: string; code: string }>(db, 'SELECT id, title, code FROM courses WHERE organization_id = ? AND deleted_at IS NULL ORDER BY title ASC', orgId);
-  const out: unknown[] = [];
-  for (const course of courses) {
-    const enrolled = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM enrollments WHERE course_id = ?', course.id))?.n ?? 0;
-    const completed = (await queryFirst<{ n: number }>(db, "SELECT COUNT(*) as n FROM enrollments WHERE course_id = ? AND status = 'completed'", course.id))?.n ?? 0;
-    const avg = (await queryFirst<{ v: number | null }>(db, 'SELECT AVG(progress_percent) as v FROM enrollments WHERE course_id = ?', course.id))?.v ?? 0;
-    out.push({ course_id: course.id, title: course.title, code: course.code, enrolled, completed, completion_rate: enrolled ? Math.round((completed / enrolled) * 10000) / 100 : 0, avg_progress: Math.round(Number(avg) * 100) / 100 });
-  }
+  // Single-pass aggregates (no per-course queries).
+  const stats = await queryAll<{ course_id: string; enrolled: number; completed: number; avg_p: number | null }>(db,
+    `SELECT course_id, COUNT(*) as enrolled,
+     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+     AVG(progress_percent) as avg_p
+     FROM enrollments WHERE course_id IN (SELECT id FROM courses WHERE organization_id = ? AND deleted_at IS NULL)
+     GROUP BY course_id`, orgId);
+  const statMap = new Map(stats.map((s) => [s.course_id, s]));
+  const out = courses.map((course) => {
+    const s = statMap.get(course.id);
+    const enrolled = s?.enrolled ?? 0;
+    const completed = s?.completed ?? 0;
+    return { course_id: course.id, title: course.title, code: course.code, enrolled, completed, completion_rate: enrolled ? Math.round((completed / enrolled) * 10000) / 100 : 0, avg_progress: Math.round(Number(s?.avg_p ?? 0) * 100) / 100 };
+  });
   return ok(c, out);
 });
 
@@ -358,12 +365,17 @@ ops.get('/api/v1/reports/quiz-performance', requireAuth(), async (c) => {
   const avg = (await queryFirst<{ v: number | null }>(db, "SELECT AVG(score) as v FROM quiz_attempts WHERE quiz_id = ? AND status IN ('submitted','graded')", quizId))?.v ?? 0;
   const passed = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM quiz_attempts WHERE quiz_id = ? AND passed = 1', quizId))?.n ?? 0;
   const questions = await queryAll<{ id: string; prompt: string }>(db, 'SELECT id, prompt FROM questions WHERE quiz_id = ? ORDER BY position ASC', quizId);
-  const perQuestion: unknown[] = [];
-  for (const q of questions) {
-    const total = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM quiz_answers WHERE question_id = ?', q.id))?.n ?? 0;
-    const correct = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM quiz_answers WHERE question_id = ? AND is_correct = 1', q.id))?.n ?? 0;
-    perQuestion.push({ question_id: q.id, prompt: q.prompt.slice(0, 120), answered: total, correct_rate: total ? Math.round((correct / total) * 10000) / 100 : 0 });
-  }
+  // Single aggregated pass over answers (no per-question queries).
+  const answerStats = await queryAll<{ question_id: string; total: number; correct: number }>(db,
+    `SELECT question_id, COUNT(*) as total, SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct
+     FROM quiz_answers WHERE question_id IN (SELECT id FROM questions WHERE quiz_id = ?) GROUP BY question_id`, quizId);
+  const statMap = new Map(answerStats.map((s) => [s.question_id, s]));
+  const perQuestion = questions.map((q) => {
+    const s = statMap.get(q.id);
+    const total = s?.total ?? 0;
+    const correct = s?.correct ?? 0;
+    return { question_id: q.id, prompt: q.prompt.slice(0, 120), answered: total, correct_rate: total ? Math.round((correct / total) * 10000) / 100 : 0 };
+  });
   return ok(c, { quiz_id: quizId, title: quiz.title, attempts, avg_score: Math.round(Number(avg) * 100) / 100, pass_rate: attempts ? Math.round((passed / attempts) * 10000) / 100 : 0, per_question: perQuestion });
 });
 
@@ -376,13 +388,16 @@ ops.get('/api/v1/reports/attendance', requireAuth(), async (c) => {
   if (role === 'student' || role === 'parent') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const db = c.get('db');
   const sessions = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM attendance_sessions WHERE organization_id = ?', orgId))?.n ?? 0;
-  const students = await queryAll<{ id: string; name: string }>(db, 'SELECT u.id, u.name FROM users u JOIN organization_members om ON om.user_id = u.id WHERE om.organization_id = ? AND om.role = ? AND u.deleted_at IS NULL', orgId, 'student');
-  const out: unknown[] = [];
-  for (const s of students) {
-    const total = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM attendance_records r JOIN attendance_sessions se ON se.id = r.session_id WHERE se.organization_id = ? AND r.student_id = ?', orgId, s.id))?.n ?? 0;
-    const present = (await queryFirst<{ n: number }>(db, "SELECT COUNT(*) as n FROM attendance_records r JOIN attendance_sessions se ON se.id = r.session_id WHERE se.organization_id = ? AND r.student_id = ? AND r.status IN ('present','late')", orgId, s.id))?.n ?? 0;
-    out.push({ student_id: s.id, name: s.name, recorded: total, attendance_pct: total ? Math.round((present / total) * 10000) / 100 : 0 });
-  }
+  // Single aggregated query over the org's records (no per-student queries).
+  const rows = await queryAll<{ student_id: string; name: string; total: number; present: number }>(db,
+    `SELECT r.student_id, u.name,
+     COUNT(*) as total,
+     SUM(CASE WHEN r.status IN ('present','late') THEN 1 ELSE 0 END) as present
+     FROM attendance_records r
+     JOIN attendance_sessions se ON se.id = r.session_id
+     JOIN users u ON u.id = r.student_id
+     WHERE se.organization_id = ? GROUP BY r.student_id, u.name ORDER BY u.name ASC`, orgId);
+  const out = rows.map((s) => ({ student_id: s.student_id, name: s.name, recorded: s.total, attendance_pct: s.total ? Math.round((s.present / s.total) * 10000) / 100 : 0 }));
   return ok(c, { sessions, students: out });
 });
 
@@ -396,13 +411,14 @@ ops.get('/api/v1/reports/teacher-activity', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   }
   const db = c.get('db');
-  const teachers = await queryAll<{ id: string; name: string }>(db, 'SELECT u.id, u.name FROM users u JOIN organization_members om ON om.user_id = u.id WHERE om.organization_id = ? AND om.role = ? AND u.deleted_at IS NULL', orgId, 'teacher');
-  const out: unknown[] = [];
-  for (const tch of teachers) {
-    const courses = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM course_instructors ci JOIN courses co ON co.id = ci.course_id WHERE ci.user_id = ? AND co.organization_id = ?', tch.id, orgId))?.n ?? 0;
-    const gradedSubs = (await queryFirst<{ n: number }>(db, "SELECT COUNT(*) as n FROM submissions s JOIN assignments a ON a.id = s.assignment_id WHERE s.graded_by = ? AND a.organization_id = ? AND s.status = 'graded'", tch.id, orgId))?.n ?? 0;
-    out.push({ teacher_id: tch.id, name: tch.name, courses, submissions_graded: gradedSubs });
-  }
+  // Single-pass aggregates (no per-teacher queries).
+  const rows = await queryAll<{ teacher_id: string; name: string; courses: number; graded: number }>(db,
+    `SELECT u.id as teacher_id, u.name,
+     (SELECT COUNT(*) FROM course_instructors ci JOIN courses co ON co.id = ci.course_id WHERE ci.user_id = u.id AND co.organization_id = ?) as courses,
+     (SELECT COUNT(*) FROM submissions s JOIN assignments a ON a.id = s.assignment_id WHERE s.graded_by = u.id AND a.organization_id = ? AND s.status = 'graded') as graded
+     FROM users u JOIN organization_members om ON om.user_id = u.id
+     WHERE om.organization_id = ? AND om.role = 'teacher' AND u.deleted_at IS NULL ORDER BY u.name ASC`, orgId, orgId, orgId);
+  const out = rows.map((tch) => ({ teacher_id: tch.teacher_id, name: tch.name, courses: tch.courses, submissions_graded: tch.graded }));
   return ok(c, out);
 });
 

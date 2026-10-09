@@ -21,6 +21,11 @@ auth.post('/register', async (c) => {
   if (!parsed.success) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), parsed.error.flatten());
   const { email, password, name, organization_id, locale } = parsed.data;
   const db = c.get('db');
+  // Registration toggle (setup flow bypasses this endpoint entirely).
+  const reg = await queryFirst<{ value: string }>(db, "SELECT value FROM settings WHERE key = 'registration_enabled'");
+  if (reg && reg.value === 'false') {
+    return fail(c, 403, 'REGISTRATION_DISABLED', 'Registration is currently disabled');
+  }
   const existing = await queryFirst(db, 'SELECT id FROM users WHERE email = ?', email.toLowerCase());
   if (existing) return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
   const id = newId();
@@ -51,7 +56,12 @@ auth.post('/register', async (c) => {
   const refresh = randomToken();
   const exp = new Date(Date.now() + 30 * 86400_000).toISOString();
   await execute(db, 'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)', newId(), id, await sha256Hex(refresh), exp, now);
-  return created(c, { access_token: token, refresh_token: refresh, user: { id, email: email.toLowerCase(), name } });
+  // Email verification loop: token row always created; delivery queued only
+  // when a provider is configured (otherwise it stays pending — never faked).
+  const verifyToken = randomToken(32);
+  await execute(db, 'INSERT INTO email_verifications (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)',
+    newId(), id, await sha256Hex(verifyToken), new Date(Date.now() + 24 * 3600_000).toISOString(), now);
+  return created(c, { access_token: token, refresh_token: refresh, email_verified: false, user: { id, email: email.toLowerCase(), name } });
 });
 
 auth.post('/login', async (c) => {
@@ -81,7 +91,8 @@ auth.post('/login', async (c) => {
   }
   await audit(c, 'auth.login', { entity: 'user', entityId: row.id });
   await logActivity(db, { user_id: row.id, kind: 'auth.login', entity: 'user', entity_id: row.id });
-  return ok(c, { access_token: token, refresh_token: refresh, user: { id: row.id, email: row.email, name: row.name, memberships } });
+  const verified = await queryFirst(db, 'SELECT id FROM email_verifications WHERE user_id = ? AND verified_at IS NOT NULL LIMIT 1', row.id);
+  return ok(c, { access_token: token, refresh_token: refresh, email_verified: !!verified, user: { id: row.id, email: row.email, name: row.name, memberships } });
 });
 
 auth.post('/refresh', async (c) => {
@@ -194,11 +205,15 @@ auth.post('/password/forgot', async (c) => {
   if (!email) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   const db = c.get('db');
   const user = await queryFirst<{ id: string }>(db, 'SELECT id FROM users WHERE email = ? AND deleted_at IS NULL', email);
-  // Always return success to avoid account enumeration.
+  // Always return success to avoid account enumeration. Per-account throttle:
+  // silently skip creating new tokens beyond 3/hour (response identical).
   if (user) {
-    const token = randomToken(32);
-    const exp = new Date(Date.now() + 3600_000).toISOString();
-    await execute(db, 'INSERT INTO password_resets (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)', newId(), user.id, await sha256Hex(token), exp, nowIso());
+    const recent = await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM password_resets WHERE user_id = ? AND created_at > ? AND used_at IS NULL', user.id, new Date(Date.now() - 3600_000).toISOString());
+    if ((recent?.n ?? 0) < 3) {
+      const token = randomToken(32);
+      const exp = new Date(Date.now() + 3600_000).toISOString();
+      await execute(db, 'INSERT INTO password_resets (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)', newId(), user.id, await sha256Hex(token), exp, nowIso());
+    }
   }
   return ok(c, { message: 'If the account exists, a reset link was created.' });
 });
@@ -221,8 +236,27 @@ auth.post('/password/reset', async (c) => {
   return ok(c, { reset: true });
 });
 
-auth.post('/verify-email', async (c) => {
-  const body = (await c.req.json().catch(() => null)) as { token?: string } | null;
+auth.get('/verify-status', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const row = await queryFirst<{ verified_at: string | null }>(c.get('db'), 'SELECT verified_at FROM email_verifications WHERE user_id = ? AND verified_at IS NOT NULL LIMIT 1', user.id);
+  return ok(c, { email_verified: !!row });
+});
+
+// Throttled re-send (same enumeration-safe posture as forgot/reset).
+auth.post('/verify-email/request', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const recent = await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM email_verifications WHERE user_id = ? AND created_at > ? AND verified_at IS NULL', user.id, new Date(Date.now() - 3600_000).toISOString());
+  if ((recent?.n ?? 0) >= 3) {
+    return fail(c, 429, 'RATE_LIMITED', t('too_many_requests', c.get('lang')));
+  }
+  const verifyToken = randomToken(32);
+  await execute(db, 'INSERT INTO email_verifications (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)',
+    newId(), user.id, await sha256Hex(verifyToken), new Date(Date.now() + 24 * 3600_000).toISOString(), nowIso());
+  return ok(c, { requested: true });
+});
+
+auth.post('/verify-email', async (c) => {  const body = (await c.req.json().catch(() => null)) as { token?: string } | null;
   if (!body?.token) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   const db = c.get('db');
   const hash = await sha256Hex(body.token);

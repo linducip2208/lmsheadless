@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0 — Governance & performance release
+
+Added:
+
+- Custom role mapping API + admin matrix editor (DB-backed enforcement)
+- Maintenance mode (503 + Retry-After, super_admin bypass)
+- Registration toggle enforcement
+- Completed email-verification loop (token, status, throttled resend)
+- Password-reset abuse throttle (enumeration-safe)
+- N+1 fixes across reports (GROUP BY aggregation)
+- Vitest 3 upgrade; dependency audit clean for production
+
 ## 1.2.0 — Enterprise release
 
 Added (all with tests + docs + portal UI):

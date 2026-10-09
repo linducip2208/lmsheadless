@@ -248,6 +248,18 @@ async function verifyPage(num: string): Promise<string> {
   }
 }
 
+async function verifyEmailPage(token: string): Promise<string> {
+  try {
+    const res = await fetch('/api/v1/auth/verify-email', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) });
+    const j = (await res.json()) as { success: boolean };
+    return j.success
+      ? `<div class="container-xl py-5"><div class="alert alert-success">Email verified. <a href="#/login">${t.signIn}</a></div></div>`
+      : `<div class="container-xl py-5"><div class="alert alert-danger">${t.verifyFail}</div></div>`;
+  } catch {
+    return `<div class="container-xl py-5"><div class="alert alert-danger">${t.verifyServiceDown}</div></div>`;
+  }
+}
+
 function registerPage(): string {
   return `<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-md-5"><div class="card"><div class="card-body">
   <h1>${t.createAccount}</h1><p class="text-muted">${t.tryDemo}</p>
@@ -307,6 +319,7 @@ async function router(): Promise<void> {
   else if (path === '/login') { body = loginPage(); setMeta('/'); }
   else if (path === '/register') { body = registerPage(); setMeta('/'); }
   else if (path.startsWith('/verify/')) { body = await verifyPage(path.split('/')[2] ?? ''); setMeta('/verify'); }
+  else if (path.startsWith('/verify-email/')) { body = await verifyEmailPage(path.split('/')[2] ?? ''); setMeta('/verify'); }
   else body = `<div class="container-xl py-5"><div class="alert alert-warning">${t.pageNotFound} <a href="#/">${t.home}</a></div></div>`;
   app.innerHTML = `${header(path)}${body}${footer()}`;
   window.scrollTo(0, 0);

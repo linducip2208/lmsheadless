@@ -15,6 +15,8 @@
 - CORS allowlist, KV/memory rate limits, no stack-trace leaks.
 - PWA: no private caching, no tokens in Cache API, per-user queue isolation
   (queue keyed by user id; flushed only with a valid session).
+- Dependencies: production audit clean; dev-only advisories documented in
+  `docs/security.md` with justification.
 - CI runs install→migrate→seed→typecheck→lint→test→build→audit→contract.
 
 ## Before first production deploy (owner checklist)

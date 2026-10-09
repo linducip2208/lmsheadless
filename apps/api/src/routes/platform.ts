@@ -4,17 +4,28 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { hashPassword, randomToken } from '../crypto.js';
 import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
-import { roleHasPermission, PERMISSIONS, ROLE_PERMISSIONS } from '../permissions.js';
+import { PERMISSIONS, ROLE_PERMISSIONS } from '../permissions.js';
+import type { D1Like } from '../db.js';
 import { audit } from '../auditlog.js';
+import { invalidateMaintenanceCache } from '../middleware/maintenance.js';
 import { getObject } from '../storage.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
 const platform = new Hono<{ Variables: AppVars }>();
 
-function can(user: AuthUser | null, orgId: string, perm: string): boolean {
+async function dbRolePerms(db: D1Like, role: string): Promise<string[]> {
+  // Database mapping wins (custom roles); static catalog is the fallback.
+  // Seed keeps both in sync on fresh installs.
+  const rows = await queryAll<{ permission_id: string }>(db, 'SELECT permission_id FROM role_permissions WHERE role = ?', role);
+  if (rows.length) return rows.map((r) => r.permission_id);
+  return ROLE_PERMISSIONS[role] ?? [];
+}
+
+async function can(db: D1Like, user: AuthUser | null, orgId: string, perm: string): Promise<boolean> {
   const role = user ? (user.isSuperAdmin ? 'super_admin' : (orgRole(user, orgId) ?? '')) : '';
-  return roleHasPermission(role, perm);
+  if (role === 'super_admin') return true;
+  return (await dbRolePerms(db, role)).includes(perm);
 }
 
 // ---------- First-run setup (locked after completion) ----------
@@ -91,6 +102,7 @@ platform.put('/api/v1/settings', requireAuth(), async (c) => {
     updated++;
   }
   await audit(c, 'settings.updated', { entity: 'settings', metadata: { updated } });
+  invalidateMaintenanceCache();
   return ok(c, { updated });
 });
 
@@ -127,7 +139,7 @@ platform.get('/api/v1/organizations/:id/branding', async (c) => {
 platform.put('/api/v1/organizations/:id', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
-  if (!can(user, id, 'settings.manage')) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (!(await can(c.get('db'), user, id, 'settings.manage'))) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const body = (await c.req.json().catch(() => null)) as { name?: string; description?: string; settings?: Record<string, unknown> } | null;
   if (!body) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   const db = c.get('db');
@@ -154,7 +166,7 @@ platform.put('/api/v1/organizations/:id', requireAuth(), async (c) => {
 platform.post('/api/v1/organizations/:id/domain', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const id = c.req.param('id');
-  if (!can(user, id, 'settings.manage')) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (!(await can(c.get('db'), user, id, 'settings.manage'))) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const body = (await c.req.json().catch(() => null)) as { hostname?: string } | null;
   const hostname = (body?.hostname ?? '').toLowerCase().trim();
   if (!/^(?=.{3,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(hostname)) {
@@ -196,6 +208,34 @@ platform.get('/api/v1/permissions', requireAuth(), async (c) => {
   return ok(c, data);
 });
 
+// Custom role mapping (super_admin only). Keys validated against the catalog.
+platform.put('/api/v1/roles/:role/permissions', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  if (!user.isSuperAdmin) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const role = c.req.param('role');
+  if (!['organization_admin', 'teacher', 'student', 'parent', 'staff'].includes(role)) {
+    return fail(c, 400, 'VALIDATION_ERROR', 'role must be a non-super-admin role');
+  }
+  const body = (await c.req.json().catch(() => null)) as { permissions?: string[] } | null;
+  if (!body?.permissions || !Array.isArray(body.permissions) || body.permissions.length > 60) {
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  }
+  const known = new Set(PERMISSIONS.map((p) => p.key));
+  const clean = [...new Set(body.permissions.filter((p) => typeof p === 'string' && known.has(p)))];
+  const db = c.get('db');
+  // Ensure catalog rows exist first (fresh DBs may only have the static fallback).
+  for (const perm of clean) {
+    const meta = PERMISSIONS.find((p) => p.key === perm);
+    await execute(db, 'INSERT OR IGNORE INTO permissions (id, key, description, created_at) VALUES (?, ?, ?, ?)', perm, perm, meta?.description ?? null, nowIso());
+  }
+  await execute(db, 'DELETE FROM role_permissions WHERE role = ?', role);
+  for (const perm of clean) {
+    await execute(db, 'INSERT OR IGNORE INTO role_permissions (role, permission_id) VALUES (?, ?)', role, perm);
+  }
+  await audit(c, 'roles.updated', { entity: 'role', entityId: role, metadata: { permissions: clean.length } });
+  return ok(c, { role, permissions: clean });
+});
+
 platform.get('/api/v1/roles', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const roles = ['super_admin', 'organization_admin', 'teacher', 'student', 'parent', 'staff'];
@@ -227,7 +267,7 @@ platform.get('/api/v1/audit-logs', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const url = new URL(c.req.url);
   const orgId = url.searchParams.get('organization_id');
-  if (!orgId || !can(user, orgId, 'audit.view')) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (!orgId || !(await can(c.get('db'), user, orgId, 'audit.view'))) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const page = Math.max(1, Number(url.searchParams.get('page') ?? '1') || 1);
   const perPage = Math.min(100, Math.max(1, Number(url.searchParams.get('per_page') ?? '20') || 20));
   const db = c.get('db');
@@ -289,7 +329,7 @@ platform.get('/api/v1/search', requireAuth(), async (c) => {
   const lessons = await queryAll(db, 'SELECT l.id, l.title, l.course_id FROM lessons l JOIN courses co ON co.id = l.course_id WHERE co.organization_id = ? AND l.title LIKE ? LIMIT 10', orgId, like);
   const announcements = await queryAll(db, 'SELECT id, title FROM announcements WHERE organization_id = ? AND title LIKE ? LIMIT 10', orgId, like);
   let users: unknown[] = [];
-  if (can(user, orgId, 'users.view')) {
+  if (await can(c.get('db'), user, orgId, 'users.view')) {
     users = await queryAll(db, 'SELECT u.id, u.name, u.email FROM users u JOIN organization_members om ON om.user_id = u.id WHERE om.organization_id = ? AND u.deleted_at IS NULL AND (u.name LIKE ? OR u.email LIKE ?) LIMIT 10', orgId, like, like);
   }
   return ok(c, { courses, lessons, announcements, users });

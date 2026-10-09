@@ -16,6 +16,7 @@ import growth from './routes/growth.js';
 import { authOptional, language, rateLimit, requestId } from './middleware/common.js';
 import { cors } from './middleware/cors.js';
 import { idempotency } from './middleware/idempotency.js';
+import { maintenance } from './middleware/maintenance.js';
 import type { AppEnv, AppVars } from './types.js';
 import type { D1Like } from './db.js';
 import { openApiDocument } from './openapi.js';
@@ -33,6 +34,7 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.use('*', cors());
   app.use('/api/*', rateLimit());
   app.use('/api/*', authOptional());
+  app.use('/api/*', maintenance());
   app.use('/api/*', idempotency());
 
   app.get('/health', (c) => c.json({ success: true, data: { status: 'ok', time: new Date().toISOString() } }));

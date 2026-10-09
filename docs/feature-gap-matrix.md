@@ -47,7 +47,7 @@ Legend: ✅ implemented+tested · 🟡 implemented, thin tests · 🟠 partial �
 | Coding exercises | ✅ | static mode live; execution gated behind sandbox provider |
 | Email queue | ✅ | queue + status + preferences enforcement; SMTP creds pending |
 | Invitations/org units/approvals | ✅ | token invites + units + publish approvals + tests |
-| Custom roles/RBAC builder UI | 🟡 | granular catalog exists; custom role CRUD deferred (documented) |
+| Custom roles/RBAC builder UI | ✅ | catalog + PUT mapping + roles matrix editor + tests |
 | SSO/SAML/SCIM | 🚫 | framework note in docs; out of scope this release |
 
 ## Platform

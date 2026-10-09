@@ -6,10 +6,12 @@ import { newId, nowIso } from '@lms/shared';
 import type { AppEnv } from '../src/types.js';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { invalidateMaintenanceCache } from '../src/middleware/maintenance.js';
 
 export const SECRET = 'test-secret-min-32-chars-long-xxxxxx';
 
 export async function setup() {
+  invalidateMaintenanceCache(); // module-level maintenance cache must not leak between tests
   const db = await createNodeSqliteDb(':memory:');
   const here = dirname(fileURLToPath(import.meta.url));
   await runMigrations(db, join(here, '..', '..', '..', 'migrations'));

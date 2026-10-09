@@ -1,6 +1,21 @@
 # Implementation status (October 2026)
 
-## Shipped this release (v1.2.0)
+## Shipped in 1.3.0 (this release)
+
+- Custom role mapping (`PUT /roles/:role/permissions`, super_admin-only,
+  catalog-validated) with enforcement reading the database (static catalog is
+  fallback/seed); roles matrix editor in admin.
+- Maintenance mode middleware (503 + Retry-After for non-GET, super_admin
+  bypass, 10s cache with invalidation on settings save).
+- Registration toggle enforced in `/auth/register`.
+- Email verification loop completed (token on register, status, throttled
+  resend, verify page backed by real endpoint).
+- Password-reset abuse throttle (3/hour/account, enumeration-safe responses).
+- N+1 elimination in cohort/program/completion/attendance/teacher-activity/
+  quiz-performance reports (single GROUP BY passes).
+- Vitest 2→3 upgrade green; dependency audit: 0 prod vulnerabilities.
+
+## Shipped in 1.2.0
 
 Migrations 008–014 (+17 column patches). New route modules: `authoring`,
 `banks`, `cohorts`, `live`, `commerce`, `scorm`, `growth` (AI/exercises/email/

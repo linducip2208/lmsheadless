@@ -23,3 +23,7 @@ upload traversal · refresh-token replay (rotation) · flood rate limiting.
 - Demo seed credentials are dev-only; production must use `/setup` + strong passwords.
 - Push/email delivery requires customer credentials before it does anything.
 - File downloads re-check auth per request; presigned R2 URLs are future work.
+- Dev-only advisories (vitest/tinypool/esbuild chains) remain in the dev
+  dependency tree pending upstream majors; production `npm audit --omit=dev`
+  is clean (0 vulnerabilities) and none of these packages ship in the Workers
+  bundle or any frontend `dist/`.
