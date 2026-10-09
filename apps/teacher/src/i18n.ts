@@ -44,6 +44,9 @@ export const en = {
   topic: 'Topic',
   statement: 'Statement',
   aiNote: 'Drafts only — outputs require your review and never publish automatically.',
+  review: 'Review',
+  grade: 'Grade',
+  score: 'Score',
 };
 export const id: Record<keyof typeof en, string> = {
   dashboard: 'Dasbor',
@@ -91,6 +94,9 @@ export const id: Record<keyof typeof en, string> = {
   topic: 'Topik',
   statement: 'Pernyataan',
   aiNote: 'Hanya draf — keluaran perlu tinjauan Anda dan tidak pernah terbit otomatis.',
+  review: 'Tinjau',
+  grade: 'Nilai',
+  score: 'Nilai',
 };
 export function getDict(l: string) {
   return l === 'id' ? id : en;

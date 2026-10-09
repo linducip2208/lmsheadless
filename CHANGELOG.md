@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.7.0 — Completion release
+
+Added:
+
+- Enrollment approval workflow (closed/approval modes enforced, request queue, approve/reject with notifications)
+- Verification emails queued when a provider is configured
+- Upcoming work in student-progress (assignments + quizzes) for students and parents
+- Full question-type support in student quiz UI (matching, ordering, essay)
+- Teacher attempt review with per-answer manual grading
+- Admin global search + notification center with unread badge
+- Invoice view in student shop, subscription plans in shop
+- Marketplace auto-join for public buyers
+- Reduced-motion support in all portals
+
 ## 1.6.0 — Marketplace & scale release
 
 Added:

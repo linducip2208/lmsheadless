@@ -286,8 +286,15 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
             box.innerHTML = `<form id="quiz-form">${att.expires_at ? `<div class="alert alert-warning">${att.expires_at.slice(11, 16)}</div>` : ''}
             ${qs
               .map(
-                (q, i) => `<div class="mb-3"><strong>${i + 1}. ${q.prompt}</strong>
-            ${q.type === 'multiple_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${o.label}</label>`).join('') : `<input class="form-control" name="q_${q.id}" placeholder="${d.answer}">`}
+                (
+                  q,
+                  i
+                ) => `<div class="mb-3"><strong>${i + 1}. ${q.prompt}</strong> <span class="badge bg-secondary">${q.type.replace(/_/g, ' ')}</span>
+            ${q.type === 'multiple_choice' || q.type === 'single_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${o.label}</label>`).join('') : ''}
+            ${q.type === 'matching' ? q.options.map((o) => `<div class="d-flex gap-2 align-items-center mb-1"><span style="min-width:120px">${o.label}</span><input class="form-control" name="qm_${q.id}_${o.id}" placeholder="${d.answer}"></div>`).join('') : ''}
+            ${q.type === 'ordering' ? `<div class="small text-muted mb-1">${d.orderHelp}</div>` + q.options.map((o) => `<div class="d-flex gap-2 align-items-center mb-1"><input type="number" min="1" max="${q.options.length}" class="form-control w-auto" name="qo_${q.id}_${o.id}" placeholder="#"><span>${o.label}</span></div>`).join('') : ''}
+            ${q.type === 'true_false' ? `<select class="form-select" name="q_${q.id}"><option value="">—</option><option value="true">true</option><option value="false">false</option></select>` : ''}
+            ${q.type === 'short_answer' || q.type === 'essay' ? `<textarea class="form-control" name="q_${q.id}" rows="${q.type === 'essay' ? 5 : 2}" placeholder="${d.answer}"></textarea>` : ''}
             </div>`
               )
               .join('')}
@@ -300,23 +307,50 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
                 const answers: { question_id: string; option_id?: string; answer_text?: string }[] =
                   [];
                 for (const q of qs) {
-                  const v = fd.get(`q_${q.id}`);
-                  if (v === null || v === '') continue;
-                  if (q.type === 'multiple_choice')
-                    answers.push({ question_id: q.id, option_id: String(v) });
-                  else answers.push({ question_id: q.id, answer_text: String(v) });
+                  if (q.type === 'multiple_choice' || q.type === 'single_choice') {
+                    const v = fd.get(`q_${q.id}`);
+                    if (v) answers.push({ question_id: q.id, option_id: String(v) });
+                  } else if (q.type === 'matching') {
+                    const pairs: Record<string, string> = {};
+                    for (const o of q.options) {
+                      const v = fd.get(`qm_${q.id}_${o.id}`);
+                      if (typeof v === 'string' && v !== '') pairs[o.id] = v;
+                    }
+                    if (Object.keys(pairs).length)
+                      answers.push({ question_id: q.id, answer_text: JSON.stringify({ pairs }) });
+                  } else if (q.type === 'ordering') {
+                    const ranked: { id: string; rank: number }[] = [];
+                    for (const o of q.options) {
+                      const v = Number(fd.get(`qo_${q.id}_${o.id}`));
+                      if (Number.isFinite(v) && v >= 1) ranked.push({ id: o.id, rank: v });
+                    }
+                    if (ranked.length) {
+                      ranked.sort((a, b) => a.rank - b.rank);
+                      answers.push({
+                        question_id: q.id,
+                        answer_text: JSON.stringify({ order: ranked.map((r) => r.id) }),
+                      });
+                    }
+                  } else {
+                    const v = fd.get(`q_${q.id}`);
+                    if (v === null || v === '') continue;
+                    answers.push({ question_id: q.id, answer_text: String(v) });
+                  }
                 }
                 try {
-                  const res = (await call<{ score: number; passed: boolean }>(
-                    `/api/v1/quiz-attempts/${att.id}/submit`,
-                    {
-                      method: 'POST',
-                      body: JSON.stringify({ answers }),
-                      headers: { 'Idempotency-Key': crypto.randomUUID() },
-                    }
-                  )) as { score: number; passed: boolean };
+                  const res = (await call<{
+                    score?: number;
+                    passed?: boolean;
+                    needs_review?: boolean;
+                  }>(`/api/v1/quiz-attempts/${att.id}/submit`, {
+                    method: 'POST',
+                    body: JSON.stringify({ answers }),
+                    headers: { 'Idempotency-Key': crypto.randomUUID() },
+                  })) as { score?: number; passed?: boolean; needs_review?: boolean };
                   (box.querySelector('[data-res]') as HTMLElement).innerHTML =
-                    `<div class="alert ${res.passed ? 'alert-success' : 'alert-warning'}">${d.score} ${res.score} — ${res.passed ? d.passed : d.notPassed}</div>`;
+                    res.score === undefined
+                      ? `<div class="alert alert-info">${d.submittedReview}</div>`
+                      : `<div class="alert ${res.passed ? 'alert-success' : 'alert-warning'}">${d.score} ${res.score} — ${res.passed ? d.passed : d.notPassed}</div>`;
                 } catch (err) {
                   toast(err instanceof Error ? err.message : 'Submit failed', 'danger');
                 }
@@ -525,7 +559,7 @@ async function shopView(el: HTMLElement): Promise<void> {
           )
           .join('') || `<p>${d.empty}</p>`
       }</div>
-      <h3 class="mt-3">${d.orders}</h3><div id="ord">${(orders as { id: string; kind: string; total: number; status: string }[]).map((o) => `<div class="card card-body mb-2 py-2">${o.kind} · ${o.total} · <span class="badge ${o.status === 'paid' ? 'bg-green' : 'bg-yellow'}">${o.status}</span>${o.status === 'pending' ? `<div class="small text-muted">${d.pendingPayment}</div>` : ''}</div>`).join('') || `<p>${d.empty}</p>`}</div>
+      <h3 class="mt-3">${d.orders}</h3><div id="ord">${(orders as { id: string; kind: string; total: number; status: string }[]).map((o) => `<div class="card card-body mb-2 py-2">${o.kind} · ${o.total} · <span class="badge ${o.status === 'paid' ? 'bg-green' : 'bg-yellow'}">${o.status}</span>${o.status === 'pending' ? `<div class="small text-muted">${d.pendingPayment}</div>` : ''}${o.status === 'paid' ? ` <button class="btn btn-sm btn-outline-primary ms-2" data-inv="${o.id}">${d.invoice}</button>` : ''}<div data-invbox="${o.id}"></div></div>`).join('') || `<p>${d.empty}</p>`}</div>
       ${
         plans.length
           ? `<h3 class="mt-3">${d.plans}</h3><div class="row row-cards">${plans
@@ -617,6 +651,24 @@ async function shopView(el: HTMLElement): Promise<void> {
         toast(err instanceof Error ? err.message : 'Failed', 'danger');
       }
     });
+    el.querySelectorAll('[data-inv]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const oid = (b as HTMLElement).dataset.inv ?? '';
+        const box = el.querySelector(`[data-invbox="${oid}"]`) as HTMLElement;
+        try {
+          const inv = (await call<Record<string, unknown>>(`/api/v1/invoices/order/${oid}`)) as {
+            number: string;
+            total: number;
+            issued_at: string;
+            lines: string;
+          };
+          const lines = (JSON.parse(inv.lines) as { title: string; amount: number }[]) ?? [];
+          box.innerHTML = `<div class="alert alert-info mt-1"><strong>${d.invoice} ${inv.number}</strong> — ${inv.total} · ${String(inv.issued_at).slice(0, 10)}<br>${lines.map((l) => `${l.title}: ${l.amount}`).join('<br>')}</div>`;
+        } catch (err) {
+          box.innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Failed'}</div>`;
+        }
+      })
+    );
   } catch (e) {
     el.innerHTML = errHtml(e);
   }
@@ -831,8 +883,9 @@ async function moreView(el: HTMLElement): Promise<void> {
           )
           .join('') || `<tr><td colspan="3">${d.empty}</td></tr>`
       }</tbody></table></div></div></div>
-      <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.announcements}</h3></div><div class="card-body">
-      ${(notifs as { id: string; title: string; body: string; is_read: number }[]).map((n) => `<div class="alert ${n.is_read ? 'alert-info' : 'alert-success'} py-2"><strong>${n.title}</strong><br>${n.body}</div>`).join('') || '<p class="text-muted">None.</p>'}</div></div>
+      <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.announcements}</h3>
+      <button class="btn btn-sm btn-outline-primary ms-auto" id="notif-all">${d.markAllRead}</button></div><div class="card-body" id="notif-list">
+      ${(notifs as { id: string; title: string; body: string; is_read: number }[]).map((n) => `<div class="alert ${n.is_read ? 'alert-info' : 'alert-success'} py-2"><strong>${n.title}</strong><br>${n.body}${n.is_read ? '' : ` <button class="btn btn-sm btn-outline-primary ms-2" data-nread="${n.id}">${d.markRead}</button>`}</div>`).join('') || `<p class="text-muted">${d.empty}</p>`}</div></div>
       <div class="card"><div class="card-header"><h3 class="card-title">${d.profile}</h3></div><div class="card-body">
       <p><strong>${getMe()?.name}</strong><br><span class="text-muted">${getMe()?.email}</span></p>
       <form id="pw"><label class="form-label">${d.newPassword}</label><input type="password" id="npw" class="form-control mb-2" required>
@@ -859,6 +912,20 @@ async function moreView(el: HTMLElement): Promise<void> {
       (el.querySelector('#push-st') as HTMLElement).textContent =
         r === 'subscribed' ? 'Enabled.' : r === 'no-keys' ? 'Not configured on this server.' : r;
     });
+    const reloadMore = () => moreView(el);
+    (el.querySelector('#notif-all') as HTMLButtonElement)?.addEventListener('click', async () => {
+      await call('/api/v1/notifications/read-all', { method: 'POST', body: '{}' });
+      await reloadMore();
+    });
+    el.querySelectorAll('[data-nread]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        await call(`/api/v1/notifications/${(b as HTMLElement).dataset.nread}/read`, {
+          method: 'POST',
+          body: '{}',
+        });
+        await reloadMore();
+      })
+    );
   } catch (e) {
     el.innerHTML = errHtml(e);
   }

@@ -267,16 +267,82 @@ async function grading(el: HTMLElement): Promise<void> {
           .join('') || '<tr><td colspan="4">All caught up.</td></tr>'
       }</tbody></table></div></div></div>
       <div class="card"><div class="card-header"><h3 class="card-title">Recent quiz attempts</h3></div>
-      <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>Student</th><th>Quiz</th><th>Score</th></tr></thead>
+      <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>Student</th><th>Quiz</th><th>Score</th><th></th></tr></thead>
       <tbody>${
         q.attempts
           .slice(0, 20)
           .map(
             (a) =>
-              `<tr><td>${a.student_name}</td><td>${a.quiz_title}</td><td>${a.score ?? '—'}</td></tr>`
+              `<tr><td>${a.student_name}</td><td>${a.quiz_title}</td><td>${a.score ?? '—'}</td><td><button class="btn btn-sm btn-outline-primary" data-review="${a.id}">${d.review ?? 'Review'}</button></td></tr>
+               <tr><td colspan="4" class="p-0 border-0"><div data-answers="${a.id}"></div></td></tr>`
           )
-          .join('') || '<tr><td colspan="3">None.</td></tr>'
+          .join('') || '<tr><td colspan="4">None.</td></tr>'
       }</tbody></table></div></div></div>`;
+    el.querySelectorAll('[data-review]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const id = (b as HTMLElement).dataset.review ?? '';
+        const box = el.querySelector(`[data-answers="${id}"]`) as HTMLElement;
+        if (!box) return;
+        if (box.dataset.loaded) {
+          box.innerHTML = '';
+          delete box.dataset.loaded;
+          return;
+        }
+        try {
+          const answers = (await call<
+            {
+              question_id: string;
+              prompt: string;
+              type: string;
+              points: number;
+              option_label: string | null;
+              answer_text: string | null;
+              is_correct: number | null;
+              points_awarded: number;
+            }[]
+          >(`/api/v1/quiz-attempts/${id}/answers`)) as {
+            question_id: string;
+            prompt: string;
+            type: string;
+            points: number;
+            option_label: string | null;
+            answer_text: string | null;
+            is_correct: number | null;
+            points_awarded: number;
+          }[];
+          box.dataset.loaded = '1';
+          box.innerHTML = `<div class="p-2 bg-light border rounded">${
+            answers
+              .map(
+                (a) => `<div class="mb-2"><strong>${a.prompt.slice(0, 160)}</strong>
+            <span class="badge bg-blue">${a.type}</span>
+            <div class="small">Answer: ${a.option_label ?? (a.answer_text ?? '—').slice(0, 500)}</div>
+            <div class="small text-muted">Awarded: ${a.points_awarded}/${a.points}${a.is_correct === 1 ? ' ✓' : a.is_correct === 0 ? ' ✗' : ' (pending)'}</div>
+            <form data-manual="${a.question_id}:${id}" class="d-flex gap-1 mt-1">
+            <input type="number" name="points" min="0" max="${a.points}" step="0.5" class="form-control form-control-sm w-auto" placeholder="${d.score}" required>
+            <button class="btn btn-sm btn-outline-primary">${d.grade}</button></form></div>`
+              )
+              .join('') || `<span class="text-muted">${d.empty}</span>`
+          }</div>`;
+          box.querySelectorAll('[data-manual]').forEach((f) =>
+            (f as HTMLFormElement).addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const [qid, aid] = ((f as HTMLElement).dataset.manual ?? '').split(':');
+              const pts = Number(new FormData(f as HTMLFormElement).get('points'));
+              await call(`/api/v1/quiz-attempts/${aid}/grade`, {
+                method: 'POST',
+                body: JSON.stringify({ question_id: qid, points_awarded: pts }),
+              });
+              toast(d.save, 'success');
+              delete box.dataset.loaded;
+              (b as HTMLElement).click();
+            })
+          );
+        } catch (err) {
+          box.innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Failed'}</div>`;
+        }
+      })
+    );
     el.querySelectorAll('[data-grade]').forEach((b) =>
       b.addEventListener('click', async () => {
         const id = (b as HTMLElement).dataset.grade ?? '';

@@ -663,7 +663,34 @@ ops.get('/api/v1/reports/student-progress', requireAuth(), async (c) => {
     'SELECT qa.*, q.title as quiz_title FROM quiz_attempts qa JOIN quizzes q ON q.id = qa.quiz_id WHERE qa.student_id = ? ORDER BY qa.created_at DESC LIMIT 100',
     studentId
   );
-  return ok(c, { enrollments, grades, quiz_attempts: attempts });
+  // Upcoming work: open assignments + quizzes in enrolled, unfinished courses.
+  const upcoming_assignments = await queryAll(
+    db,
+    `SELECT a.id, a.title, a.due_at, a.course_id, co.title as course_title FROM assignments a
+     JOIN courses co ON co.id = a.course_id
+     JOIN enrollments e ON e.course_id = a.course_id AND e.student_id = ? AND e.status = 'active'
+     LEFT JOIN submissions s ON s.assignment_id = a.id AND s.student_id = ?
+     WHERE s.id IS NULL ORDER BY a.due_at ASC LIMIT 20`,
+    studentId,
+    studentId
+  );
+  const upcoming_quizzes = await queryAll(
+    db,
+    `SELECT q.id, q.title, q.course_id, co.title as course_title FROM quizzes q
+     JOIN enrollments e ON e.course_id = q.course_id AND e.student_id = ? AND e.status = 'active'
+     JOIN courses co ON co.id = q.course_id
+     LEFT JOIN quiz_attempts qa ON qa.quiz_id = q.id AND qa.student_id = ? AND qa.status IN ('submitted','graded')
+     WHERE qa.id IS NULL ORDER BY q.created_at ASC LIMIT 20`,
+    studentId,
+    studentId
+  );
+  return ok(c, {
+    enrollments,
+    grades,
+    quiz_attempts: attempts,
+    upcoming_assignments,
+    upcoming_quizzes,
+  });
 });
 
 // ---------- Uploads ----------

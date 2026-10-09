@@ -451,12 +451,33 @@ courses.post('/enrollments', requireAuth(), async (c) => {
     capacity: number | null;
     enrollment_start: string | null;
     enrollment_end: string | null;
+    enrollment_mode: string | null;
   }>(
     db,
-    'SELECT price, capacity, enrollment_start, enrollment_end FROM courses WHERE id = ?',
+    'SELECT price, capacity, enrollment_start, enrollment_end, enrollment_mode FROM courses WHERE id = ?',
     parsed.data.course_id
   );
   const nowMs = Date.now();
+  if ((course?.enrollment_mode ?? 'open') === 'closed' && !canTeach(user, orgId)) {
+    return fail(c, 400, 'ENROLLMENT_CLOSED', 'Enrollment for this course is closed');
+  }
+  if ((course?.enrollment_mode ?? 'open') === 'approval' && !canTeach(user, orgId)) {
+    // Approval workflow: request instead of direct enrollment.
+    await execute(
+      db,
+      'INSERT OR IGNORE INTO enrollment_requests (id, course_id, student_id, created_at) VALUES (?, ?, ?, ?)',
+      newId(),
+      parsed.data.course_id,
+      studentId,
+      nowIso()
+    );
+    await audit(c, 'enrollment.requested', {
+      entity: 'enrollment_request',
+      organizationId: orgId,
+      metadata: { course_id: parsed.data.course_id, student_id: studentId },
+    });
+    return created(c, { requested: true, status: 'pending' });
+  }
   if (course?.enrollment_start && new Date(course.enrollment_start).getTime() > nowMs) {
     return fail(c, 400, 'ENROLLMENT_CLOSED', 'Enrollment has not opened yet');
   }
@@ -553,6 +574,102 @@ courses.get('/courses/:id/enrollments', requireAuth(), async (c) => {
     c.req.param('id')
   );
   return ok(c, rows);
+});
+
+// Enrollment requests (approval workflow).
+courses.get('/courses/:id/enrollment-requests', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const orgId = await courseOrg(db, c.req.param('id'));
+  if (!orgId || !canTeach(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const rows = await queryAll(
+    db,
+    "SELECT er.*, u.name as student_name FROM enrollment_requests er JOIN users u ON u.id = er.student_id WHERE er.course_id = ? AND er.status = 'pending' ORDER BY er.created_at ASC LIMIT 500",
+    c.req.param('id')
+  );
+  return ok(c, rows);
+});
+
+courses.post('/enrollment-requests/:requestId/approve', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const req = await queryFirst<{ course_id: string; student_id: string; status: string }>(
+    db,
+    'SELECT course_id, student_id, status FROM enrollment_requests WHERE id = ?',
+    c.req.param('requestId')
+  );
+  if (!req) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await courseOrg(db, req.course_id);
+  if (!orgId || !canTeach(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (req.status !== 'pending') return fail(c, 400, 'VALIDATION_ERROR', 'Already decided');
+  const now = nowIso();
+  await execute(
+    db,
+    'INSERT OR IGNORE INTO enrollments (id, course_id, student_id, status, enrolled_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    newId(),
+    req.course_id,
+    req.student_id,
+    'active',
+    now,
+    now,
+    now
+  );
+  await execute(
+    db,
+    "UPDATE enrollment_requests SET status = 'approved', decided_by = ?, decided_at = ? WHERE id = ?",
+    user.id,
+    now,
+    c.req.param('requestId')
+  );
+  await execute(
+    db,
+    'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
+    newId(),
+    req.student_id,
+    'Enrollment approved',
+    'Your enrollment request was approved.',
+    now
+  );
+  await audit(c, 'enrollment.approved', {
+    entity: 'enrollment_request',
+    entityId: c.req.param('requestId'),
+    organizationId: orgId,
+  });
+  return ok(c, { approved: true });
+});
+
+courses.post('/enrollment-requests/:requestId/reject', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const req = await queryFirst<{ course_id: string; student_id: string; status: string }>(
+    db,
+    'SELECT course_id, student_id, status FROM enrollment_requests WHERE id = ?',
+    c.req.param('requestId')
+  );
+  if (!req) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await courseOrg(db, req.course_id);
+  if (!orgId || !canTeach(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (req.status !== 'pending') return fail(c, 400, 'VALIDATION_ERROR', 'Already decided');
+  await execute(
+    db,
+    "UPDATE enrollment_requests SET status = 'rejected', decided_by = ?, decided_at = ? WHERE id = ?",
+    user.id,
+    nowIso(),
+    c.req.param('requestId')
+  );
+  await execute(
+    db,
+    'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
+    newId(),
+    req.student_id,
+    'Enrollment decision',
+    'Your enrollment request was not approved.',
+    nowIso()
+  );
+  return ok(c, { rejected: true });
 });
 
 // Lesson completion + course progress

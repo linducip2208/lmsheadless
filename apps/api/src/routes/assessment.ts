@@ -650,6 +650,72 @@ assess.post('/quiz-attempts/:attemptId/submit', requireAuth(), async (c) => {
   return ok(c, { score: pct, passed: passed === 1, earned, total, needs_review: needsReview });
 });
 
+// Attempt answers review (teacher grading; students see own without correctness).
+assess.get('/quiz-attempts/:attemptId/answers', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const attempt = await queryFirst<{
+    id: string;
+    quiz_id: string;
+    student_id: string;
+    status: string;
+  }>(
+    db,
+    'SELECT id, quiz_id, student_id, status FROM quiz_attempts WHERE id = ?',
+    c.req.param('attemptId')
+  );
+  if (!attempt) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const orgId = await quizOrg(db, attempt.quiz_id);
+  if (!orgId || !canAccessOrg(user, orgId))
+    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  const role = orgRole(user, orgId);
+  const isTeacher = role !== 'student' && role !== 'parent';
+  if (!isTeacher && attempt.student_id !== user.id)
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const rows = await queryAll<{
+    question_id: string;
+    prompt: string;
+    type: string;
+    points: number;
+    correct_answer: string | null;
+    option_id: string | null;
+    option_label: string | null;
+    answer_text: string | null;
+    is_correct: number | null;
+    points_awarded: number;
+  }>(
+    db,
+    `SELECT q.id as question_id, q.prompt, q.type, q.points, q.correct_answer,
+      qa.option_id, qo.label as option_label, qa.answer_text, qa.is_correct, qa.points_awarded
+     FROM quiz_answers qa
+     JOIN questions q ON q.id = qa.question_id
+     LEFT JOIN question_options qo ON qo.id = qa.option_id
+     WHERE qa.attempt_id = ? ORDER BY q.position ASC`,
+    attempt.id
+  );
+  if (isTeacher) return ok(c, rows);
+  // Students: answers without correctness metadata; scores hidden when the
+  // quiz never releases them, or until the attempt is graded.
+  const policy = await queryFirst<{ answer_release: string }>(
+    db,
+    'SELECT answer_release FROM quizzes WHERE id = ?',
+    attempt.quiz_id
+  );
+  const showScore = attempt.status === 'graded' && policy?.answer_release !== 'never';
+  return ok(
+    c,
+    rows.map((r) => ({
+      question_id: r.question_id,
+      prompt: r.prompt,
+      type: r.type,
+      points: r.points,
+      option_label: r.option_label,
+      answer_text: r.answer_text,
+      points_awarded: showScore ? r.points_awarded : null,
+    }))
+  );
+});
+
 // ---- Assignments ----
 assess.post('/assignments', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
@@ -1072,7 +1138,7 @@ assess.post('/quiz-attempts/:attemptId/grade', requireAuth(), async (c) => {
   const pct = !totals?.total ? 0 : Math.round(((totals.earned ?? 0) / totals.total) * 10000) / 100;
   await execute(
     db,
-    'UPDATE quiz_attempts SET score = ?, passed = ?, updated_at = ? WHERE id = ?',
+    "UPDATE quiz_attempts SET status = 'graded', score = ?, passed = ?, updated_at = ? WHERE id = ?",
     pct,
     pct >= (quiz?.passing_score ?? 70) ? 1 : 0,
     nowIso(),

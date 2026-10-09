@@ -129,7 +129,7 @@ documented in `docs/white-label.md`). Tenant isolation is tested
 ## Testing
 
 ```bash
-npm test            # 73+ tests: auth, RBAC matrix, tenant isolation, IDOR,
+npm test            # 87+ tests: auth, RBAC matrix, tenant isolation, IDOR,
                     # courses, quiz (scoring/expiry/limits/pools/manual),
                     # assignments, attendance, certificates, files, setup, search,
                     # idempotency, CORS, rate limiting, authoring, banks, cohorts,

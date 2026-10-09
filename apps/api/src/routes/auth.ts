@@ -13,7 +13,7 @@ import {
 import { created, fail, ok } from '../respond.js';
 import { requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { logActivity } from './growth.js';
+import { logActivity, queueVerificationEmail } from './growth.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -122,10 +122,12 @@ auth.post('/register', async (c) => {
     new Date(Date.now() + 24 * 3600_000).toISOString(),
     now
   );
+  const delivery = await queueVerificationEmail(db, email, verifyToken);
   return created(c, {
     access_token: token,
     refresh_token: refresh,
     email_verified: false,
+    verification_email: delivery,
     user: { id, email: email.toLowerCase(), name },
   });
 });
@@ -507,7 +509,15 @@ auth.post('/verify-email/request', requireAuth(), async (c) => {
     new Date(Date.now() + 24 * 3600_000).toISOString(),
     nowIso()
   );
-  return ok(c, { requested: true });
+  const meRow = await queryFirst<{ email: string }>(
+    db,
+    'SELECT email FROM users WHERE id = ?',
+    user.id
+  );
+  const delivery = meRow
+    ? await queueVerificationEmail(db, meRow.email, verifyToken)
+    : 'no-provider';
+  return ok(c, { requested: true, verification_email: delivery });
 });
 
 auth.post('/verify-email', async (c) => {

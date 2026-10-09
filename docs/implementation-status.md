@@ -1,5 +1,18 @@
 # Implementation status (October 2026)
 
+## Shipped in 1.7.0 (this release)
+
+- Enrollment approval workflow end-to-end (modes enforced, queue UI, decisions
+  with notifications); closed mode blocks self-enrollment.
+- Verification emails actually queued when a provider is configured
+  (global settings), otherwise honestly reported as not sent.
+- Upcoming assignments/quizzes in student-progress (students + linked parents).
+- Student quiz UI renders all 7 question types with correct answer encodings.
+- Teacher attempt review: per-answer inspection + inline manual grading.
+- Admin global search overlay and notification center with unread badge.
+- Invoice display in shop; plans purchasable; marketplace auto-join.
+- Reduced-motion support across portals.
+
 ## Shipped in 1.6.0 (this release)
 
 - Marketplace auto-join on order/subscribe (public buyers), plans in shop.

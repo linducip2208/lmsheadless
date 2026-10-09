@@ -40,6 +40,7 @@ import { renderCohorts } from './pages/cohorts.js';
 import { renderLive } from './pages/live.js';
 import { renderScorm } from './pages/scorm.js';
 import { renderData } from './pages/data.js';
+import { renderSearch, renderNotifications } from './pages/search.js';
 
 const THEME_KEY = 'admin-theme';
 applyTheme(THEME_KEY);
@@ -63,6 +64,7 @@ function navItems(): { hash: string; label: string; title: string }[] {
     { hash: '#/grades', label: d.grades, title: d.grades },
     { hash: '#/community', label: d.community, title: d.community },
     { hash: '#/certificates', label: d.certificates, title: d.certificates },
+    { hash: '#/notifications', label: d.notifications, title: d.notifications },
     { hash: '#/files', label: d.files, title: d.files },
     { hash: '#/reports', label: d.reports, title: d.reports },
     { hash: '#/settings', label: d.settings, title: d.settings },
@@ -142,6 +144,8 @@ async function shell(): Promise<void> {
           <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0" id="crumbs"></ol></nav>
           <div class="ms-auto d-flex gap-2 align-items-center">
             ${onlineIndicatorHtml()}
+            <form id="g-search" class="d-none d-md-flex" role="search"><input id="g-q" type="search" class="form-control form-control-sm" placeholder="${t().search}" aria-label="${t().search}"></form>
+            <a href="#/notifications" class="btn btn-sm btn-outline-primary position-relative" aria-label="Notifications">🔔<span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span></a>
             <select id="org-sel" class="form-select form-select-sm w-auto" aria-label="Organization">
               ${orgs.map((o) => `<option value="${o.id}"${o.id === currentOrgId() ? ' selected' : ''}>${o.name}</option>`).join('')}
             </select>
@@ -176,6 +180,26 @@ async function shell(): Promise<void> {
     localStorage.setItem('admin-locale', (e.target as HTMLSelectElement).value);
     location.reload();
   });
+  (document.getElementById('g-search') as HTMLFormElement).addEventListener('submit', (e) => {
+    e.preventDefault();
+    location.hash = `#/search/${encodeURIComponent((document.getElementById('g-q') as HTMLInputElement).value)}`;
+  });
+  void refreshNotifBadge();
+}
+
+async function refreshNotifBadge(): Promise<void> {
+  try {
+    const r = (await call<{ unread: number }>('/api/v1/notifications/unread-count')) as {
+      unread: number;
+    };
+    const badge = document.getElementById('notif-badge');
+    if (badge && r.unread > 0) {
+      badge.textContent = String(Math.min(99, r.unread));
+      badge.classList.remove('d-none');
+    }
+  } catch {
+    /* notifications unavailable */
+  }
 }
 
 async function router(): Promise<void> {
@@ -217,6 +241,9 @@ async function router(): Promise<void> {
     else if (route.startsWith('/grades')) await renderGrades(view);
     else if (route.startsWith('/community')) await renderSocial(view);
     else if (route.startsWith('/certificates')) await renderCerts(view);
+    else if (route.startsWith('/notifications')) await renderNotifications(view);
+    else if (route.startsWith('/search/'))
+      await renderSearch(view, decodeURIComponent(route.slice('/search/'.length)));
     else if (route.startsWith('/files')) await renderFilesPage(view);
     else if (route.startsWith('/reports')) await renderReports(view);
     else if (route.startsWith('/settings')) await renderSettings(view);

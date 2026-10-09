@@ -13,6 +13,46 @@ import { t } from '../i18n.js';
 
 const growth = new Hono<{ Variables: AppVars }>();
 
+export async function getGlobalSetting(db: D1Like, key: string): Promise<string> {
+  const row = await queryFirst<{ value: string }>(
+    db,
+    'SELECT value FROM settings WHERE key = ?',
+    key
+  );
+  return row?.value ?? '';
+}
+
+// Verification delivery: queued only when a provider is configured.
+// Returns 'queued' | 'no-provider'. Never throws (auth must not break).
+export async function queueVerificationEmail(
+  db: D1Like,
+  email: string,
+  token: string
+): Promise<string> {
+  try {
+    const apiUrl = await getGlobalSetting(db, 'email_api_url');
+    const apiKey = await getGlobalSetting(db, 'email_api_key');
+    if (!apiUrl || !apiKey) return 'no-provider';
+    const webBase = (await getGlobalSetting(db, 'web_base_url')) || 'http://localhost:5177';
+    const link = `${webBase.replace(/\/$/, '')}/#/verify-email/${token}`;
+    const now = nowIso();
+    await execute(
+      db,
+      'INSERT INTO email_queue (id, organization_id, to_email, subject, body_html, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      newId(),
+      null,
+      email.toLowerCase(),
+      'Verify your email',
+      `<p>Confirm your email address:</p><p><a href="${link}">${link}</a></p><p>This link expires in 24 hours.</p>`,
+      now,
+      now
+    );
+    return 'queued';
+  } catch {
+    return 'no-provider';
+  }
+}
+
 export async function logActivity(
   db: D1Like,
   entry: {
