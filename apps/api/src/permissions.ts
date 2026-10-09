@@ -72,4 +72,3 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   student: ['courses.view', 'lessons.view'],
   parent: ['courses.view', 'lessons.view', 'reports.view'],
 };
-
