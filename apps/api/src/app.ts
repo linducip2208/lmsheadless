@@ -43,10 +43,14 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.use('/api/*', maintenance());
   app.use('/api/*', idempotency());
 
-  app.get('/health', (c) => c.json({ success: true, data: { status: 'ok', time: new Date().toISOString() } }));
+  app.get('/health', (c) =>
+    c.json({ success: true, data: { status: 'ok', time: new Date().toISOString() } })
+  );
   app.get('/api/v1/openapi.json', (c) => c.json(openApiDocument()));
   app.get('/api/v1/docs', (c) =>
-    c.html(`<!doctype html><html><head><meta charset="utf-8"><title>LMS API Docs</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.6}</style></head><body><h1>LMS Headless API v1</h1><p>OpenAPI JSON: <a href="/api/v1/openapi.json">/api/v1/openapi.json</a></p><p>Auth: Bearer access token from <code>POST /api/v1/auth/login</code>. Base path: <code>/api/v1</code>.</p><ul><li>auth: register/login/refresh/logout/me/password</li><li>users, organizations, academic years/terms/classes/subjects</li><li>courses, sections, lessons, enrollments, progress</li><li>quizzes, questions, attempts, assignments, submissions, grades</li><li>attendance, certificates (+public verify), announcements, notifications, discussions, reports, uploads</li></ul></body></html>`)
+    c.html(
+      `<!doctype html><html><head><meta charset="utf-8"><title>LMS API Docs</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.6}</style></head><body><h1>LMS Headless API v1</h1><p>OpenAPI JSON: <a href="/api/v1/openapi.json">/api/v1/openapi.json</a></p><p>Auth: Bearer access token from <code>POST /api/v1/auth/login</code>. Base path: <code>/api/v1</code>.</p><ul><li>auth: register/login/refresh/logout/me/password</li><li>users, organizations, academic years/terms/classes/subjects</li><li>courses, sections, lessons, enrollments, progress</li><li>quizzes, questions, attempts, assignments, submissions, grades</li><li>attendance, certificates (+public verify), announcements, notifications, discussions, reports, uploads</li></ul></body></html>`
+    )
   );
 
   app.route('/api/v1/auth', auth);
@@ -66,12 +70,24 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.route('/', ops);
   app.route('/', platform);
 
-  app.notFound((c) => c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Route not found' } }, 404));
+  app.notFound((c) =>
+    c.json({ success: false, error: { code: 'NOT_FOUND', message: 'Route not found' } }, 404)
+  );
   app.onError((err, c) => {
     const requestId = c.get('requestId') as string | undefined;
     // Never leak stack traces; log server-side only.
     console.error(`[${requestId ?? '-'}]`, err instanceof Error ? err.message : err);
-    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal server error', ...(requestId ? { requestId } : {}) } }, 500);
+    return c.json(
+      {
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Internal server error',
+          ...(requestId ? { requestId } : {}),
+        },
+      },
+      500
+    );
   });
 
   return app;

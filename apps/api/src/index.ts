@@ -31,7 +31,9 @@ function buildEnv(platformEnv: WorkerBindings, db: D1Like): AppEnv {
     R2_PUBLIC_BASE_URL: platformEnv.R2_PUBLIC_BASE_URL,
     RATE_LIMIT_MAX: Number(platformEnv.RATE_LIMIT_MAX ?? 120),
     RATE_LIMIT_WINDOW_MS: Number(platformEnv.RATE_LIMIT_WINDOW_MS ?? 60_000),
-    AUTH_RATE_LIMIT_MAX: Number((platformEnv as Record<string, string | undefined>).AUTH_RATE_LIMIT_MAX ?? 60),
+    AUTH_RATE_LIMIT_MAX: Number(
+      (platformEnv as Record<string, string | undefined>).AUTH_RATE_LIMIT_MAX ?? 60
+    ),
     ALLOWED_ORIGINS: platformEnv.ALLOWED_ORIGINS,
     COOKIE_SECURE: platformEnv.COOKIE_SECURE === '1',
   };
@@ -41,7 +43,10 @@ export default {
   async fetch(request: Request, env: WorkerBindings): Promise<Response> {
     const db = env.DB as D1Like | undefined;
     if (!db) {
-      return Response.json({ success: false, error: { code: 'NO_DB', message: 'D1 binding missing' } }, { status: 500 });
+      return Response.json(
+        { success: false, error: { code: 'NO_DB', message: 'D1 binding missing' } },
+        { status: 500 }
+      );
     }
     const appEnv = buildEnv(env, db);
     const app = createApp(appEnv, db);

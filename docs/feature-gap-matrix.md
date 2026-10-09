@@ -5,18 +5,18 @@ Legend: ✅ implemented+tested · 🟡 implemented, thin tests · 🟠 partial �
 
 ## Authoring
 
-| Feature | Status | Evidence |
-|---|---|---|
-| Sections/lessons/order | ✅ | courses routes + builder UI + tests |
-| Tags | ✅ | 008 + API + tests |
-| Prerequisites (course/lesson) | ✅ | 008 + enforcement in enroll/complete + tests |
-| Drip scheduling | ✅ | drip_rules + unlock check + tests |
-| Enrollment windows/capacity/waitlist | ✅ | columns + waitlist flow + tests |
-| Scheduled publish / review workflow | ✅ | publish_at + review_status + approvals + tests |
-| Duplication / templates | ✅ | duplicate endpoint + tests |
-| Versions | ✅ | snapshots on publish + tests |
-| CSV course export | ✅ | export endpoint + injection-safe |
-| Bulk user/enrollment import | ✅ | import_jobs + dry-run + tests |
+| Feature                              | Status | Evidence                                       |
+| ------------------------------------ | ------ | ---------------------------------------------- |
+| Sections/lessons/order               | ✅     | courses routes + builder UI + tests            |
+| Tags                                 | ✅     | 008 + API + tests                              |
+| Prerequisites (course/lesson)        | ✅     | 008 + enforcement in enroll/complete + tests   |
+| Drip scheduling                      | ✅     | drip_rules + unlock check + tests              |
+| Enrollment windows/capacity/waitlist | ✅     | columns + waitlist flow + tests                |
+| Scheduled publish / review workflow  | ✅     | publish_at + review_status + approvals + tests |
+| Duplication / templates              | ✅     | duplicate endpoint + tests                     |
+| Versions                             | ✅     | snapshots on publish + tests                   |
+| CSV course export                    | ✅     | export endpoint + injection-safe               |
+| Bulk user/enrollment import          | ✅     | import_jobs + dry-run + tests                  |
 
 ## Assessment
 

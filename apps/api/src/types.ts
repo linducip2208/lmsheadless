@@ -29,7 +29,10 @@ export interface AppEnv {
     put(key: string, body: ArrayBuffer, opts?: { contentType?: string }): Promise<unknown>;
     get(key: string): Promise<{ body: ReadableStream | null; contentType?: string } | null>;
   };
-  KV?: { get(k: string): Promise<string | null>; put(k: string, v: string, opts?: { expirationTtl?: number }): Promise<void> };
+  KV?: {
+    get(k: string): Promise<string | null>;
+    put(k: string, v: string, opts?: { expirationTtl?: number }): Promise<void>;
+  };
 }
 
 export type AppVars = {

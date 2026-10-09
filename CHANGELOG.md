@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5.0 — Verification & evidence release
+
+Added:
+
+- Security headers middleware, tiered auth rate limiting (60/min bucket)
+- Pagination bounds on every collection endpoint
+- Robustness tests (malformed JSON, oversized input, traversal IDs, caps)
+- Browser E2E for offline behavior (SW control, shell offline, no private caching)
+- Automated accessibility smoke (named controls, labels, lang)
+- Performance budgets + bench script with measured evidence
+- Prettier format gate in CI, API versioning policy
+- D1 engine verification recorded; backup drill with evidence
+
 ## 1.4.0 — Final hardening release
 
 Added:

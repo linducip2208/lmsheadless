@@ -32,7 +32,10 @@ export function idempotency() {
     );
     if (existing) {
       c.header('Idempotent-Replayed', 'true');
-      return c.json(JSON.parse(existing.response_body) as unknown as Record<string, unknown>, existing.status_code as 200);
+      return c.json(
+        JSON.parse(existing.response_body) as unknown as Record<string, unknown>,
+        existing.status_code as 200
+      );
     }
     await next();
     // Capture successful JSON responses for replay.

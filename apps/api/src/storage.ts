@@ -24,11 +24,31 @@ const ALLOWED_MIME: Record<string, string[]> = {
   video: ['video/mp4', 'video/webm'],
 };
 
-const ALLOWED_EXT = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv', 'mp4', 'webm']);
+const ALLOWED_EXT = new Set([
+  'png',
+  'jpg',
+  'jpeg',
+  'webp',
+  'gif',
+  'pdf',
+  'doc',
+  'docx',
+  'xls',
+  'xlsx',
+  'txt',
+  'csv',
+  'mp4',
+  'webm',
+]);
 
 const MAX_SIZE = 25 * 1024 * 1024;
 
-export function validateUpload(fileName: string, mimeType: string, sizeBytes: number, kind: 'image' | 'document' | 'video' | 'any' = 'any'): string | null {
+export function validateUpload(
+  fileName: string,
+  mimeType: string,
+  sizeBytes: number,
+  kind: 'image' | 'document' | 'video' | 'any' = 'any'
+): string | null {
   if (sizeBytes <= 0 || sizeBytes > MAX_SIZE) return 'File size must be between 1 byte and 25MB';
   const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
   if (!ALLOWED_EXT.has(ext)) return `Extension .${ext} is not allowed`;
@@ -51,7 +71,12 @@ export function objectKey(prefix: string, fileName: string): string {
   return `${prefix}/${stamp}/${crypto.randomUUID()}.${safe}`;
 }
 
-export async function putObject(env: AppEnv, key: string, body: ArrayBuffer, contentType: string): Promise<void> {
+export async function putObject(
+  env: AppEnv,
+  key: string,
+  body: ArrayBuffer,
+  contentType: string
+): Promise<void> {
   if (env.STORAGE_DRIVER === 'r2' && env.R2) {
     await env.R2.put(key, body, { contentType });
     return;
@@ -65,7 +90,10 @@ export async function putObject(env: AppEnv, key: string, body: ArrayBuffer, con
   await writeFile(full, Buffer.from(body));
 }
 
-export async function getObject(env: AppEnv, key: string): Promise<{ body: ArrayBuffer; contentType: string } | null> {
+export async function getObject(
+  env: AppEnv,
+  key: string
+): Promise<{ body: ArrayBuffer; contentType: string } | null> {
   if (key.includes('..')) return null;
   if (env.STORAGE_DRIVER === 'r2' && env.R2) {
     const obj = await env.R2.get(key);
@@ -78,7 +106,10 @@ export async function getObject(env: AppEnv, key: string): Promise<{ body: Array
     const { join } = await import('node:path');
     const full = join(env.STORAGE_LOCAL_DIR, key);
     const data = await readFile(full);
-    return { body: data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer, contentType: 'application/octet-stream' };
+    return {
+      body: data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer,
+      contentType: 'application/octet-stream',
+    };
   } catch {
     return null;
   }

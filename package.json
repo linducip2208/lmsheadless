@@ -1,6 +1,6 @@
 {
   "name": "lms-headless",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "Production-ready headless LMS (Cloudflare-native: Workers + D1 + R2 + KV)",
   "workspaces": [
@@ -24,7 +24,9 @@
     "db:migrate": "npm --workspace apps/api run db:migrate",
     "db:seed": "npm --workspace apps/api run db:seed",
     "audit": "npm --workspace apps/api run audit",
-    "contract": "tsx scripts/check-contract.mts"
+    "contract": "tsx scripts/check-contract.mts",
+    "bench": "node scripts/bench.mjs",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "eslint": "^9.12.0",

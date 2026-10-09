@@ -1,6 +1,27 @@
 import '@tabler/core/dist/css/tabler.min.css';
-import { applyTheme, themeToggleHtml, bindThemeToggles, bindSwUpdates, onlineIndicatorHtml, bindOnlineIndicator, flushQueue } from '@lms/ui';
-import { ensureMe, login, logout, getMe, call, myOrgs, currentOrgId, setCurrentOrgId, applyBranding, toast, t, lang } from './lib.js';
+import {
+  applyTheme,
+  themeToggleHtml,
+  bindThemeToggles,
+  bindSwUpdates,
+  onlineIndicatorHtml,
+  bindOnlineIndicator,
+  flushQueue,
+} from '@lms/ui';
+import {
+  ensureMe,
+  login,
+  logout,
+  getMe,
+  call,
+  myOrgs,
+  currentOrgId,
+  setCurrentOrgId,
+  applyBranding,
+  toast,
+  t,
+  lang,
+} from './lib.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderUsers } from './pages/users.js';
 import { renderOrgs } from './pages/orgs.js';
@@ -80,7 +101,8 @@ async function loginPage(root: HTMLElement): Promise<void> {
       await login(email, password);
       location.hash = '#/';
     } catch (err) {
-      (root.querySelector('#login-err') as HTMLElement).innerHTML = `<div class="alert alert-danger" role="alert">${err instanceof Error ? err.message : 'Login failed'}</div>`;
+      (root.querySelector('#login-err') as HTMLElement).innerHTML =
+        `<div class="alert alert-danger" role="alert">${err instanceof Error ? err.message : 'Login failed'}</div>`;
     }
   });
 }
@@ -92,7 +114,9 @@ async function shell(): Promise<void> {
   if (!currentOrgId() && orgs[0]) setCurrentOrgId(orgs[0].id);
   if (currentOrgId()) {
     try {
-      const brand = await call<Record<string, string>>(`/api/v1/organizations/${currentOrgId()}/branding`);
+      const brand = await call<Record<string, string>>(
+        `/api/v1/organizations/${currentOrgId()}/branding`
+      );
       applyBranding(brand);
     } catch {
       /* branding is best-effort */
@@ -105,7 +129,12 @@ async function shell(): Promise<void> {
       <h1 class="navbar-brand" id="brand-name">LMS Admin</h1>
       <div class="collapse navbar-collapse" id="sidebar-menu">
       <ul class="navbar-nav pt-lg-3" id="nav-list">
-        ${navItems().map((n) => `<li class="nav-item"><a class="nav-link" href="${n.hash}" data-nav="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`).join('')}
+        ${navItems()
+          .map(
+            (n) =>
+              `<li class="nav-item"><a class="nav-link" href="${n.hash}" data-nav="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`
+          )
+          .join('')}
       </ul></div></div></aside>
     <div class="page-wrapper">
       <header class="navbar navbar-expand-md d-print-none sticky-top bg-white">
@@ -129,8 +158,16 @@ async function shell(): Promise<void> {
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
   bindOnlineIndicator();
-  void flushQueue((a, okAction) => toast(okAction ? `Synced pending action (${a.path})` : `Sync failed, will retry (${a.path})`, okAction ? 'success' : 'warning'));
-  (document.getElementById('logout') as HTMLButtonElement).addEventListener('click', () => void logout());
+  void flushQueue((a, okAction) =>
+    toast(
+      okAction ? `Synced pending action (${a.path})` : `Sync failed, will retry (${a.path})`,
+      okAction ? 'success' : 'warning'
+    )
+  );
+  (document.getElementById('logout') as HTMLButtonElement).addEventListener(
+    'click',
+    () => void logout()
+  );
   (document.getElementById('org-sel') as HTMLSelectElement).addEventListener('change', (e) => {
     setCurrentOrgId((e.target as HTMLSelectElement).value);
     void router();
@@ -157,8 +194,11 @@ async function router(): Promise<void> {
   const route = hash.replace('#', '');
   const items = navItems();
   const item = items.find((n) => n.hash === `#${route}`) ?? items[0];
-  (document.getElementById('crumbs') as HTMLElement).innerHTML = `<li class="breadcrumb-item">Home</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`;
-  document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('active', (a as HTMLElement).dataset.nav === item.hash));
+  (document.getElementById('crumbs') as HTMLElement).innerHTML =
+    `<li class="breadcrumb-item">Home</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`;
+  document
+    .querySelectorAll('[data-nav]')
+    .forEach((a) => a.classList.toggle('active', (a as HTMLElement).dataset.nav === item.hash));
   const view = document.getElementById('view') as HTMLElement;
   try {
     if (route === '/' || route === '') await renderDashboard(view);

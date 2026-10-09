@@ -22,14 +22,14 @@ credentials — the architecture is built in, nothing is pretended.
 
 ## Screens (portals)
 
-| Portal | Dev URL | Purpose |
-|---|---|---|
+| Portal         | Dev URL               | Purpose                                   |
+| -------------- | --------------------- | ----------------------------------------- |
 | Public website | http://localhost:5177 | Landing, pricing, docs, `/verify/:number` |
-| Admin | http://localhost:5173 | Full organization management |
-| Teacher | http://localhost:5175 | Teaching workflow |
-| Student | http://localhost:5174 | Learning workflow (installable PWA) |
-| Parent | http://localhost:5176 | Child monitoring |
-| API | http://localhost:8787 | REST + OpenAPI + docs |
+| Admin          | http://localhost:5173 | Full organization management              |
+| Teacher        | http://localhost:5175 | Teaching workflow                         |
+| Student        | http://localhost:5174 | Learning workflow (installable PWA)       |
+| Parent         | http://localhost:5176 | Child monitoring                          |
+| API            | http://localhost:8787 | REST + OpenAPI + docs                     |
 
 ## Roles
 

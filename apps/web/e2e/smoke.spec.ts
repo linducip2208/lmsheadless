@@ -16,13 +16,20 @@ test('catalog shows a published public course from the live API', async ({ page,
   expect(login.ok()).toBeTruthy();
   const { data } = (await login.json()) as { data: { access_token: string } };
   const headers = { Authorization: `Bearer ${data.access_token}` };
-  const orgs = (await (await request.get('http://localhost:8787/api/v1/organizations', { headers })).json()) as {
+  const orgs = (await (
+    await request.get('http://localhost:8787/api/v1/organizations', { headers })
+  ).json()) as {
     data: { id: string }[];
   };
   const orgId = orgs.data[0].id;
   const created = await request.post('http://localhost:8787/api/v1/courses', {
     headers: { ...headers, 'content-type': 'application/json' },
-    data: { organization_id: orgId, code: `E2E-${Date.now().toString(36)}`, title: 'E2E Public Course', price: 0 },
+    data: {
+      organization_id: orgId,
+      code: `E2E-${Date.now().toString(36)}`,
+      title: 'E2E Public Course',
+      price: 0,
+    },
   });
   expect(created.ok()).toBeTruthy();
   const courseId = ((await created.json()) as { data: { id: string } }).data.id;

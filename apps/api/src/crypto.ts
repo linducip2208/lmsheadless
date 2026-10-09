@@ -4,7 +4,9 @@
 const enc = new TextEncoder();
 
 function hex(bytes: Uint8Array): string {
-  return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 function unhex(s: string): Uint8Array {
@@ -15,7 +17,9 @@ function unhex(s: string): Uint8Array {
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, [
+    'deriveBits',
+  ]);
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', hash: 'SHA-256', salt: salt as BufferSource, iterations: 100_000 },
     key,
@@ -31,7 +35,9 @@ export async function verifyPassword(password: string, stored: string): Promise<
   if (!Number.isFinite(iterations)) return false;
   const salt = unhex(parts[2]);
   const expected = parts[3];
-  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, [
+    'deriveBits',
+  ]);
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', hash: 'SHA-256', salt: salt as BufferSource, iterations },
     key,
@@ -64,9 +70,13 @@ function b64urlDecode(s: string): Uint8Array {
 }
 
 async function hmac(secret: string, data: string): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [
-    'sign',
-  ]);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
   return new Uint8Array(sig);
 }
@@ -79,17 +89,27 @@ export interface AccessClaims {
   jti: string;
 }
 
-export async function signAccessToken(secret: string, sub: string, email: string, ttlSec = 900): Promise<string> {
+export async function signAccessToken(
+  secret: string,
+  sub: string,
+  email: string,
+  ttlSec = 900
+): Promise<string> {
   const header = b64url(enc.encode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
   const now = Math.floor(Date.now() / 1000);
   const payload = b64url(
-    enc.encode(JSON.stringify({ sub, email, iat: now, exp: now + ttlSec, jti: crypto.randomUUID() }))
+    enc.encode(
+      JSON.stringify({ sub, email, iat: now, exp: now + ttlSec, jti: crypto.randomUUID() })
+    )
   );
   const sig = b64url(await hmac(secret, `${header}.${payload}`));
   return `${header}.${payload}.${sig}`;
 }
 
-export async function verifyAccessToken(secret: string, token: string): Promise<AccessClaims | null> {
+export async function verifyAccessToken(
+  secret: string,
+  token: string
+): Promise<AccessClaims | null> {
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   const [h, p, s] = parts;

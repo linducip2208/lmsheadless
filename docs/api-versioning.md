@@ -1,7 +1,7 @@
 # API versioning & deprecation policy
 
 Base path: `/api/v1`. All changes within `v1` are **additive and backward
-compatible**: new endpoints, new optional fields, new enum values on *output*
+compatible**: new endpoints, new optional fields, new enum values on _output_
 only where documented. Breaking changes (removed endpoints, required-field
 additions, envelope changes) require a new major version (`/api/v2`) with:
 

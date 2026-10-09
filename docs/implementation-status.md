@@ -1,12 +1,22 @@
 # Implementation status (October 2026)
 
-## Shipped in 1.4.0 (this release)
+## Shipped in 1.5.0 (this release)
+
+- Browser E2E for offline behavior (SW activation, offline shell, no private
+  API data in caches) and accessibility smoke (named controls, label
+  association, document language) — 7/7 green.
+- Performance budgets with measured local evidence (`docs/performance.md`,
+  `scripts/bench.mjs`).
+- Prettier format gate in CI; full-repo format pass.
+- Dead-code sweep (unused RBAC helper removed after DB-backed enforcement).
+
+## Shipped in 1.4.0
 
 - Browser E2E suite (Playwright, chromium headless shell): home + ID toggle,
   catalog-vs-live-API, honest verify page, OpenAPI sanity — 4/4 green locally;
   `npm run test:e2e`, separate `e2e.yml` CI job.
 - D1 engine verification: all 15 migrations applied via `wrangler d1 execute
-  --local`, FK enforcement + ALTER confirmed (see `docs/cloudflare.md`).
+--local`, FK enforcement + ALTER confirmed (see `docs/cloudflare.md`).
 - Security headers middleware (`nosniff`, strict referrer policy; no global
   frame-blocking to protect the sandboxed SCORM player).
 - Tiered rate limits: stricter auth bucket (60/min default, `AUTH_RATE_LIMIT_MAX`).

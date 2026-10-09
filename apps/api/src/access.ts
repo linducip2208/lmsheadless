@@ -4,7 +4,11 @@ import { orgRole } from './middleware/common.js';
 import type { AuthUser } from './types.js';
 
 export async function orgSetting(db: D1Like, orgId: string, key: string): Promise<string> {
-  const org = await queryFirst<{ settings: string | null }>(db, 'SELECT settings FROM organizations WHERE id = ?', orgId);
+  const org = await queryFirst<{ settings: string | null }>(
+    db,
+    'SELECT settings FROM organizations WHERE id = ?',
+    orgId
+  );
   try {
     const parsed = JSON.parse(org?.settings ?? '{}') as Record<string, string>;
     return parsed[key] ?? '';
@@ -14,12 +18,20 @@ export async function orgSetting(db: D1Like, orgId: string, key: string): Promis
 }
 
 export async function courseOrg(db: D1Like, courseId: string): Promise<string | null> {
-  const row = await queryFirst<{ organization_id: string }>(db, 'SELECT organization_id FROM courses WHERE id = ? AND deleted_at IS NULL', courseId);
+  const row = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM courses WHERE id = ? AND deleted_at IS NULL',
+    courseId
+  );
   return row?.organization_id ?? null;
 }
 
 export async function quizOrg(db: D1Like, quizId: string): Promise<string | null> {
-  const r = await queryFirst<{ organization_id: string }>(db, 'SELECT organization_id FROM quizzes WHERE id = ?', quizId);
+  const r = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM quizzes WHERE id = ?',
+    quizId
+  );
   return r?.organization_id ?? null;
 }
 
@@ -34,17 +46,31 @@ export function isPrivileged(user: AuthUser, orgId: string): boolean {
 }
 
 // Entitlement: paid courses require a live entitlement row; free courses are open.
-export async function hasEntitlement(db: D1Like, userId: string, courseId: string, coursePrice: number): Promise<boolean> {
+export async function hasEntitlement(
+  db: D1Like,
+  userId: string,
+  courseId: string,
+  coursePrice: number
+): Promise<boolean> {
   if (coursePrice <= 0) return true;
   const row = await queryFirst<{ expires_at: string | null }>(
-    db, 'SELECT expires_at FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?', userId, 'course', courseId
+    db,
+    'SELECT expires_at FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?',
+    userId,
+    'course',
+    courseId
   );
   if (!row) return false;
   if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) return false;
   return true;
 }
 
-export function slugify(input: string, fallback: string): string {  const s = input.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120);
+export function slugify(input: string, fallback: string): string {
+  const s = input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 120);
   return s || fallback;
 }
 
@@ -69,13 +95,18 @@ export function parseCsv(text: string): { header: string[]; rows: string[][]; er
   let cur = '';
   let row: string[] = [];
   let inQuotes = false;
-  const push = () => { row.push(cur); cur = ''; };
+  const push = () => {
+    row.push(cur);
+    cur = '';
+  };
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     if (inQuotes) {
       if (ch === '"') {
-        if (text[i + 1] === '"') { cur += '"'; i++; }
-        else inQuotes = false;
+        if (text[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else inQuotes = false;
       } else cur += ch;
     } else if (ch === '"') inQuotes = true;
     else if (ch === ',') push();

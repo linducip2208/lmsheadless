@@ -43,8 +43,7 @@ export async function createNodeSqliteDb(path: string): Promise<D1Like> {
   // ever runs in Node (local dev / tests). Workers inject the D1 binding.
   const proc = (globalThis as { process?: { getBuiltinModule?: (id: string) => unknown } }).process;
   const builtin = proc?.getBuiltinModule?.('node:sqlite') as
-    | { DatabaseSync: new (path: string) => NodeSqliteDb }
-    | undefined;
+    { DatabaseSync: new (path: string) => NodeSqliteDb } | undefined;
   if (!builtin) throw new Error('node:sqlite is unavailable in this runtime');
   const sqlite = new builtin.DatabaseSync(path);
   sqlite.exec('PRAGMA foreign_keys = ON');
@@ -66,7 +65,10 @@ export async function createNodeSqliteDb(path: string): Promise<D1Like> {
           return (row ?? null) as T | null;
         },
         async run() {
-          const info = stmt.run(...(values as [])) as { changes: number | bigint; lastInsertRowid: number | bigint };
+          const info = stmt.run(...(values as [])) as {
+            changes: number | bigint;
+            lastInsertRowid: number | bigint;
+          };
           return {
             success: true,
             changes: Number(info.changes),
@@ -83,15 +85,32 @@ export async function createNodeSqliteDb(path: string): Promise<D1Like> {
   };
 }
 
-export async function queryAll<T = Record<string, unknown>>(db: D1Like, sql: string, ...params: SqlValue[]): Promise<T[]> {
-  const r = await db.prepare(sql).bind(...params).all<T>();
+export async function queryAll<T = Record<string, unknown>>(
+  db: D1Like,
+  sql: string,
+  ...params: SqlValue[]
+): Promise<T[]> {
+  const r = await db
+    .prepare(sql)
+    .bind(...params)
+    .all<T>();
   return r.results;
 }
 
-export async function queryFirst<T = Record<string, unknown>>(db: D1Like, sql: string, ...params: SqlValue[]): Promise<T | null> {
-  return db.prepare(sql).bind(...params).first<T>();
+export async function queryFirst<T = Record<string, unknown>>(
+  db: D1Like,
+  sql: string,
+  ...params: SqlValue[]
+): Promise<T | null> {
+  return db
+    .prepare(sql)
+    .bind(...params)
+    .first<T>();
 }
 
 export async function execute(db: D1Like, sql: string, ...params: SqlValue[]): Promise<D1RunInfo> {
-  return db.prepare(sql).bind(...params).run();
+  return db
+    .prepare(sql)
+    .bind(...params)
+    .run();
 }

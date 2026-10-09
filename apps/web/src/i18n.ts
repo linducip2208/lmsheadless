@@ -1,7 +1,8 @@
 export const en = {
   tagline: 'API-first · Cloudflare-native · PWA',
   heroTitle: 'The headless LMS for schools, training & companies',
-  heroSub: 'Courses, quizzes, assignments, attendance, grades and certificates — delivered through a clean REST API to web portals, installable PWAs and your future Flutter app.',
+  heroSub:
+    'Courses, quizzes, assignments, attendance, grades and certificates — delivered through a clean REST API to web portals, installable PWAs and your future Flutter app.',
   getStarted: 'Get started',
   apiDocs: 'API docs',
   readDocs: 'Read the docs',
@@ -15,10 +16,12 @@ export const en = {
   signIn: 'Sign in',
   catalog: 'Catalog',
   fiveExperiences: 'One platform, five experiences',
-  fiveExperiencesSub: 'Each role gets a purpose-built portal — not one dashboard with a different menu.',
+  fiveExperiencesSub:
+    'Each role gets a purpose-built portal — not one dashboard with a different menu.',
   seeProduct: 'See the product',
   architecture: 'Architecture',
-  architectureSub: 'SQLite locally, D1 in production. Files in R2 (local disk in dev). Rate limiting in KV with a safe local fallback.',
+  architectureSub:
+    'SQLite locally, D1 in production. Files in R2 (local disk in dev). Rate limiting in KV with a safe local fallback.',
   faq: 'FAQ',
   contactUs: 'Contact us',
   startFree: 'Start free',
@@ -42,7 +45,8 @@ export const en = {
   authenticate: 'Authenticate, then choose your portal.',
   openPortal: 'Open',
   portal: 'portal →',
-  sessionNote: 'Your session cookie was set; the portal will pick it up automatically on the same domain.',
+  sessionNote:
+    'Your session cookie was set; the portal will pick it up automatically on the same domain.',
   signedInAs: 'Signed in as',
   name: 'Name',
   message: 'Message',
@@ -51,8 +55,10 @@ export const en = {
   portals: 'Portals',
   product: 'Product',
   company: 'Company',
-  footerNote: '© 2026 LMS Headless. Demo dataset only — no real customer data. Licensing terms are set by the product owner (see LICENSE).',
-  footerTag: 'API-first learning management system. Web + PWA · Flutter-ready API · Cloudflare-native.',
+  footerNote:
+    '© 2026 LMS Headless. Demo dataset only — no real customer data. Licensing terms are set by the product owner (see LICENSE).',
+  footerTag:
+    'API-first learning management system. Web + PWA · Flutter-ready API · Cloudflare-native.',
   pageNotFound: 'Page not found.',
   home: 'Home',
   admin: 'Admin',
@@ -68,11 +74,13 @@ export const en = {
   docsGuidesNote: 'Full guides live in the repository docs/ folder and PRODUCT.md.',
   principles: 'Principles',
   technology: 'Technology',
-  aboutLead: 'LMS Headless is an API-first learning management system built for organizations that outgrow spreadsheets and closed SaaS.',
+  aboutLead:
+    'LMS Headless is an API-first learning management system built for organizations that outgrow spreadsheets and closed SaaS.',
   fCourseBuilder: 'Course builder',
   fCourseBuilderD: 'Sections, lessons, ordering, drafts, rich content, video and documents.',
   fQuiz: 'Quiz engine',
-  fQuizD: 'Multiple choice, true/false, short answer, attempts, time limits, auto + manual grading.',
+  fQuizD:
+    'Multiple choice, true/false, short answer, attempts, time limits, auto + manual grading.',
   fAssign: 'Assignments',
   fAssignD: 'Instructions, due dates, resubmission rules, teacher review and feedback.',
   fAttend: 'Attendance',
@@ -96,9 +104,11 @@ export const en = {
   roleAdmin: 'Admin',
   roleAdminD: 'Organizations, users, roles, branding, settings, reports, audit log.',
   roleTeacher: 'Teacher',
-  roleTeacherD: 'Assigned courses, lesson and quiz authoring, grading queue, attendance, student progress.',
+  roleTeacherD:
+    'Assigned courses, lesson and quiz authoring, grading queue, attendance, student progress.',
   roleStudent: 'Student',
-  roleStudentD: 'Enrolled courses, progress, quizzes, assignments, grades, certificates — mobile-first PWA.',
+  roleStudentD:
+    'Enrolled courses, progress, quizzes, assignments, grades, certificates — mobile-first PWA.',
   roleParent: 'Parent',
   roleParentD: 'Linked children only: progress, grades, attendance, announcements.',
   roleStaff: 'Staff',
@@ -106,11 +116,13 @@ export const en = {
   archLine: 'Web + PWA portals → REST /api/v1 → Hono on Workers → D1 · R2 · KV',
   ctaTitle: 'Run your academy on an API-first LMS',
   ctaSub: 'Spin up an organization, invite teachers, publish your first course today.',
-  pricingNote: 'Illustrative plans — contact us for an actual quote. Final license terms are set by the product owner.',
+  pricingNote:
+    'Illustrative plans — contact us for an actual quote. Final license terms are set by the product owner.',
   featuresLead: 'Everything below is implemented and tested — no mock features.',
   solutionsLead: 'One platform for every kind of learning organization.',
   pricingLead: 'Start with a demo organization, upgrade when you grow.',
-  fairUse: '* Fair-use limits apply on managed hosting. Illustrative plans — request an actual quote. License terms are set by the product owner.',
+  fairUse:
+    '* Fair-use limits apply on managed hosting. Illustrative plans — request an actual quote. License terms are set by the product owner.',
   publishedCatalog: 'Published public courses. Prices shown by the organization.',
   bundlesTitle: 'Bundles',
   bundleNotFound: 'Bundle not found.',
@@ -133,7 +145,8 @@ export type WebDict = typeof en;
 export const id: Record<keyof WebDict, string> = {
   tagline: 'API-first · Cloudflare-native · PWA',
   heroTitle: 'LMS headless untuk sekolah, pelatihan & perusahaan',
-  heroSub: 'Kursus, kuis, tugas, kehadiran, nilai, dan sertifikat — disajikan melalui REST API yang bersih ke portal web, PWA terpasang, dan aplikasi Flutter Anda kelak.',
+  heroSub:
+    'Kursus, kuis, tugas, kehadiran, nilai, dan sertifikat — disajikan melalui REST API yang bersih ke portal web, PWA terpasang, dan aplikasi Flutter Anda kelak.',
   getStarted: 'Mulai',
   apiDocs: 'Dok API',
   readDocs: 'Baca docs',
@@ -147,10 +160,12 @@ export const id: Record<keyof WebDict, string> = {
   signIn: 'Masuk',
   catalog: 'Katalog',
   fiveExperiences: 'Satu platform, lima pengalaman',
-  fiveExperiencesSub: 'Setiap peran mendapat portal khusus — bukan satu dasbor dengan menu berbeda.',
+  fiveExperiencesSub:
+    'Setiap peran mendapat portal khusus — bukan satu dasbor dengan menu berbeda.',
   seeProduct: 'Lihat produk',
   architecture: 'Arsitektur',
-  architectureSub: 'SQLite lokal, D1 produksi. Berkas di R2 (disk lokal saat dev). Rate limiting di KV dengan fallback lokal.',
+  architectureSub:
+    'SQLite lokal, D1 produksi. Berkas di R2 (disk lokal saat dev). Rate limiting di KV dengan fallback lokal.',
   faq: 'FAQ',
   contactUs: 'Hubungi kami',
   startFree: 'Mulai gratis',
@@ -174,17 +189,21 @@ export const id: Record<keyof WebDict, string> = {
   authenticate: 'Otentikasi, lalu pilih portal Anda.',
   openPortal: 'Buka',
   portal: 'portal →',
-  sessionNote: 'Cookie sesi Anda sudah diset; portal akan mengambilnya otomatis di domain yang sama.',
+  sessionNote:
+    'Cookie sesi Anda sudah diset; portal akan mengambilnya otomatis di domain yang sama.',
   signedInAs: 'Masuk sebagai',
   name: 'Nama',
   message: 'Pesan',
   sendViaEmail: 'Kirim via surel',
-  contactNote: 'Ini membuka aplikasi surel Anda — pesan tidak disimpan di server kami dari halaman ini.',
+  contactNote:
+    'Ini membuka aplikasi surel Anda — pesan tidak disimpan di server kami dari halaman ini.',
   portals: 'Portal',
   product: 'Produk',
   company: 'Perusahaan',
-  footerNote: '© 2026 LMS Headless. Hanya data demo — bukan data pelanggan nyata. Ketentuan lisensi ditetapkan pemilik produk (lihat LICENSE).',
-  footerTag: 'Sistem manajemen pembelajaran API-first. Web + PWA · API siap-Flutter · Cloudflare-native.',
+  footerNote:
+    '© 2026 LMS Headless. Hanya data demo — bukan data pelanggan nyata. Ketentuan lisensi ditetapkan pemilik produk (lihat LICENSE).',
+  footerTag:
+    'Sistem manajemen pembelajaran API-first. Web + PWA · API siap-Flutter · Cloudflare-native.',
   pageNotFound: 'Halaman tidak ditemukan.',
   home: 'Beranda',
   admin: 'Admin',
@@ -200,11 +219,13 @@ export const id: Record<keyof WebDict, string> = {
   docsGuidesNote: 'Panduan lengkap ada di folder docs/ repositori dan PRODUCT.md.',
   principles: 'Prinsip',
   technology: 'Teknologi',
-  aboutLead: 'LMS Headless adalah sistem manajemen pembelajaran API-first untuk organisasi yang sudah melampaui spreadsheet dan SaaS tertutup.',
+  aboutLead:
+    'LMS Headless adalah sistem manajemen pembelajaran API-first untuk organisasi yang sudah melampaui spreadsheet dan SaaS tertutup.',
   fCourseBuilder: 'Penyusun kursus',
   fCourseBuilderD: 'Bab, pelajaran, urutan, draf, konten kaya, video dan dokumen.',
   fQuiz: 'Mesin kuis',
-  fQuizD: 'Pilihan ganda, benar/salah, isian singkat, percobaan, batas waktu, penilaian otomatis + manual.',
+  fQuizD:
+    'Pilihan ganda, benar/salah, isian singkat, percobaan, batas waktu, penilaian otomatis + manual.',
   fAssign: 'Tugas',
   fAssignD: 'Instruksi, tenggat, aturan kirim ulang, tinjauan dan umpan balik guru.',
   fAttend: 'Kehadiran',
@@ -228,7 +249,8 @@ export const id: Record<keyof WebDict, string> = {
   roleAdmin: 'Admin',
   roleAdminD: 'Organisasi, pengguna, peran, merek, pengaturan, laporan, log audit.',
   roleTeacher: 'Guru',
-  roleTeacherD: 'Kursus yang ditugaskan, penulisan pelajaran dan kuis, antrean penilaian, kehadiran, progres siswa.',
+  roleTeacherD:
+    'Kursus yang ditugaskan, penulisan pelajaran dan kuis, antrean penilaian, kehadiran, progres siswa.',
   roleStudent: 'Siswa',
   roleStudentD: 'Kursus terdaftar, progres, kuis, tugas, nilai, sertifikat — PWA mobile-first.',
   roleParent: 'Orang tua',
@@ -238,11 +260,13 @@ export const id: Record<keyof WebDict, string> = {
   archLine: 'Portal Web + PWA → REST /api/v1 → Hono di Workers → D1 · R2 · KV',
   ctaTitle: 'Jalankan akademi Anda di LMS API-first',
   ctaSub: 'Buat organisasi, undang guru, terbitkan kursus pertama hari ini.',
-  pricingNote: 'Paket ilustratif — hubungi kami untuk penawaran aktual. Ketentuan lisensi final ditetapkan pemilik produk.',
+  pricingNote:
+    'Paket ilustratif — hubungi kami untuk penawaran aktual. Ketentuan lisensi final ditetapkan pemilik produk.',
   featuresLead: 'Semua di bawah ini sudah diimplementasi dan diuji — bukan fitur mock.',
   solutionsLead: 'Satu platform untuk setiap jenis organisasi pembelajaran.',
   pricingLead: 'Mulai dengan organisasi demo, tingkatkan saat tumbuh.',
-  fairUse: '* Batas wajar berlaku di hosting terkelola. Paket ilustratif — minta penawaran aktual. Ketentuan lisensi ditetapkan pemilik produk.',
+  fairUse:
+    '* Batas wajar berlaku di hosting terkelola. Paket ilustratif — minta penawaran aktual. Ketentuan lisensi ditetapkan pemilik produk.',
   publishedCatalog: 'Kursus publik yang terbit. Harga ditetapkan organisasi.',
   bundlesTitle: 'Paket',
   bundleNotFound: 'Paket tidak ditemukan.',

@@ -12,7 +12,12 @@ export async function renderUsers(el: HTMLElement): Promise<void> {
     cols: [
       { key: 'email', label: d.email },
       { key: 'name', label: d.name },
-      { key: 'status', label: d.status, render: (v) => `<span class="badge ${v === 'active' ? 'bg-green' : 'bg-yellow'}">${String(v)}</span>` },
+      {
+        key: 'status',
+        label: d.status,
+        render: (v) =>
+          `<span class="badge ${v === 'active' ? 'bg-green' : 'bg-yellow'}">${String(v)}</span>`,
+      },
       { key: 'locale', label: d.locale },
     ],
     createTitle: `${d.create} ${d.users}`,

@@ -12,10 +12,18 @@ const { runMigrations } = await import('../apps/api/src/migrate.js');
 
 const db = await createNodeSqliteDb(':memory:');
 await runMigrations(db, join(root, 'migrations'));
-const env = { DB: db, JWT_SECRET: 'x'.repeat(40), STORAGE_DRIVER: 'local', STORAGE_LOCAL_DIR: './.data/u' };
+const env = {
+  DB: db,
+  JWT_SECRET: 'x'.repeat(40),
+  STORAGE_DRIVER: 'local',
+  STORAGE_LOCAL_DIR: './.data/u',
+};
 const app = createApp(env, db);
 
-interface Route { method: string; pattern: string[] }
+interface Route {
+  method: string;
+  pattern: string[];
+}
 const routes: Route[] = app.routes
   .filter((r) => r.path.startsWith('/api/'))
   .map((r) => ({ method: r.method.toUpperCase(), pattern: r.path.split('/').filter(Boolean) }));
@@ -62,12 +70,14 @@ for (const frontend of ['admin', 'teacher', 'student', 'parent', 'web']) {
       const segments = raw.split('/').filter(Boolean);
       // Existence check across common read methods; writes must match exactly.
       const exists =
-        matchRoute(method, segments) ||
-        (method === 'GET' && (matchRoute('GET', segments)));
+        matchRoute(method, segments) || (method === 'GET' && matchRoute('GET', segments));
       if (!exists) {
         // For non-GET, also accept if the path exists under any method (handler exists, verb may vary by UI action).
-        const anyMethod = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'].some((mt) => matchRoute(mt, segments));
-        if (!anyMethod) issues.push(`${frontend}: ${raw} (no backend route) [${file.split('lmsheadless')[1]}]`);
+        const anyMethod = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'].some((mt) =>
+          matchRoute(mt, segments)
+        );
+        if (!anyMethod)
+          issues.push(`${frontend}: ${raw} (no backend route) [${file.split('lmsheadless')[1]}]`);
       }
     }
   }

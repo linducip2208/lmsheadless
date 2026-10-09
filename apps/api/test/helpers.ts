@@ -15,28 +15,63 @@ export async function setup() {
   const db = await createNodeSqliteDb(':memory:');
   const here = dirname(fileURLToPath(import.meta.url));
   await runMigrations(db, join(here, '..', '..', '..', 'migrations'));
-  const env: AppEnv = { DB: db, JWT_SECRET: SECRET, STORAGE_DRIVER: 'local', STORAGE_LOCAL_DIR: './.data/uploads-test' };
+  const env: AppEnv = {
+    DB: db,
+    JWT_SECRET: SECRET,
+    STORAGE_DRIVER: 'local',
+    STORAGE_LOCAL_DIR: './.data/uploads-test',
+  };
   const app = createApp(env, db);
   return { db, app, env };
 }
 
 export async function mkOrg(db: D1Like, slug: string) {
   const id = newId();
-  await execute(db, 'INSERT INTO organizations (id, name, slug, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', id, slug, slug, nowIso(), nowIso());
+  await execute(
+    db,
+    'INSERT INTO organizations (id, name, slug, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    id,
+    slug,
+    slug,
+    nowIso(),
+    nowIso()
+  );
   return id;
 }
 
 export async function mkUser(db: D1Like, email: string, role: string | null, orgId?: string) {
   const id = newId();
-  await execute(db, 'INSERT INTO users (id, email, password_hash, name, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    id, email, await hashPassword('Password123!'), email.split('@')[0], 'active', nowIso(), nowIso());
+  await execute(
+    db,
+    'INSERT INTO users (id, email, password_hash, name, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    id,
+    email,
+    await hashPassword('Password123!'),
+    email.split('@')[0],
+    'active',
+    nowIso(),
+    nowIso()
+  );
   if (role && orgId) {
-    await execute(db, 'INSERT INTO organization_members (id, organization_id, user_id, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', newId(), orgId, id, role, nowIso(), nowIso());
+    await execute(
+      db,
+      'INSERT INTO organization_members (id, organization_id, user_id, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      newId(),
+      orgId,
+      id,
+      role,
+      nowIso(),
+      nowIso()
+    );
   }
   return id;
 }
 
-export async function login(app: ReturnType<typeof createApp>, email: string, password = 'Password123!') {
+export async function login(
+  app: ReturnType<typeof createApp>,
+  email: string,
+  password = 'Password123!'
+) {
   const res = await app.request('/api/v1/auth/login', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -48,8 +83,18 @@ export async function login(app: ReturnType<typeof createApp>, email: string, pa
 
 export async function mkCourse(db: D1Like, orgId: string, teacherId: string, code = 'C101') {
   const id = newId();
-  await execute(db, 'INSERT INTO courses (id, organization_id, code, title, status, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    id, orgId, code, `Course ${code}`, 'published', teacherId, nowIso(), nowIso());
+  await execute(
+    db,
+    'INSERT INTO courses (id, organization_id, code, title, status, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    id,
+    orgId,
+    code,
+    `Course ${code}`,
+    'published',
+    teacherId,
+    nowIso(),
+    nowIso()
+  );
   return id;
 }
 

@@ -7,7 +7,10 @@ const dict: Record<string, Record<Lang, string>> = {
   validation_failed: { en: 'Validation failed', id: 'Validasi gagal' },
   invalid_credentials: { en: 'Invalid email or password', id: 'Email atau kata sandi salah' },
   inactive_account: { en: 'Account is not active', id: 'Akun tidak aktif' },
-  too_many_requests: { en: 'Too many requests, slow down', id: 'Terlalu banyak permintaan, coba lagi nanti' },
+  too_many_requests: {
+    en: 'Too many requests, slow down',
+    id: 'Terlalu banyak permintaan, coba lagi nanti',
+  },
   tenant_denied: { en: 'Organization access denied', id: 'Akses organisasi ditolak' },
   conflict: { en: 'Resource already exists', id: 'Data sudah ada' },
   attempt_limit: { en: 'Maximum attempts reached', id: 'Batas percobaan tercapai' },

@@ -5,10 +5,18 @@ export function openApiDocument() {
     summary,
     tags,
     ...(auth ? { security: [{ bearerAuth: [] }] } : {}),
-    ...(body ? { requestBody: { content: { 'application/json': { schema: { type: 'object' } } } } } : {}),
+    ...(body
+      ? { requestBody: { content: { 'application/json': { schema: { type: 'object' } } } } }
+      : {}),
     responses: {
-      '200': { description: 'Success', content: { 'application/json': { schema: { $ref: '#/components/schemas/Success' } } } },
-      '400': { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      '200': {
+        description: 'Success',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Success' } } },
+      },
+      '400': {
+        description: 'Validation error',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+      },
       '401': { description: 'Unauthorized' },
       '403': { description: 'Forbidden / tenant denied' },
     },
@@ -26,7 +34,12 @@ export function openApiDocument() {
     ['/users/me/permissions', 'get', 'My permissions for an organization', ['users']],
     ['/organizations', 'get', 'List organizations', ['organizations']],
     ['/organizations', 'post', 'Create organization', ['organizations']],
-    ['/organizations/{id}/branding', 'get', 'Public branding subset (white-label)', ['organizations']],
+    [
+      '/organizations/{id}/branding',
+      'get',
+      'Public branding subset (white-label)',
+      ['organizations'],
+    ],
     ['/permissions', 'get', 'Permission catalog', ['rbac']],
     ['/roles', 'get', 'Roles with permissions', ['rbac']],
     ['/roles/{role}/permissions', 'put', 'Remap role permissions (super_admin)', ['rbac']],
@@ -39,7 +52,12 @@ export function openApiDocument() {
     ['/enrollments', 'post', 'Enroll in course', ['courses']],
     ['/quizzes', 'post', 'Create quiz', ['assessment']],
     ['/quizzes', 'get', 'List quizzes for a course', ['assessment']],
-    ['/quizzes/{id}/questions', 'get', 'List questions (correctness hidden for students)', ['assessment']],
+    [
+      '/quizzes/{id}/questions',
+      'get',
+      'List questions (correctness hidden for students)',
+      ['assessment'],
+    ],
     ['/quiz-attempts/{attemptId}/submit', 'post', 'Submit answers (idempotent)', ['assessment']],
     ['/quiz-attempts/{attemptId}/grade', 'post', 'Manual grading', ['assessment']],
     ['/assignments', 'post', 'Create assignment', ['assessment']],
@@ -60,7 +78,12 @@ export function openApiDocument() {
     ['/reports/attendance', 'get', 'Attendance summary', ['reports']],
     ['/reports/student-progress', 'get', 'Student progress detail', ['reports']],
     ['/notifications', 'get', 'My notifications', ['notifications']],
-    ['/push/subscriptions', 'post', 'Register push subscription (needs VAPID keys)', ['notifications']],
+    [
+      '/push/subscriptions',
+      'post',
+      'Register push subscription (needs VAPID keys)',
+      ['notifications'],
+    ],
     ['/settings', 'get', 'Global settings (super_admin)', ['settings']],
     ['/setup', 'post', 'First-run setup (locked afterwards)', ['settings']],
     ['/audit-logs', 'get', 'Audit logs', ['settings']],
@@ -105,18 +128,38 @@ export function openApiDocument() {
       p.includes('verify') ||
       p.includes('branding') ||
       p.startsWith('/catalog/') ||
-      ['/auth/register', '/auth/login', '/auth/refresh', '/setup'].some((pub) => p === pub || p.startsWith(`${pub}/`));
+      ['/auth/register', '/auth/login', '/auth/refresh', '/setup'].some(
+        (pub) => p === pub || p.startsWith(`${pub}/`)
+      );
     paths[`/api/v1${p}`] = { [method]: def(summary, tags, !isPublic, method === 'post') };
   }
   return {
     openapi: '3.1.0',
-    info: { title: 'LMS Headless API', version: '1.0.0', description: 'Headless LMS REST API (Hono + D1). Base path /api/v1.' },
+    info: {
+      title: 'LMS Headless API',
+      version: '1.0.0',
+      description: 'Headless LMS REST API (Hono + D1). Base path /api/v1.',
+    },
     servers: [{ url: '/api/v1' }],
     components: {
       securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } },
       schemas: {
-        Success: { type: 'object', properties: { success: { type: 'boolean' }, data: {}, meta: { type: 'object' } }, required: ['success', 'data'] },
-        Error: { type: 'object', properties: { success: { type: 'boolean' }, error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' }, details: {} } } }, required: ['success', 'error'] },
+        Success: {
+          type: 'object',
+          properties: { success: { type: 'boolean' }, data: {}, meta: { type: 'object' } },
+          required: ['success', 'data'],
+        },
+        Error: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            error: {
+              type: 'object',
+              properties: { code: { type: 'string' }, message: { type: 'string' }, details: {} },
+            },
+          },
+          required: ['success', 'error'],
+        },
       },
     },
     paths,

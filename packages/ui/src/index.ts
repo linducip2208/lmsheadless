@@ -11,7 +11,8 @@ export function getTheme(key: string): Theme {
 export function applyTheme(key: string): Theme {
   const theme = getTheme(key);
   const dark =
-    theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    theme === 'dark' ||
+    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
   return theme;
 }
@@ -30,9 +31,13 @@ export function themeToggleHtml(key: string): string {
 
 export function bindThemeToggles(key: string): void {
   document.querySelectorAll(`[data-theme-toggle="${key}"]`).forEach((el) => {
-    el.addEventListener('change', (e) => setTheme(key, (e.target as HTMLSelectElement).value as Theme));
+    el.addEventListener('change', (e) =>
+      setTheme(key, (e.target as HTMLSelectElement).value as Theme)
+    );
   });
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme(key));
+  window
+    .matchMedia('(prefers-color-scheme: dark)')
+    .addEventListener('change', () => applyTheme(key));
 }
 
 // ---- API client ----
@@ -58,9 +63,15 @@ export function getAccessToken(): string | null {
   return memoryToken ?? localStorage.getItem('lms-token-fallback');
 }
 
-export async function api<T = unknown>(path: string, opts: RequestInit = {}, query?: Record<string, string>): Promise<T> {
+export async function api<T = unknown>(
+  path: string,
+  opts: RequestInit = {},
+  query?: Record<string, string>
+): Promise<T> {
   const url = query ? `${path}?${new URLSearchParams(query).toString()}` : path;
-  const headers: Record<string, string> = { ...(opts.headers as Record<string, string> | undefined) };
+  const headers: Record<string, string> = {
+    ...(opts.headers as Record<string, string> | undefined),
+  };
   const hasBody = opts.body !== undefined;
   if (hasBody && !headers['content-type']) headers['content-type'] = 'application/json';
   const token = getAccessToken();
@@ -68,7 +79,10 @@ export async function api<T = unknown>(path: string, opts: RequestInit = {}, que
   const res = await fetch(url, { ...opts, headers, credentials: 'same-origin' });
   const json = (await res.json().catch(() => null)) as ApiEnvelope<T> | null;
   if (!json || json.success !== true) {
-    const err = new Error(json?.error?.message ?? `Request failed (${res.status})`) as Error & { code?: string; status?: number };
+    const err = new Error(json?.error?.message ?? `Request failed (${res.status})`) as Error & {
+      code?: string;
+      status?: number;
+    };
     err.code = json?.error?.code;
     err.status = res.status;
     throw err;
@@ -93,14 +107,21 @@ export interface ClientOptions {
 export function createClient(opts: ClientOptions) {
   let me: Me | null = null;
 
-  async function call<T = unknown>(path: string, reqOpts: RequestInit = {}, query?: Record<string, string>): Promise<T> {
+  async function call<T = unknown>(
+    path: string,
+    reqOpts: RequestInit = {},
+    query?: Record<string, string>
+  ): Promise<T> {
     try {
       return await api<T>(path, reqOpts, query);
     } catch (e) {
       const err = e as Error & { status?: number };
       if (err.status === 401 && getAccessToken()) {
         try {
-          const r = (await api<{ access_token: string }>('/api/v1/auth/refresh', { method: 'POST', body: '{}' })) as {
+          const r = (await api<{ access_token: string }>('/api/v1/auth/refresh', {
+            method: 'POST',
+            body: '{}',
+          })) as {
             access_token: string;
           };
           setAccessToken(r.access_token);
@@ -148,7 +169,10 @@ export function createClient(opts: ClientOptions) {
       return me;
     } catch {
       try {
-        const r = await api<{ access_token: string }>('/api/v1/auth/refresh', { method: 'POST', body: '{}' });
+        const r = await api<{ access_token: string }>('/api/v1/auth/refresh', {
+          method: 'POST',
+          body: '{}',
+        });
         setAccessToken(r.access_token);
         me = (await api<{ user: Me }>('/api/v1/auth/me')).user;
         return me;
@@ -180,7 +204,10 @@ export function createClient(opts: ClientOptions) {
 export type ApiClient = ReturnType<typeof createClient>;
 
 // ---- Toasts ----
-export function toast(message: string, kind: 'success' | 'danger' | 'info' | 'warning' = 'info'): void {
+export function toast(
+  message: string,
+  kind: 'success' | 'danger' | 'info' | 'warning' = 'info'
+): void {
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');
@@ -204,7 +231,12 @@ export function toast(message: string, kind: 'success' | 'danger' | 'info' | 'wa
 }
 
 // ---- Confirm dialog + modal ----
-export function confirmDialog(title: string, message: string, confirmLabel = 'Delete', cancelLabel = 'Cancel'): Promise<boolean> {
+export function confirmDialog(
+  title: string,
+  message: string,
+  confirmLabel = 'Delete',
+  cancelLabel = 'Cancel'
+): Promise<boolean> {
   return new Promise((resolve) => {
     const wrap = document.createElement('div');
     wrap.className = 'modal modal-blur fade show d-block';
@@ -218,9 +250,16 @@ export function confirmDialog(title: string, message: string, confirmLabel = 'De
       <button class="btn btn-danger" data-ok>${confirmLabel}</button></div></div></div>`;
     (wrap.querySelector('.text-muted') as HTMLElement).textContent = message;
     (wrap.querySelector('[data-x]') as HTMLButtonElement).textContent = cancelLabel;
-    const done = (v: boolean) => { wrap.remove(); resolve(v); };
-    (wrap.querySelector('[data-ok]') as HTMLButtonElement).addEventListener('click', () => done(true));
-    (wrap.querySelector('[data-x]') as HTMLButtonElement).addEventListener('click', () => done(false));
+    const done = (v: boolean) => {
+      wrap.remove();
+      resolve(v);
+    };
+    (wrap.querySelector('[data-ok]') as HTMLButtonElement).addEventListener('click', () =>
+      done(true)
+    );
+    (wrap.querySelector('[data-x]') as HTMLButtonElement).addEventListener('click', () =>
+      done(false)
+    );
     (wrap.querySelector('[data-ok]') as HTMLButtonElement).focus();
     document.body.appendChild(wrap);
   });
@@ -228,7 +267,14 @@ export function confirmDialog(title: string, message: string, confirmLabel = 'De
 
 export function modalForm(
   title: string,
-  fields: { name: string; label: string; type?: string; value?: string; options?: { value: string; label: string }[]; required?: boolean }[],
+  fields: {
+    name: string;
+    label: string;
+    type?: string;
+    value?: string;
+    options?: { value: string; label: string }[];
+    required?: boolean;
+  }[],
   labels: { save?: string; cancel?: string } = {}
 ): Promise<Record<string, string> | null> {
   return new Promise((resolve) => {
@@ -278,12 +324,17 @@ export function modalForm(
       }
       body.append(label, input);
     }
-    const done = (v: Record<string, string> | null) => { wrap.remove(); resolve(v); };
+    const done = (v: Record<string, string> | null) => {
+      wrap.remove();
+      resolve(v);
+    };
     wrap.querySelectorAll('[data-x]').forEach((b) => b.addEventListener('click', () => done(null)));
     (wrap.querySelector('form') as HTMLFormElement).addEventListener('submit', (e) => {
       e.preventDefault();
       const data: Record<string, string> = {};
-      new FormData(e.target as HTMLFormElement).forEach((v, k) => { data[k] = String(v); });
+      new FormData(e.target as HTMLFormElement).forEach((v, k) => {
+        data[k] = String(v);
+      });
       done(data);
     });
     document.body.appendChild(wrap);
@@ -332,7 +383,9 @@ export function enqueueOffline(method: string, path: string, body: unknown): Pen
 }
 
 // Flush queue when online. Idempotency-Key prevents duplicate writes.
-export async function flushQueue(onResult?: (action: PendingAction, ok: boolean) => void): Promise<void> {
+export async function flushQueue(
+  onResult?: (action: PendingAction, ok: boolean) => void
+): Promise<void> {
   if (!navigator.onLine) return;
   const q = getQueue();
   const remaining: PendingAction[] = [];
@@ -370,7 +423,11 @@ export function bindOnlineIndicator(): void {
   window.addEventListener('offline', update);
 }
 
-export function formatDateTime(iso: string | null | undefined, locale = 'en', timeZone?: string): string {
+export function formatDateTime(
+  iso: string | null | undefined,
+  locale = 'en',
+  timeZone?: string
+): string {
   if (!iso) return '—';
   try {
     return new Intl.DateTimeFormat(locale === 'id' ? 'id-ID' : 'en-US', {
@@ -392,17 +449,19 @@ export function bindSwUpdates(): void {
     refreshed = true;
     window.location.reload();
   });
-  navigator.serviceWorker.ready.then((reg) => {
-    reg.addEventListener('updatefound', () => {
-      const worker = reg.installing;
-      if (!worker) return;
-      worker.addEventListener('statechange', () => {
-        if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-          toast('A new version is available and will apply on reload.', 'info');
-        }
+  navigator.serviceWorker.ready
+    .then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const worker = reg.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            toast('A new version is available and will apply on reload.', 'info');
+          }
+        });
       });
-    });
-  }).catch(() => undefined);
+    })
+    .catch(() => undefined);
 }
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
@@ -416,17 +475,25 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 // Push subscription architecture. Requires the deployment to configure a
 // VAPID public key (GET /api/v1/push/config). Without keys this is a clean
 // no-op that explains itself — delivery is never faked.
-export async function subscribePush(): Promise<'subscribed' | 'unsupported' | 'no-keys' | 'denied'> {
+export async function subscribePush(): Promise<
+  'subscribed' | 'unsupported' | 'no-keys' | 'denied'
+> {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
   try {
-    const cfg = (await api<{ enabled: boolean; public_key: string | null }>('/api/v1/push/config').catch(() => ({ enabled: false, public_key: null }))) as {
-      enabled: boolean; public_key: string | null;
+    const cfg = (await api<{ enabled: boolean; public_key: string | null }>(
+      '/api/v1/push/config'
+    ).catch(() => ({ enabled: false, public_key: null }))) as {
+      enabled: boolean;
+      public_key: string | null;
     };
     if (!cfg.enabled || !cfg.public_key) return 'no-keys';
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') return 'denied';
     const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(cfg.public_key) as BufferSource });
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(cfg.public_key) as BufferSource,
+    });
     await api('/api/v1/push/subscriptions', { method: 'POST', body: JSON.stringify(sub.toJSON()) });
     return 'subscribed';
   } catch {

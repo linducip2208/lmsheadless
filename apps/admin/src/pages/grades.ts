@@ -12,23 +12,55 @@ export async function renderGrades(el: HTMLElement): Promise<void> {
   const studentInput = el.querySelector('#g-student') as HTMLInputElement;
   const list = el.querySelector('#g-list') as HTMLElement;
   const orgId = currentOrgId();
-  const courses = (await call<{ id: string; title: string }[]>('/api/v1/courses', {}, orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }).catch(() => [])) as { id: string; title: string }[];
-  courseSel.innerHTML = courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('') || '<option value="">No courses</option>';
+  const courses = (await call<{ id: string; title: string }[]>(
+    '/api/v1/courses',
+    {},
+    orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
+  ).catch(() => [])) as { id: string; title: string }[];
+  courseSel.innerHTML =
+    courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('') ||
+    '<option value="">No courses</option>';
   const load = async () => {
-    if (!courseSel.value) { list.innerHTML = ''; return; }
+    if (!courseSel.value) {
+      list.innerHTML = '';
+      return;
+    }
     list.innerHTML = loadingHtml();
     try {
       const query: Record<string, string> = { course_id: courseSel.value };
       if (studentInput.value.trim()) query.student_id = studentInput.value.trim();
-      const grades = (await call<{ id: string; student_id: string; category: string; score: number; max_score: number; feedback: string | null }[]>('/api/v1/grades', {}, query)) as {
-        id: string; student_id: string; category: string; score: number; max_score: number; feedback: string | null;
+      const grades = (await call<
+        {
+          id: string;
+          student_id: string;
+          category: string;
+          score: number;
+          max_score: number;
+          feedback: string | null;
+        }[]
+      >('/api/v1/grades', {}, query)) as {
+        id: string;
+        student_id: string;
+        category: string;
+        score: number;
+        max_score: number;
+        feedback: string | null;
       }[];
-      list.innerHTML = grades.length ? `<div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table card-table">
+      list.innerHTML = grades.length
+        ? `<div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table card-table">
         <thead><tr><th scope="col">${d.students}</th><th scope="col">${d.status}</th><th scope="col">${d.total}</th><th scope="col">${d.feedback}</th></tr></thead>
-        <tbody>${grades.map((g) => `<tr><td class="text-truncate" style="max-width:200px">${g.student_id.slice(0, 8)}…</td>
-        <td>${g.category}</td><td><strong>${g.score}</strong> / ${g.max_score}</td><td>${g.feedback ?? '—'}</td></tr>`).join('')}</tbody></table></div></div></div>`
+        <tbody>${grades
+          .map(
+            (
+              g
+            ) => `<tr><td class="text-truncate" style="max-width:200px">${g.student_id.slice(0, 8)}…</td>
+        <td>${g.category}</td><td><strong>${g.score}</strong> / ${g.max_score}</td><td>${g.feedback ?? '—'}</td></tr>`
+          )
+          .join('')}</tbody></table></div></div></div>`
         : `<div class="alert alert-info">${d.empty}</div>`;
-    } catch (e) { list.innerHTML = errorHtml(e); }
+    } catch (e) {
+      list.innerHTML = errorHtml(e);
+    }
   };
   (el.querySelector('#g-load') as HTMLButtonElement).addEventListener('click', () => void load());
   (el.querySelector('#g-new') as HTMLButtonElement).addEventListener('click', async () => {
@@ -42,10 +74,21 @@ export async function renderGrades(el: HTMLElement): Promise<void> {
     ]);
     if (!data) return;
     try {
-      await call('/api/v1/grades', { method: 'POST', body: JSON.stringify({ course_id: courseSel.value, ...data, score: Number(data.score), max_score: Number(data.max_score), feedback: data.feedback || undefined }) });
+      await call('/api/v1/grades', {
+        method: 'POST',
+        body: JSON.stringify({
+          course_id: courseSel.value,
+          ...data,
+          score: Number(data.score),
+          max_score: Number(data.max_score),
+          feedback: data.feedback || undefined,
+        }),
+      });
       toast(d.saved, 'success');
       await load();
-    } catch (e) { toast(e instanceof Error ? e.message : d.failed, 'danger'); }
+    } catch (e) {
+      toast(e instanceof Error ? e.message : d.failed, 'danger');
+    }
   });
   await load();
 }

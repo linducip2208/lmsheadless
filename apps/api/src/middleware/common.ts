@@ -18,7 +18,9 @@ export function language() {
     const url = new URL(c.req.url);
     const q = url.searchParams.get('lang');
     const h = c.req.header('accept-language');
-    const lang = (q === 'id' || q === 'en' ? q : (h ?? '').toLowerCase().startsWith('id') ? 'id' : 'en') as 'en' | 'id';
+    const lang = (
+      q === 'id' || q === 'en' ? q : (h ?? '').toLowerCase().startsWith('id') ? 'id' : 'en'
+    ) as 'en' | 'id';
     c.set('lang', lang);
     await next();
   });
@@ -31,7 +33,9 @@ export function rateLimit(opts: { prefix?: string; max?: number; windowMs?: numb
   const prefix = opts.prefix ?? 'rl';
   return createMiddleware<{ Variables: AppVars }>(async (c, next) => {
     const env = c.get('env');
-    const max = opts.max ?? (prefix === 'auth' ? (env.AUTH_RATE_LIMIT_MAX ?? 60) : (env.RATE_LIMIT_MAX ?? 120));
+    const max =
+      opts.max ??
+      (prefix === 'auth' ? (env.AUTH_RATE_LIMIT_MAX ?? 60) : (env.RATE_LIMIT_MAX ?? 120));
     const win = opts.windowMs ?? env.RATE_LIMIT_WINDOW_MS ?? 60_000;
     const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'local';
     const key = `${prefix}:${ip}:${Math.floor(Date.now() / win)}`;
@@ -41,7 +45,10 @@ export function rateLimit(opts: { prefix?: string; max?: number; windowMs?: numb
       await env.KV.put(key, String(count), { expirationTtl: Math.ceil(win / 1000) });
       if (count > max) {
         return c.json(
-          { success: false, error: { code: 'RATE_LIMITED', message: t('too_many_requests', c.get('lang')) } },
+          {
+            success: false,
+            error: { code: 'RATE_LIMITED', message: t('too_many_requests', c.get('lang')) },
+          },
           429
         );
       }
@@ -53,7 +60,10 @@ export function rateLimit(opts: { prefix?: string; max?: number; windowMs?: numb
         b.count += 1;
         if (b.count > max) {
           return c.json(
-            { success: false, error: { code: 'RATE_LIMITED', message: t('too_many_requests', c.get('lang')) } },
+            {
+              success: false,
+              error: { code: 'RATE_LIMITED', message: t('too_many_requests', c.get('lang')) },
+            },
             429
           );
         }
@@ -103,11 +113,20 @@ export function requireAuth() {
   return createMiddleware<{ Variables: AppVars }>(async (c, next) => {
     const user = c.get('user') as AuthUser | null;
     if (!user) {
-      return c.json({ success: false, error: { code: 'UNAUTHORIZED', message: t('unauthorized', c.get('lang')) } }, 401);
+      return c.json(
+        {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: t('unauthorized', c.get('lang')) },
+        },
+        401
+      );
     }
     if (user.status !== 'active') {
       return c.json(
-        { success: false, error: { code: 'ACCOUNT_INACTIVE', message: t('inactive_account', c.get('lang')) } },
+        {
+          success: false,
+          error: { code: 'ACCOUNT_INACTIVE', message: t('inactive_account', c.get('lang')) },
+        },
         403
       );
     }
@@ -129,13 +148,24 @@ export function requireOrgRoles(...roles: string[]) {
   return createMiddleware<{ Variables: AppVars }>(async (c, next) => {
     const user = c.get('user') as AuthUser | null;
     const orgId =
-      c.req.param('orgId') ?? c.req.param('id') ?? new URL(c.req.url).searchParams.get('organization_id');
+      c.req.param('orgId') ??
+      c.req.param('id') ??
+      new URL(c.req.url).searchParams.get('organization_id');
     if (!orgId || !canAccessOrg(user, orgId)) {
-      return c.json({ success: false, error: { code: 'TENANT_DENIED', message: t('tenant_denied', c.get('lang')) } }, 403);
+      return c.json(
+        {
+          success: false,
+          error: { code: 'TENANT_DENIED', message: t('tenant_denied', c.get('lang')) },
+        },
+        403
+      );
     }
     const role = orgRole(user, orgId);
     if (role !== 'super_admin' && !roles.includes(role ?? '')) {
-      return c.json({ success: false, error: { code: 'FORBIDDEN', message: t('forbidden', c.get('lang')) } }, 403);
+      return c.json(
+        { success: false, error: { code: 'FORBIDDEN', message: t('forbidden', c.get('lang')) } },
+        403
+      );
     }
     await next();
   });

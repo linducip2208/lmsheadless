@@ -3,10 +3,25 @@ import { z } from 'zod';
 export const email = z.string().email().max(255);
 export const password = z.string().min(8).max(128);
 export const uuid = z.string().uuid().or(z.string().min(1).max(64));
-export const roleEnum = z.enum(['super_admin', 'organization_admin', 'teacher', 'student', 'parent', 'staff']);
+export const roleEnum = z.enum([
+  'super_admin',
+  'organization_admin',
+  'teacher',
+  'student',
+  'parent',
+  'staff',
+]);
 export const localeEnum = z.enum(['en', 'id']);
 export const courseStatus = z.enum(['draft', 'published', 'archived']);
-export const questionType = z.enum(['multiple_choice', 'single_choice', 'true_false', 'short_answer', 'essay', 'matching', 'ordering']);
+export const questionType = z.enum([
+  'multiple_choice',
+  'single_choice',
+  'true_false',
+  'short_answer',
+  'essay',
+  'matching',
+  'ordering',
+]);
 export const attendanceStatus = z.enum(['present', 'absent', 'late', 'excused']);
 
 export const registerSchema = z.object({
@@ -28,7 +43,11 @@ export const refreshSchema = z.object({
 
 export const organizationSchema = z.object({
   name: z.string().min(2).max(150),
-  slug: z.string().min(2).max(80).regex(/^[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(2)
+    .max(80)
+    .regex(/^[a-z0-9-]+$/),
   description: z.string().max(2000).optional(),
   settings: z.record(z.unknown()).optional(),
 });
@@ -53,7 +72,12 @@ export const courseSchema = z.object({
   status: courseStatus.optional(),
   thumbnail_url: z.string().max(1000).optional(),
   price: z.number().min(0).max(100000000).optional(),
-  slug: z.string().min(2).max(120).regex(/^[a-z0-9-]+$/).optional(),
+  slug: z
+    .string()
+    .min(2)
+    .max(120)
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   visibility: z.enum(['private', 'public', 'unlisted']).optional(),
   start_at: z.string().max(64).optional(),
   end_at: z.string().max(64).optional(),
@@ -103,7 +127,13 @@ export const questionSchema = z.object({
   explanation: z.string().max(5000).optional(),
   negative_points: z.number().min(0).max(1000).optional(),
   options: z
-    .array(z.object({ label: z.string().min(1).max(1000), match_value: z.string().max(1000).optional(), is_correct: z.boolean() }))
+    .array(
+      z.object({
+        label: z.string().min(1).max(1000),
+        match_value: z.string().max(1000).optional(),
+        is_correct: z.boolean(),
+      })
+    )
     .max(20)
     .optional(),
   correct_answer: z.string().max(5000).optional(),
@@ -137,7 +167,13 @@ export const gradeSchema = z.object({
 export const attendanceRecordSchema = z.object({
   session_id: z.string().min(1).max(64),
   records: z
-    .array(z.object({ student_id: z.string().min(1).max(64), status: attendanceStatus, note: z.string().max(500).optional() }))
+    .array(
+      z.object({
+        student_id: z.string().min(1).max(64),
+        status: attendanceStatus,
+        note: z.string().max(500).optional(),
+      })
+    )
     .min(1)
     .max(500),
 });
@@ -193,7 +229,15 @@ export const bankSchema = z.object({
 });
 
 export const bankQuestionSchema = z.object({
-  type: z.enum(['multiple_choice', 'single_choice', 'true_false', 'short_answer', 'essay', 'matching', 'ordering']),
+  type: z.enum([
+    'multiple_choice',
+    'single_choice',
+    'true_false',
+    'short_answer',
+    'essay',
+    'matching',
+    'ordering',
+  ]),
   prompt: z.string().min(1).max(5000),
   points: z.number().min(0).max(1000),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
@@ -202,11 +246,16 @@ export const bankQuestionSchema = z.object({
   explanation: z.string().max(5000).optional(),
   correct_answer: z.string().max(5000).optional(),
   negative_points: z.number().min(0).max(1000).optional(),
-  options: z.array(z.object({
-    label: z.string().min(1).max(1000),
-    match_value: z.string().max(1000).optional(),
-    is_correct: z.boolean(),
-  })).max(20).optional(),
+  options: z
+    .array(
+      z.object({
+        label: z.string().min(1).max(1000),
+        match_value: z.string().max(1000).optional(),
+        is_correct: z.boolean(),
+      })
+    )
+    .max(20)
+    .optional(),
 });
 
 export const cohortSchema = z.object({
@@ -248,7 +297,11 @@ export const bundleSchema = z.object({
 
 export const couponSchema = z.object({
   organization_id: z.string().min(1).max(64),
-  code: z.string().min(2).max(40).regex(/^[A-Za-z0-9_-]+$/),
+  code: z
+    .string()
+    .min(2)
+    .max(40)
+    .regex(/^[A-Za-z0-9_-]+$/),
   kind: z.enum(['percent', 'fixed']),
   value: z.number().min(0),
   max_uses: z.number().int().min(1).max(1000000).optional(),

@@ -30,4 +30,3 @@ Record the drill date and result in the ops log.
   deleted live DB, rebuilt via `db:migrate` + `db:seed` (001→015 applied),
   then restored the backup copy as live, booted the API, verified student
   login and 404-safe certificate verification. Result: **PASS**.
-

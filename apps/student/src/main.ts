@@ -1,7 +1,17 @@
 import '@tabler/core/dist/css/tabler.min.css';
 import {
-  createClient, applyTheme, themeToggleHtml, bindThemeToggles, bindSwUpdates, onlineIndicatorHtml,
-  bindOnlineIndicator, flushQueue, enqueueOffline, toast, subscribePush, type ApiClient,
+  createClient,
+  applyTheme,
+  themeToggleHtml,
+  bindThemeToggles,
+  bindSwUpdates,
+  onlineIndicatorHtml,
+  bindOnlineIndicator,
+  flushQueue,
+  enqueueOffline,
+  toast,
+  subscribePush,
+  type ApiClient,
 } from '@lms/ui';
 import { getDict } from './i18n.js';
 
@@ -36,10 +46,14 @@ async function loginPage(root: HTMLElement): Promise<void> {
   (root.querySelector('#f') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
-      await login((root.querySelector('#e') as HTMLInputElement).value, (root.querySelector('#p') as HTMLInputElement).value);
+      await login(
+        (root.querySelector('#e') as HTMLInputElement).value,
+        (root.querySelector('#p') as HTMLInputElement).value
+      );
       location.hash = '#/';
     } catch (err) {
-      (root.querySelector('#err') as HTMLElement).innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Error'}</div>`;
+      (root.querySelector('#err') as HTMLElement).innerHTML =
+        `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Error'}</div>`;
     }
   });
 }
@@ -62,16 +76,30 @@ function shell(): void {
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
   bindOnlineIndicator();
-  void flushQueue((a, okAction) => toast(okAction ? 'Pending action synced' : 'Will retry when online', okAction ? 'success' : 'warning'));
-  (document.getElementById('install-btn') as HTMLButtonElement).addEventListener('click', () => deferredPrompt?.prompt());
-  (document.getElementById('out') as HTMLButtonElement).addEventListener('click', () => void logout());
+  void flushQueue((a, okAction) =>
+    toast(
+      okAction ? 'Pending action synced' : 'Will retry when online',
+      okAction ? 'success' : 'warning'
+    )
+  );
+  (document.getElementById('install-btn') as HTMLButtonElement).addEventListener('click', () =>
+    deferredPrompt?.prompt()
+  );
+  (document.getElementById('out') as HTMLButtonElement).addEventListener(
+    'click',
+    () => void logout()
+  );
 }
 
 async function home(el: HTMLElement): Promise<void> {
   el.innerHTML = loading();
   try {
     const [rep, notifs] = await Promise.all([
-      call<{ enrollments: { course_title: string; progress_percent: number; course_id: string }[]; grades: { score: number; category: string }[]; quiz_attempts: { quiz_title: string; score: number }[] }>('/api/v1/reports/student-progress'),
+      call<{
+        enrollments: { course_title: string; progress_percent: number; course_id: string }[];
+        grades: { score: number; category: string }[];
+        quiz_attempts: { quiz_title: string; score: number }[];
+      }>('/api/v1/reports/student-progress'),
       call<{ title: string; body: string }[]>('/api/v1/notifications').catch(() => []),
     ]);
     el.innerHTML = `<h2>🏠 ${d.myLearning}</h2>
@@ -80,31 +108,65 @@ async function home(el: HTMLElement): Promise<void> {
       <a class="btn btn-sm btn-outline-primary" href="#/live">📡 ${d.live}</a>
       <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a></div>
       <h3 class="mt-3">${d.enrolled}</h3>
-      ${(rep.enrollments as { course_title: string; progress_percent: number; course_id: string }[]).map((x) => `<a href="#/courses/${x.course_id}" class="card card-link mb-2"><div class="card-body"><strong>${x.course_title}</strong>
-      <div class="progress mt-2" role="progressbar" aria-valuenow="${x.progress_percent}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${x.progress_percent}%"></div></div></div></a>`).join('') || `<p class="text-muted">${d.empty}</p>`}
+      ${
+        (rep.enrollments as { course_title: string; progress_percent: number; course_id: string }[])
+          .map(
+            (
+              x
+            ) => `<a href="#/courses/${x.course_id}" class="card card-link mb-2"><div class="card-body"><strong>${x.course_title}</strong>
+      <div class="progress mt-2" role="progressbar" aria-valuenow="${x.progress_percent}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${x.progress_percent}%"></div></div></div></a>`
+          )
+          .join('') || `<p class="text-muted">${d.empty}</p>`
+      }
       <h3 class="mt-4">${d.upcoming}</h3><div id="upcoming">${loading('')}</div>
       <h3 class="mt-4">${d.announcements}</h3>
-      ${(notifs as { title: string; body: string }[]).slice(0, 5).map((n) => `<div class="alert alert-info"><strong>${n.title}</strong><br>${n.body}</div>`).join('')}`;
+      ${(notifs as { title: string; body: string }[])
+        .slice(0, 5)
+        .map((n) => `<div class="alert alert-info"><strong>${n.title}</strong><br>${n.body}</div>`)
+        .join('')}`;
     // Upcoming: assignments across enrolled courses.
     const box = el.querySelector('#upcoming') as HTMLElement;
     const items: string[] = [];
     for (const enr of rep.enrollments as { course_id: string; course_title: string }[]) {
-      const asg = (await call<{ id: string; title: string; due_at: string | null }[]>('/api/v1/assignments', {}, { course_id: enr.course_id }).catch(() => [])) as { id: string; title: string; due_at: string | null }[];
-      for (const a of asg) items.push(`<div class="card card-body mb-2 py-2">${a.title} <span class="text-muted">· ${enr.course_title} · due ${a.due_at ?? '—'}</span> <a class="btn btn-sm btn-outline-primary ms-2" href="#/courses/${enr.course_id}">Open</a></div>`);
+      const asg = (await call<{ id: string; title: string; due_at: string | null }[]>(
+        '/api/v1/assignments',
+        {},
+        { course_id: enr.course_id }
+      ).catch(() => [])) as { id: string; title: string; due_at: string | null }[];
+      for (const a of asg)
+        items.push(
+          `<div class="card card-body mb-2 py-2">${a.title} <span class="text-muted">· ${enr.course_title} · due ${a.due_at ?? '—'}</span> <a class="btn btn-sm btn-outline-primary ms-2" href="#/courses/${enr.course_id}">Open</a></div>`
+        );
     }
     box.innerHTML = items.join('') || `<p class="text-muted">${d.empty}</p>`;
-  } catch (e) { el.innerHTML = errHtml(e); }
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function courseList(el: HTMLElement): Promise<void> {
   el.innerHTML = loading();
   try {
-    const res = (await call<unknown>('/api/v1/courses', {}, { per_page: '50' })) as { items?: { id: string; title: string; code: string }[] } | { id: string; title: string; code: string }[];
-    const list = (Array.isArray(res) ? res : (res.items ?? [])) as { id: string; title: string; code: string }[];
-    el.innerHTML = `<h2>${d.courses}</h2><div class="row row-cards">${list.map((c) => `<div class="col-md-4 col-6"><div class="card h-100">
+    const res = (await call<unknown>('/api/v1/courses', {}, { per_page: '50' })) as
+      | { items?: { id: string; title: string; code: string }[] }
+      | { id: string; title: string; code: string }[];
+    const list = (Array.isArray(res) ? res : (res.items ?? [])) as {
+      id: string;
+      title: string;
+      code: string;
+    }[];
+    el.innerHTML = `<h2>${d.courses}</h2><div class="row row-cards">${
+      list
+        .map(
+          (c) => `<div class="col-md-4 col-6"><div class="card h-100">
       <div class="card-body"><h3 class="card-title">${c.title}</h3><p class="text-muted small">${c.code}</p>
-      <a class="btn btn-primary btn-sm w-100" href="#/courses/${c.id}">${d.continue}</a></div></div></div>`).join('') || `<p>${d.empty}</p>`}</div>`;
-  } catch (e) { el.innerHTML = errHtml(e); }
+      <a class="btn btn-primary btn-sm w-100" href="#/courses/${c.id}">${d.continue}</a></div></div></div>`
+        )
+        .join('') || `<p>${d.empty}</p>`
+    }</div>`;
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
@@ -113,12 +175,31 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
     const [course, sections, prog, quizzes, assignments] = await Promise.all([
       call<Record<string, string>>(`/api/v1/courses/${courseId}`),
       call<{ id: string; title: string }[]>(`/api/v1/courses/${courseId}/sections`),
-      call<{ progress?: { percent: number } }>(`/api/v1/courses/${courseId}/progress`).catch(() => ({ progress: { percent: 0 } })),
-      call<{ id: string; title: string }[]>('/api/v1/quizzes', {}, { course_id: courseId }).catch(() => []),
-      call<{ id: string; title: string; due_at: string | null }[]>('/api/v1/assignments', {}, { course_id: courseId }).catch(() => []),
+      call<{ progress?: { percent: number } }>(`/api/v1/courses/${courseId}/progress`).catch(
+        () => ({ progress: { percent: 0 } })
+      ),
+      call<{ id: string; title: string }[]>('/api/v1/quizzes', {}, { course_id: courseId }).catch(
+        () => []
+      ),
+      call<{ id: string; title: string; due_at: string | null }[]>(
+        '/api/v1/assignments',
+        {},
+        { course_id: courseId }
+      ).catch(() => []),
     ]);
-    const scormPkgs = (await call<{ id: string; title: string }[]>(`/api/v1/scorm/packages`, {}, { course_id: courseId }).catch(() => [])) as { id: string; title: string }[];
-    const tabs = [['learn', d.learn], ['quiz', `${d.quiz} (${(quizzes as unknown[]).length})`], ['task', `${d.tasks} (${(assignments as unknown[]).length})`], ['talk', d.discussion], ['scorm', `${d.scorm} (${scormPkgs.length})`], ['code', d.exercises]];
+    const scormPkgs = (await call<{ id: string; title: string }[]>(
+      `/api/v1/scorm/packages`,
+      {},
+      { course_id: courseId }
+    ).catch(() => [])) as { id: string; title: string }[];
+    const tabs = [
+      ['learn', d.learn],
+      ['quiz', `${d.quiz} (${(quizzes as unknown[]).length})`],
+      ['task', `${d.tasks} (${(assignments as unknown[]).length})`],
+      ['talk', d.discussion],
+      ['scorm', `${d.scorm} (${scormPkgs.length})`],
+      ['code', d.exercises],
+    ];
     el.innerHTML = `<a href="#/courses" class="btn btn-sm btn-outline-secondary mb-2">← ${d.courses}</a>
       <h2>${String(course.title)}</h2><p class="text-muted">${String(course.description ?? '')}</p>
       <div class="alert alert-info">${d.progress}: ${(prog.progress as { percent: number } | undefined)?.percent ?? 0}%</div>
@@ -128,8 +209,20 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
     const renderLearn = async () => {
       let html = '';
       for (const s of sections as { id: string; title: string }[]) {
-        const lessons = (await call<{ id: string; title: string; content_type: string; body: string | null; video_url: string | null }[]>(`/api/v1/courses/sections/${s.id}/lessons`).catch(() => [])) as {
-          id: string; title: string; content_type: string; body: string | null; video_url: string | null;
+        const lessons = (await call<
+          {
+            id: string;
+            title: string;
+            content_type: string;
+            body: string | null;
+            video_url: string | null;
+          }[]
+        >(`/api/v1/courses/sections/${s.id}/lessons`).catch(() => [])) as {
+          id: string;
+          title: string;
+          content_type: string;
+          body: string | null;
+          video_url: string | null;
         }[];
         html += `<div class="card mb-2"><div class="card-header"><h3 class="card-title">${s.title}</h3></div><div class="list-group list-group-flush">`;
         for (const l of lessons) {
@@ -141,238 +234,467 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
         html += '</div></div>';
       }
       body.innerHTML = html || `<p class="text-muted">${d.empty}</p>`;
-      body.querySelectorAll('[data-done]').forEach((b) => b.addEventListener('click', async () => {
-        const lid = (b as HTMLElement).dataset.done ?? '';
-        try {
-          if (!navigator.onLine) {
-            enqueueOffline('POST', `/api/v1/lessons/${lid}/complete`, {});
-            toast(d.offlineQueued, 'warning');
-            return;
+      body.querySelectorAll('[data-done]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          const lid = (b as HTMLElement).dataset.done ?? '';
+          try {
+            if (!navigator.onLine) {
+              enqueueOffline('POST', `/api/v1/lessons/${lid}/complete`, {});
+              toast(d.offlineQueued, 'warning');
+              return;
+            }
+            await call(`/api/v1/lessons/${lid}/complete`, { method: 'POST' });
+            toast(d.lessonCompleted, 'success');
+            await courseDetail(el, courseId);
+          } catch (err) {
+            toast(err instanceof Error ? err.message : 'Failed', 'danger');
           }
-          await call(`/api/v1/lessons/${lid}/complete`, { method: 'POST' });
-          toast(d.lessonCompleted, 'success');
-          await courseDetail(el, courseId);
-        } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
-      }));
+        })
+      );
     };
     const renderQuiz = async () => {
-      body.innerHTML = (quizzes as { id: string; title: string }[]).map((q) => `<div class="card mb-2"><div class="card-body">
+      body.innerHTML =
+        (quizzes as { id: string; title: string }[])
+          .map(
+            (q) => `<div class="card mb-2"><div class="card-body">
         <h3 class="card-title">${q.title}</h3><button class="btn btn-primary btn-sm" data-start="${q.id}">${d.start}</button>
-        <div data-att="${q.id}" class="mt-2"></div></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
-      body.querySelectorAll('[data-start]').forEach((b) => b.addEventListener('click', async () => {
-        const qid = (b as HTMLElement).dataset.start ?? '';
-        const box = body.querySelector(`[data-att="${qid}"]`) as HTMLElement;
-        try {
-          const att = (await call<{ id: string; expires_at: string | null }>(`/api/v1/quizzes/${qid}/attempts`, { method: 'POST' })) as { id: string; expires_at: string | null };
-          const qs = (await call<{ id: string; type: string; prompt: string; options: { id: string; label: string }[] }[]>(`/api/v1/quizzes/${qid}/questions`)) as {
-            id: string; type: string; prompt: string; options: { id: string; label: string }[];
-          }[];
-          box.innerHTML = `<form id="quiz-form">${att.expires_at ? `<div class="alert alert-warning">${att.expires_at.slice(11, 16)}</div>` : ''}
-            ${qs.map((q, i) => `<div class="mb-3"><strong>${i + 1}. ${q.prompt}</strong>
+        <div data-att="${q.id}" class="mt-2"></div></div></div>`
+          )
+          .join('') || `<p class="text-muted">${d.empty}</p>`;
+      body.querySelectorAll('[data-start]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          const qid = (b as HTMLElement).dataset.start ?? '';
+          const box = body.querySelector(`[data-att="${qid}"]`) as HTMLElement;
+          try {
+            const att = (await call<{ id: string; expires_at: string | null }>(
+              `/api/v1/quizzes/${qid}/attempts`,
+              { method: 'POST' }
+            )) as { id: string; expires_at: string | null };
+            const qs = (await call<
+              {
+                id: string;
+                type: string;
+                prompt: string;
+                options: { id: string; label: string }[];
+              }[]
+            >(`/api/v1/quizzes/${qid}/questions`)) as {
+              id: string;
+              type: string;
+              prompt: string;
+              options: { id: string; label: string }[];
+            }[];
+            box.innerHTML = `<form id="quiz-form">${att.expires_at ? `<div class="alert alert-warning">${att.expires_at.slice(11, 16)}</div>` : ''}
+            ${qs
+              .map(
+                (q, i) => `<div class="mb-3"><strong>${i + 1}. ${q.prompt}</strong>
             ${q.type === 'multiple_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${o.label}</label>`).join('') : `<input class="form-control" name="q_${q.id}" placeholder="${d.answer}">`}
-            </div>`).join('')}
+            </div>`
+              )
+              .join('')}
             <button class="btn btn-primary">${d.submit}</button></form><div data-res class="mt-2"></div>`;
-          (box.querySelector('#quiz-form') as HTMLFormElement).addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target as HTMLFormElement);
-            const answers: { question_id: string; option_id?: string; answer_text?: string }[] = [];
-            for (const q of qs) {
-              const v = fd.get(`q_${q.id}`);
-              if (v === null || v === '') continue;
-              if (q.type === 'multiple_choice') answers.push({ question_id: q.id, option_id: String(v) });
-              else answers.push({ question_id: q.id, answer_text: String(v) });
-            }
-            try {
-              const res = (await call<{ score: number; passed: boolean }>(`/api/v1/quiz-attempts/${att.id}/submit`, {
-                method: 'POST', body: JSON.stringify({ answers }), headers: { 'Idempotency-Key': crypto.randomUUID() },
-              })) as { score: number; passed: boolean };
-              (box.querySelector('[data-res]') as HTMLElement).innerHTML = `<div class="alert ${res.passed ? 'alert-success' : 'alert-warning'}">${d.score} ${res.score} — ${res.passed ? d.passed : d.notPassed}</div>`;
-            } catch (err) { toast(err instanceof Error ? err.message : 'Submit failed', 'danger'); }
-          });
-        } catch (err) { toast(err instanceof Error ? err.message : 'Cannot start', 'danger'); }
-      }));
+            (box.querySelector('#quiz-form') as HTMLFormElement).addEventListener(
+              'submit',
+              async (e) => {
+                e.preventDefault();
+                const fd = new FormData(e.target as HTMLFormElement);
+                const answers: { question_id: string; option_id?: string; answer_text?: string }[] =
+                  [];
+                for (const q of qs) {
+                  const v = fd.get(`q_${q.id}`);
+                  if (v === null || v === '') continue;
+                  if (q.type === 'multiple_choice')
+                    answers.push({ question_id: q.id, option_id: String(v) });
+                  else answers.push({ question_id: q.id, answer_text: String(v) });
+                }
+                try {
+                  const res = (await call<{ score: number; passed: boolean }>(
+                    `/api/v1/quiz-attempts/${att.id}/submit`,
+                    {
+                      method: 'POST',
+                      body: JSON.stringify({ answers }),
+                      headers: { 'Idempotency-Key': crypto.randomUUID() },
+                    }
+                  )) as { score: number; passed: boolean };
+                  (box.querySelector('[data-res]') as HTMLElement).innerHTML =
+                    `<div class="alert ${res.passed ? 'alert-success' : 'alert-warning'}">${d.score} ${res.score} — ${res.passed ? d.passed : d.notPassed}</div>`;
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'Submit failed', 'danger');
+                }
+              }
+            );
+          } catch (err) {
+            toast(err instanceof Error ? err.message : 'Cannot start', 'danger');
+          }
+        })
+      );
     };
     const renderTasks = async () => {
-      body.innerHTML = (assignments as { id: string; title: string; description: string | null; due_at: string | null }[]).map((a) => `<div class="card mb-2"><div class="card-body">
+      body.innerHTML =
+        (
+          assignments as {
+            id: string;
+            title: string;
+            description: string | null;
+            due_at: string | null;
+          }[]
+        )
+          .map(
+            (a) => `<div class="card mb-2"><div class="card-body">
         <h3 class="card-title">${a.title}</h3><p class="text-muted">${(a.description ?? '').slice(0, 400)}</p>
         <p class="small">${d.date}: ${a.due_at ?? '—'}</p><div data-sub="${a.id}"></div>
         <form data-sform="${a.id}" class="d-flex gap-2"><input class="form-control" name="body" placeholder="${d.answer}" required>
-        <button class="btn btn-primary btn-sm">${d.submit}</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
+        <button class="btn btn-primary btn-sm">${d.submit}</button></form></div></div>`
+          )
+          .join('') || `<p class="text-muted">${d.empty}</p>`;
       for (const a of assignments as { id: string }[]) {
-        const subs = (await call<{ status: string; score: number | null; feedback: string | null }[]>(`/api/v1/assignments/${a.id}/submissions`).catch(() => [])) as {
-          status: string; score: number | null; feedback: string | null;
+        const subs = (await call<
+          { status: string; score: number | null; feedback: string | null }[]
+        >(`/api/v1/assignments/${a.id}/submissions`).catch(() => [])) as {
+          status: string;
+          score: number | null;
+          feedback: string | null;
         }[];
         const box = body.querySelector(`[data-sub="${a.id}"]`) as HTMLElement;
-        if (subs[0]) box.innerHTML = `<div class="alert ${subs[0].status === 'graded' ? 'alert-success' : 'alert-info'}">${d.status}: ${subs[0].status}${subs[0].score !== null ? ` · ${d.score} ${subs[0].score}` : ''}${subs[0].feedback ? ` · ${subs[0].feedback}` : ''}</div>`;
+        if (subs[0])
+          box.innerHTML = `<div class="alert ${subs[0].status === 'graded' ? 'alert-success' : 'alert-info'}">${d.status}: ${subs[0].status}${subs[0].score !== null ? ` · ${d.score} ${subs[0].score}` : ''}${subs[0].feedback ? ` · ${subs[0].feedback}` : ''}</div>`;
       }
-      body.querySelectorAll('[data-sform]').forEach((f) => (f as HTMLFormElement).addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const aid = (f as HTMLElement).dataset.sform ?? '';
-        const text = new FormData(f as HTMLFormElement).get('body');
-        try {
-          await call(`/api/v1/assignments/${aid}/submissions`, {
-            method: 'POST', body: JSON.stringify({ body: String(text) }), headers: { 'Idempotency-Key': crypto.randomUUID() },
-          });
-          toast(d.quizSubmitted, 'success');
-          await renderTasks();
-        } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
-      }));
+      body.querySelectorAll('[data-sform]').forEach((f) =>
+        (f as HTMLFormElement).addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const aid = (f as HTMLElement).dataset.sform ?? '';
+          const text = new FormData(f as HTMLFormElement).get('body');
+          try {
+            await call(`/api/v1/assignments/${aid}/submissions`, {
+              method: 'POST',
+              body: JSON.stringify({ body: String(text) }),
+              headers: { 'Idempotency-Key': crypto.randomUUID() },
+            });
+            toast(d.quizSubmitted, 'success');
+            await renderTasks();
+          } catch (err) {
+            toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          }
+        })
+      );
     };
     const renderTalk = async () => {
-      const threads = (await call<{ id: string; title: string; body: string }[]>('/api/v1/discussions', {}, { course_id: courseId }).catch(() => [])) as { id: string; title: string; body: string }[];
+      const threads = (await call<{ id: string; title: string; body: string }[]>(
+        '/api/v1/discussions',
+        {},
+        { course_id: courseId }
+      ).catch(() => [])) as { id: string; title: string; body: string }[];
       body.innerHTML = `<button class="btn btn-primary btn-sm mb-2" id="th-new">${d.newThread}</button>
-        ${threads.map((x) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${x.title}</h3><p>${x.body.slice(0, 400)}</p>
-        <div data-rep="${x.id}"></div><form data-rform="${x.id}" class="d-flex gap-2 mt-2"><input class="form-control" name="body" placeholder="${d.reply}…" required><button class="btn btn-sm btn-outline-primary">${d.reply}</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`}`;
+        ${
+          threads
+            .map(
+              (
+                x
+              ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${x.title}</h3><p>${x.body.slice(0, 400)}</p>
+        <div data-rep="${x.id}"></div><form data-rform="${x.id}" class="d-flex gap-2 mt-2"><input class="form-control" name="body" placeholder="${d.reply}…" required><button class="btn btn-sm btn-outline-primary">${d.reply}</button></form></div></div>`
+            )
+            .join('') || `<p class="text-muted">${d.empty}</p>`
+        }`;
       for (const t of threads) {
-        const reps = (await call<{ body: string }[]>(`/api/v1/discussions/${t.id}/replies`).catch(() => [])) as { body: string }[];
-        (body.querySelector(`[data-rep="${t.id}"]`) as HTMLElement).innerHTML = reps.map((r) => `<div class="alert alert-info py-1 small">${r.body.slice(0, 300)}</div>`).join('');
+        const reps = (await call<{ body: string }[]>(`/api/v1/discussions/${t.id}/replies`).catch(
+          () => []
+        )) as { body: string }[];
+        (body.querySelector(`[data-rep="${t.id}"]`) as HTMLElement).innerHTML = reps
+          .map((r) => `<div class="alert alert-info py-1 small">${r.body.slice(0, 300)}</div>`)
+          .join('');
       }
       (body.querySelector('#th-new') as HTMLButtonElement)?.addEventListener('click', async () => {
         const title = prompt(`${d.newThread}:`);
         if (!title) return;
         const text = prompt(`${d.answer}:`);
         if (!text) return;
-        await call('/api/v1/discussions', { method: 'POST', body: JSON.stringify({ course_id: courseId, title, body: text }) });
+        await call('/api/v1/discussions', {
+          method: 'POST',
+          body: JSON.stringify({ course_id: courseId, title, body: text }),
+        });
         toast(d.quizSubmitted, 'success');
         await renderTalk();
       });
-      body.querySelectorAll('[data-rform]').forEach((f) => (f as HTMLFormElement).addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const tid = (f as HTMLElement).dataset.rform ?? '';
-        await call(`/api/v1/discussions/${tid}/replies`, { method: 'POST', body: JSON.stringify({ body: String(new FormData(f as HTMLFormElement).get('body')) }) });
-        toast(d.quizSubmitted, 'success');
-        await renderTalk();
-      }));
+      body.querySelectorAll('[data-rform]').forEach((f) =>
+        (f as HTMLFormElement).addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const tid = (f as HTMLElement).dataset.rform ?? '';
+          await call(`/api/v1/discussions/${tid}/replies`, {
+            method: 'POST',
+            body: JSON.stringify({ body: String(new FormData(f as HTMLFormElement).get('body')) }),
+          });
+          toast(d.quizSubmitted, 'success');
+          await renderTalk();
+        })
+      );
     };
-    el.querySelectorAll('[data-t]').forEach((b) => b.addEventListener('click', () => {
-      el.querySelectorAll('[data-t]').forEach((x) => x.classList.remove('active'));
-      b.classList.add('active');
-      const tab = (b as HTMLElement).dataset.t;
-      if (tab === 'learn') void renderLearn();
-      else if (tab === 'quiz') void renderQuiz();
-      else if (tab === 'task') void renderTasks();
-      else if (tab === 'scorm') {
-        body.innerHTML = scormPkgs.map((p) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${p.title}</h3><a class="btn btn-sm btn-primary" href="#/scorm/${p.id}">${d.launch}</a></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
-      } else if (tab === 'code') void exercisesView(body, courseId);
-      else void renderTalk();
-    }));
+    el.querySelectorAll('[data-t]').forEach((b) =>
+      b.addEventListener('click', () => {
+        el.querySelectorAll('[data-t]').forEach((x) => x.classList.remove('active'));
+        b.classList.add('active');
+        const tab = (b as HTMLElement).dataset.t;
+        if (tab === 'learn') void renderLearn();
+        else if (tab === 'quiz') void renderQuiz();
+        else if (tab === 'task') void renderTasks();
+        else if (tab === 'scorm') {
+          body.innerHTML =
+            scormPkgs
+              .map(
+                (p) =>
+                  `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${p.title}</h3><a class="btn btn-sm btn-primary" href="#/scorm/${p.id}">${d.launch}</a></div></div>`
+              )
+              .join('') || `<p class="text-muted">${d.empty}</p>`;
+        } else if (tab === 'code') void exercisesView(body, courseId);
+        else void renderTalk();
+      })
+    );
     await renderLearn();
-  } catch (e) { el.innerHTML = errHtml(e); }
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function gradesView(el: HTMLElement): Promise<void> {
   el.innerHTML = loading();
   try {
-    const rep = (await call<{ enrollments: { course_title: string; progress_percent: number }[]; grades: { score: number; max_score?: number; category: string }[] }>('/api/v1/reports/student-progress')) as {
-      enrollments: { course_title: string; progress_percent: number }[]; grades: { score: number; max_score?: number; category: string }[];
+    const rep = (await call<{
+      enrollments: { course_title: string; progress_percent: number }[];
+      grades: { score: number; max_score?: number; category: string }[];
+    }>('/api/v1/reports/student-progress')) as {
+      enrollments: { course_title: string; progress_percent: number }[];
+      grades: { score: number; max_score?: number; category: string }[];
     };
     el.innerHTML = `<h2>${d.grades}</h2><div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table card-table">
       <thead><tr><th>${d.category}</th><th>${d.score}</th></tr></thead><tbody>
       ${rep.grades.map((g) => `<tr><td>${g.category}</td><td><strong>${g.score}</strong></td></tr>`).join('') || `<tr><td colspan="2">${d.empty}</td></tr>`}
       </tbody></table></div></div></div>
       <h3 class="mt-3">${d.certificates}</h3><div id="certs">${loading('')}</div>`;
-    const certs = (await call<{ certificate_number: string; issued_at: string }[]>('/api/v1/certificates').catch(() => [])) as { certificate_number: string; issued_at: string }[];
-    (el.querySelector('#certs') as HTMLElement).innerHTML = certs.map((c) => `<div class="card card-body mb-2 py-2">🎓 <code>${c.certificate_number}</code> <span class="text-muted">· ${c.issued_at?.slice(0, 10) ?? ''}</span></div>`).join('') || `<p class="text-muted">${d.noCertificates}</p>`;
-  } catch (e) { el.innerHTML = errHtml(e); }
+    const certs = (await call<{ certificate_number: string; issued_at: string }[]>(
+      '/api/v1/certificates'
+    ).catch(() => [])) as { certificate_number: string; issued_at: string }[];
+    (el.querySelector('#certs') as HTMLElement).innerHTML =
+      certs
+        .map(
+          (c) =>
+            `<div class="card card-body mb-2 py-2">🎓 <code>${c.certificate_number}</code> <span class="text-muted">· ${c.issued_at?.slice(0, 10) ?? ''}</span></div>`
+        )
+        .join('') || `<p class="text-muted">${d.noCertificates}</p>`;
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function shopView(el: HTMLElement): Promise<void> {
   el.innerHTML = loading();
   try {
     const [courses, bundles, orders] = await Promise.all([
-      call<{ id: string; title: string; code: string; price: number }[]>('/api/v1/catalog/courses').catch(() => []),
-      call<{ id: string; name: string; price: number }[]>('/api/v1/catalog/bundles').catch(() => []),
-      call<{ id: string; kind: string; total: number; status: string }[]>('/api/v1/orders').catch(() => []),
+      call<{ id: string; title: string; code: string; price: number }[]>(
+        '/api/v1/catalog/courses'
+      ).catch(() => []),
+      call<{ id: string; name: string; price: number }[]>('/api/v1/catalog/bundles').catch(
+        () => []
+      ),
+      call<{ id: string; kind: string; total: number; status: string }[]>('/api/v1/orders').catch(
+        () => []
+      ),
     ]);
     el.innerHTML = `<h2>🛍 ${d.shop}</h2>
-      <h3>${d.courses}</h3><div class="row row-cards">${(courses as { id: string; title: string; code: string; price: number }[]).map((c) => `<div class="col-md-4 col-6"><div class="card h-100"><div class="card-body">
+      <h3>${d.courses}</h3><div class="row row-cards">${
+        (courses as { id: string; title: string; code: string; price: number }[])
+          .map(
+            (c) => `<div class="col-md-4 col-6"><div class="card h-100"><div class="card-body">
       <h3 class="card-title">${c.title}</h3><p class="text-muted small">${c.code} · ${c.price > 0 ? c.price : d.free}</p>
       <div class="d-flex gap-1"><a class="btn btn-sm btn-outline-primary" href="#/courses/${c.id}">${d.continue}</a>
-      ${c.price > 0 ? `<button class="btn btn-sm btn-primary" data-buy="course:${c.id}">${d.buy}</button>` : `<button class="btn btn-sm btn-primary" data-enroll="${c.id}">${d.enroll}</button>`}</div></div></div></div>`).join('') || `<p>${d.empty}</p>`}</div>
-      <h3 class="mt-3">${d.bundles}</h3><div class="row row-cards">${(bundles as { id: string; name: string; price: number }[]).map((b) => `<div class="col-md-4 col-6"><div class="card h-100"><div class="card-body">
+      ${c.price > 0 ? `<button class="btn btn-sm btn-primary" data-buy="course:${c.id}">${d.buy}</button>` : `<button class="btn btn-sm btn-primary" data-enroll="${c.id}">${d.enroll}</button>`}</div></div></div></div>`
+          )
+          .join('') || `<p>${d.empty}</p>`
+      }</div>
+      <h3 class="mt-3">${d.bundles}</h3><div class="row row-cards">${
+        (bundles as { id: string; name: string; price: number }[])
+          .map(
+            (b) => `<div class="col-md-4 col-6"><div class="card h-100"><div class="card-body">
       <h3 class="card-title">${b.name}</h3><p class="text-muted">${b.price}</p>
-      <button class="btn btn-sm btn-primary" data-buy="bundle:${b.id}">${d.buy}</button></div></div></div>`).join('') || `<p>${d.empty}</p>`}</div>
+      <button class="btn btn-sm btn-primary" data-buy="bundle:${b.id}">${d.buy}</button></div></div></div>`
+          )
+          .join('') || `<p>${d.empty}</p>`
+      }</div>
       <h3 class="mt-3">${d.orders}</h3><div id="ord">${(orders as { id: string; kind: string; total: number; status: string }[]).map((o) => `<div class="card card-body mb-2 py-2">${o.kind} · ${o.total} · <span class="badge ${o.status === 'paid' ? 'bg-green' : 'bg-yellow'}">${o.status}</span>${o.status === 'pending' ? `<div class="small text-muted">${d.pendingPayment}</div>` : ''}</div>`).join('') || `<p>${d.empty}</p>`}</div>
       <div class="card mt-3"><div class="card-body"><form id="gift-f" class="d-flex gap-2">
       <input id="gift-code" class="form-control" placeholder="Gift code" required><button class="btn btn-outline-primary">${d.redeem}</button></form></div></div>`;
-    el.querySelectorAll('[data-enroll]').forEach((b) => b.addEventListener('click', async () => {
-      try {
-        await call('/api/v1/enrollments', { method: 'POST', body: JSON.stringify({ course_id: (b as HTMLElement).dataset.enroll }) });
-        toast(d.enrolled2, 'success');
-      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
-    }));
-    el.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', async () => {
-      const [kind, ref] = ((b as HTMLElement).dataset.buy ?? '').split(':');
-      const code = prompt(d.couponCode) || undefined;
-      try {
-        const r = (await call<{ id: string; total: number; status: string }>('/api/v1/orders', { method: 'POST', body: JSON.stringify({ organization_id: currentOrg() ?? undefined, kind, reference_id: ref, ...(code ? { coupon_code: code } : {}) }) })) as { id: string; total: number; status: string };
-        if (r.status === 'paid') { toast(d.enrolled2, 'success'); await shopView(el); return; }
-        const claim = confirm(`${d.pendingPayment}\n${d.total}: ${r.total}`);
-        if (claim) {
-          await call(`/api/v1/orders/${r.id}/payments/manual`, { method: 'POST', body: JSON.stringify({}) });
-          toast(d.pendingPayment, 'info');
-          await shopView(el);
+    el.querySelectorAll('[data-enroll]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        try {
+          await call('/api/v1/enrollments', {
+            method: 'POST',
+            body: JSON.stringify({ course_id: (b as HTMLElement).dataset.enroll }),
+          });
+          toast(d.enrolled2, 'success');
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
         }
-      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
-    }));
+      })
+    );
+    el.querySelectorAll('[data-buy]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const [kind, ref] = ((b as HTMLElement).dataset.buy ?? '').split(':');
+        const code = prompt(d.couponCode) || undefined;
+        try {
+          const r = (await call<{ id: string; total: number; status: string }>('/api/v1/orders', {
+            method: 'POST',
+            body: JSON.stringify({
+              organization_id: currentOrg() ?? undefined,
+              kind,
+              reference_id: ref,
+              ...(code ? { coupon_code: code } : {}),
+            }),
+          })) as { id: string; total: number; status: string };
+          if (r.status === 'paid') {
+            toast(d.enrolled2, 'success');
+            await shopView(el);
+            return;
+          }
+          const claim = confirm(`${d.pendingPayment}\n${d.total}: ${r.total}`);
+          if (claim) {
+            await call(`/api/v1/orders/${r.id}/payments/manual`, {
+              method: 'POST',
+              body: JSON.stringify({}),
+            });
+            toast(d.pendingPayment, 'info');
+            await shopView(el);
+          }
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        }
+      })
+    );
     (el.querySelector('#gift-f') as HTMLFormElement).addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
-        await call('/api/v1/gifts/redeem', { method: 'POST', body: JSON.stringify({ code: (el.querySelector('#gift-code') as HTMLInputElement).value }) });
+        await call('/api/v1/gifts/redeem', {
+          method: 'POST',
+          body: JSON.stringify({
+            code: (el.querySelector('#gift-code') as HTMLInputElement).value,
+          }),
+        });
         toast(d.enrolled2, 'success');
         await shopView(el);
-      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      }
     });
-  } catch (e) { el.innerHTML = errHtml(e); }
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function liveView(el: HTMLElement): Promise<void> {
   el.innerHTML = loading();
   try {
     const orgId = currentOrg();
-    const items = (await call<{ id: string; title: string; starts_at: string; meeting_url: string | null }[]>('/api/v1/live-sessions', {}, orgId ? { organization_id: orgId, upcoming: '1' } : { upcoming: '1' }).catch(() => [])) as {
-      id: string; title: string; starts_at: string; meeting_url: string | null;
+    const items = (await call<
+      { id: string; title: string; starts_at: string; meeting_url: string | null }[]
+    >(
+      '/api/v1/live-sessions',
+      {},
+      orgId ? { organization_id: orgId, upcoming: '1' } : { upcoming: '1' }
+    ).catch(() => [])) as {
+      id: string;
+      title: string;
+      starts_at: string;
+      meeting_url: string | null;
     }[];
-    el.innerHTML = `<h2>📡 ${d.live}</h2>${items.map((s) => `<div class="card mb-2"><div class="card-body">
+    el.innerHTML = `<h2>📡 ${d.live}</h2>${
+      items
+        .map(
+          (s) => `<div class="card mb-2"><div class="card-body">
       <h3 class="card-title">${s.title}</h3><p class="text-muted">${s.starts_at?.slice(0, 16).replace('T', ' ') ?? ''}</p>
       <div class="d-flex gap-1"><button class="btn btn-sm btn-primary" data-reg="${s.id}">${d.register2}</button>
-      ${s.meeting_url ? `<a class="btn btn-sm btn-outline-primary" href="${s.meeting_url}" target="_blank" rel="noopener">${d.launch}</a>` : ''}</div></div></div>`).join('') || `<p>${d.empty}</p>`}`;
-    el.querySelectorAll('[data-reg]').forEach((b) => b.addEventListener('click', async () => {
-      try {
-        await call(`/api/v1/live-sessions/${(b as HTMLElement).dataset.reg}/register`, { method: 'POST', body: '{}' });
-        toast(d.registered, 'success');
-      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
-    }));
-  } catch (e) { el.innerHTML = errHtml(e); }
+      ${s.meeting_url ? `<a class="btn btn-sm btn-outline-primary" href="${s.meeting_url}" target="_blank" rel="noopener">${d.launch}</a>` : ''}</div></div></div>`
+        )
+        .join('') || `<p>${d.empty}</p>`
+    }`;
+    el.querySelectorAll('[data-reg]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        try {
+          await call(`/api/v1/live-sessions/${(b as HTMLElement).dataset.reg}/register`, {
+            method: 'POST',
+            body: '{}',
+          });
+          toast(d.registered, 'success');
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        }
+      })
+    );
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function programsView(el: HTMLElement): Promise<void> {
   el.innerHTML = loading();
   try {
     const orgId = currentOrg();
-    const programs = (await call<{ id: string; name: string }[]>('/api/v1/programs', {}, orgId ? { organization_id: orgId } : {}).catch(() => [])) as { id: string; name: string }[];
-    el.innerHTML = `<h2>🗺 ${d.programs}</h2>${programs.map((p) => `<div class="card mb-2"><div class="card-body">
+    const programs = (await call<{ id: string; name: string }[]>(
+      '/api/v1/programs',
+      {},
+      orgId ? { organization_id: orgId } : {}
+    ).catch(() => [])) as { id: string; name: string }[];
+    el.innerHTML = `<h2>🗺 ${d.programs}</h2>${
+      programs
+        .map(
+          (p) => `<div class="card mb-2"><div class="card-body">
       <h3 class="card-title">${p.name}</h3><button class="btn btn-sm btn-outline-primary" data-prog="${p.id}">${d.continue}</button>
-      <div data-pd="${p.id}" class="mt-2"></div></div></div>`).join('') || `<p>${d.empty}</p>`}`;
-    el.querySelectorAll('[data-prog]').forEach((b) => b.addEventListener('click', async () => {
-      const id = (b as HTMLElement).dataset.prog ?? '';
-      const det = (await call<{ courses: { course_id: string; course_title: string; locked: boolean; enrollment_status: string | null }[] }>(`/api/v1/programs/${id}`)) as {
-        courses: { course_id: string; course_title: string; locked: boolean; enrollment_status: string | null }[];
-      };
-      (el.querySelector(`[data-pd="${id}"]`) as HTMLElement).innerHTML = `<ol>${det.courses.map((x) => `<li>${x.course_title}
-        ${x.locked ? `<span class="badge bg-red">${d.locked}</span>` : x.enrollment_status ? `<span class="badge bg-green">${x.enrollment_status}</span>` : `<button class="btn btn-sm btn-primary" data-penroll="${x.course_id}">${d.enroll}</button>`}</li>`).join('')}</ol>`;
-      el.querySelectorAll('[data-penroll]').forEach((bb) => bb.addEventListener('click', async () => {
-        await call('/api/v1/enrollments', { method: 'POST', body: JSON.stringify({ course_id: (bb as HTMLElement).dataset.penroll }) });
-        toast(d.enrolled2, 'success');
-      }));
-    }));
-  } catch (e) { el.innerHTML = errHtml(e); }
+      <div data-pd="${p.id}" class="mt-2"></div></div></div>`
+        )
+        .join('') || `<p>${d.empty}</p>`
+    }`;
+    el.querySelectorAll('[data-prog]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const id = (b as HTMLElement).dataset.prog ?? '';
+        const det = (await call<{
+          courses: {
+            course_id: string;
+            course_title: string;
+            locked: boolean;
+            enrollment_status: string | null;
+          }[];
+        }>(`/api/v1/programs/${id}`)) as {
+          courses: {
+            course_id: string;
+            course_title: string;
+            locked: boolean;
+            enrollment_status: string | null;
+          }[];
+        };
+        (el.querySelector(`[data-pd="${id}"]`) as HTMLElement).innerHTML = `<ol>${det.courses
+          .map(
+            (x) => `<li>${x.course_title}
+        ${x.locked ? `<span class="badge bg-red">${d.locked}</span>` : x.enrollment_status ? `<span class="badge bg-green">${x.enrollment_status}</span>` : `<button class="btn btn-sm btn-primary" data-penroll="${x.course_id}">${d.enroll}</button>`}</li>`
+          )
+          .join('')}</ol>`;
+        el.querySelectorAll('[data-penroll]').forEach((bb) =>
+          bb.addEventListener('click', async () => {
+            await call('/api/v1/enrollments', {
+              method: 'POST',
+              body: JSON.stringify({ course_id: (bb as HTMLElement).dataset.penroll }),
+            });
+            toast(d.enrolled2, 'success');
+          })
+        );
+      })
+    );
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
   el.innerHTML = loading();
   try {
-    const att = (await call<{ id: string; resumed: boolean }>(`/api/v1/scorm/attempts`, { method: 'POST', body: JSON.stringify({ package_id: pkgId }) })) as { id: string; resumed: boolean };
+    const att = (await call<{ id: string; resumed: boolean }>(`/api/v1/scorm/attempts`, {
+      method: 'POST',
+      body: JSON.stringify({ package_id: pkgId }),
+    })) as { id: string; resumed: boolean };
     el.innerHTML = `<a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary mb-2">←</a>
       <div class="ratio ratio-16x9 mb-2"><iframe title="SCORM content" sandbox="allow-scripts" src="/api/v1/scorm/content/${pkgId}/index.html" class="w-100 border rounded"></iframe></div>
       <div class="alert alert-info">Sandboxed player — content cannot access your session. Use the buttons to record progress.</div>
@@ -381,37 +703,81 @@ async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
       <button class="btn btn-primary" id="sc-done">${d.markSynced}</button></div><div id="sc-out" class="mt-2"></div>`;
     (el.querySelector('#sc-bm') as HTMLButtonElement).addEventListener('click', async () => {
       const loc = prompt('Bookmark (e.g. page 3):') ?? '';
-      await call(`/api/v1/scorm/attempts/${att.id}/commit`, { method: 'POST', body: JSON.stringify({ location: loc }) });
+      await call(`/api/v1/scorm/attempts/${att.id}/commit`, {
+        method: 'POST',
+        body: JSON.stringify({ location: loc }),
+      });
       toast(d.bookmark, 'success');
     });
     (el.querySelector('#sc-done') as HTMLButtonElement).addEventListener('click', async () => {
-      await call(`/api/v1/scorm/attempts/${att.id}/commit`, { method: 'POST', body: JSON.stringify({ completion: 'completed', success: 'passed' }) });
-      (el.querySelector('#sc-out') as HTMLElement).innerHTML = `<div class="alert alert-success">${d.markSynced} ✓</div>`;
+      await call(`/api/v1/scorm/attempts/${att.id}/commit`, {
+        method: 'POST',
+        body: JSON.stringify({ completion: 'completed', success: 'passed' }),
+      });
+      (el.querySelector('#sc-out') as HTMLElement).innerHTML =
+        `<div class="alert alert-success">${d.markSynced} ✓</div>`;
     });
-  } catch (e) { el.innerHTML = errHtml(e); }
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function exercisesView(el: HTMLElement, courseId: string): Promise<void> {
-  const items = (await call<{ id: string; title: string; language: string }[]>(`/api/v1/exercises`, {}, { course_id: courseId }).catch(() => [])) as { id: string; title: string; language: string }[];
-  el.innerHTML = `<h3>💻 ${d.exercises}</h3>${items.map((x) => `<div class="card mb-2"><div class="card-body">
+  const items = (await call<{ id: string; title: string; language: string }[]>(
+    `/api/v1/exercises`,
+    {},
+    { course_id: courseId }
+  ).catch(() => [])) as { id: string; title: string; language: string }[];
+  el.innerHTML = `<h3>💻 ${d.exercises}</h3>${
+    items
+      .map(
+        (x) => `<div class="card mb-2"><div class="card-body">
     <h3 class="card-title">${x.title}</h3><span class="badge bg-blue">${x.language}</span>
     <form data-ex="${x.id}" class="mt-2"><textarea name="code" class="form-control mb-2" rows="6" placeholder="// your code"></textarea>
-    <button class="btn btn-sm btn-primary">${d.submit} (review)</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`}`;
-  el.querySelectorAll('[data-ex]').forEach((f) => (f as HTMLFormElement).addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-      await call(`/api/v1/exercises/${(f as HTMLElement).dataset.ex}/submissions`, { method: 'POST', body: JSON.stringify({ code: String(new FormData(f as HTMLFormElement).get('code')) }) });
-      toast(d.submit, 'success');
-    } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
-  }));
+    <button class="btn btn-sm btn-primary">${d.submit} (review)</button></form></div></div>`
+      )
+      .join('') || `<p class="text-muted">${d.empty}</p>`
+  }`;
+  el.querySelectorAll('[data-ex]').forEach((f) =>
+    (f as HTMLFormElement).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await call(`/api/v1/exercises/${(f as HTMLElement).dataset.ex}/submissions`, {
+          method: 'POST',
+          body: JSON.stringify({ code: String(new FormData(f as HTMLFormElement).get('code')) }),
+        });
+        toast(d.submit, 'success');
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      }
+    })
+  );
 }
 
-async function moreView(el: HTMLElement): Promise<void> {  const orgId = currentOrg() ?? (await myOrgs().then((o) => { if (o[0] && !currentOrg()) setCurrentOrg(o[0].id); return currentOrg(); }).catch(() => null));
+async function moreView(el: HTMLElement): Promise<void> {
+  const orgId =
+    currentOrg() ??
+    (await myOrgs()
+      .then((o) => {
+        if (o[0] && !currentOrg()) setCurrentOrg(o[0].id);
+        return currentOrg();
+      })
+      .catch(() => null));
   el.innerHTML = loading();
   try {
     const [att, notifs] = await Promise.all([
-      orgId ? call<{ records: { status: string; title: string; session_date: string }[]; attendance_pct: number }>(`/api/v1/attendance/student`, {}, { organization_id: orgId }).catch(() => ({ records: [], attendance_pct: 0 })) : Promise.resolve({ records: [], attendance_pct: 0 }),
-      call<{ id: string; title: string; body: string; is_read: number }[]>('/api/v1/notifications').catch(() => []),
+      orgId
+        ? call<{
+            records: { status: string; title: string; session_date: string }[];
+            attendance_pct: number;
+          }>(`/api/v1/attendance/student`, {}, { organization_id: orgId }).catch(() => ({
+            records: [],
+            attendance_pct: 0,
+          }))
+        : Promise.resolve({ records: [], attendance_pct: 0 }),
+      call<{ id: string; title: string; body: string; is_read: number }[]>(
+        '/api/v1/notifications'
+      ).catch(() => []),
     ]);
     el.innerHTML = `<h2>${d.more}</h2>
     <div class="d-flex gap-1 flex-wrap mb-3">
@@ -420,7 +786,15 @@ async function moreView(el: HTMLElement): Promise<void> {  const orgId = current
       <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a></div>
       <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.myAttendance} (${(att as { attendance_pct: number }).attendance_pct}%)</h3></div>
       <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>${d.session}</th><th>${d.date}</th><th>${d.status}</th></tr></thead><tbody>
-      ${((att as { records: { status: string; title: string; session_date: string }[] }).records).slice(0, 20).map((r) => `<tr><td>${r.title}</td><td>${r.session_date}</td><td><span class="badge ${r.status === 'present' ? 'bg-green' : 'bg-yellow'}">${r.status}</span></td></tr>`).join('') || `<tr><td colspan="3">${d.empty}</td></tr>`}</tbody></table></div></div></div>
+      ${
+        (att as { records: { status: string; title: string; session_date: string }[] }).records
+          .slice(0, 20)
+          .map(
+            (r) =>
+              `<tr><td>${r.title}</td><td>${r.session_date}</td><td><span class="badge ${r.status === 'present' ? 'bg-green' : 'bg-yellow'}">${r.status}</span></td></tr>`
+          )
+          .join('') || `<tr><td colspan="3">${d.empty}</td></tr>`
+      }</tbody></table></div></div></div>
       <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.announcements}</h3></div><div class="card-body">
       ${(notifs as { id: string; title: string; body: string; is_read: number }[]).map((n) => `<div class="alert ${n.is_read ? 'alert-info' : 'alert-success'} py-2"><strong>${n.title}</strong><br>${n.body}</div>`).join('') || '<p class="text-muted">None.</p>'}</div></div>
       <div class="card"><div class="card-header"><h3 class="card-title">${d.profile}</h3></div><div class="card-body">
@@ -432,23 +806,40 @@ async function moreView(el: HTMLElement): Promise<void> {  const orgId = current
     (el.querySelector('#pw') as HTMLFormElement).addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
-        await call('/api/v1/auth/password/change', { method: 'POST', body: JSON.stringify({ current_password: (el.querySelector('#cpw') as HTMLInputElement).value, new_password: (el.querySelector('#npw') as HTMLInputElement).value }) });
+        await call('/api/v1/auth/password/change', {
+          method: 'POST',
+          body: JSON.stringify({
+            current_password: (el.querySelector('#cpw') as HTMLInputElement).value,
+            new_password: (el.querySelector('#npw') as HTMLInputElement).value,
+          }),
+        });
         toast(d.changePassword, 'success');
-      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      }
     });
     (el.querySelector('#push-btn') as HTMLButtonElement).addEventListener('click', async () => {
       const r = await subscribePush();
-      (el.querySelector('#push-st') as HTMLElement).textContent = r === 'subscribed' ? 'Enabled.' : r === 'no-keys' ? 'Not configured on this server.' : r;
+      (el.querySelector('#push-st') as HTMLElement).textContent =
+        r === 'subscribed' ? 'Enabled.' : r === 'no-keys' ? 'Not configured on this server.' : r;
     });
-  } catch (e) { el.innerHTML = errHtml(e); }
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
 }
 
 async function router(): Promise<void> {
   const app = document.getElementById('app') as HTMLElement;
   const hash = location.hash || '#/';
-  if (hash === '#/login') { await loginPage(app); return; }
+  if (hash === '#/login') {
+    await loginPage(app);
+    return;
+  }
   const me = await ensureMe();
-  if (!me) { location.hash = '#/login'; return; }
+  if (!me) {
+    location.hash = '#/login';
+    return;
+  }
   if (!document.getElementById('view')) shell();
   const view = document.getElementById('view') as HTMLElement;
   const route = hash.replace('#', '');
@@ -463,11 +854,16 @@ async function router(): Promise<void> {
     else if (route.startsWith('/grades')) await gradesView(view);
     else if (route.startsWith('/more')) await moreView(view);
     else await home(view);
-  } catch (e) { view.innerHTML = errHtml(e); }
+  } catch (e) {
+    view.innerHTML = errHtml(e);
+  }
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => undefined); bindSwUpdates(); });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+    bindSwUpdates();
+  });
 }
 window.addEventListener('hashchange', () => void router());
 void router();

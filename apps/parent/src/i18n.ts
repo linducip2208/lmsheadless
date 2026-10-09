@@ -6,7 +6,8 @@ export const en = {
   signIn: 'Sign in',
   logout: 'Logout',
   children: 'My children',
-  noChildren: 'No linked students yet. Ask your school administrator to link your children to this account.',
+  noChildren:
+    'No linked students yet. Ask your school administrator to link your children to this account.',
   noOrg: 'No organization membership.',
   back: 'All children',
   progress: 'Course progress',
@@ -32,7 +33,8 @@ export const id: Record<keyof ParentDict, string> = {
   signIn: 'Masuk',
   logout: 'Keluar',
   children: 'Anak saya',
-  noChildren: 'Belum ada siswa tertaut. Minta administrator sekolah menautkan anak Anda ke akun ini.',
+  noChildren:
+    'Belum ada siswa tertaut. Minta administrator sekolah menautkan anak Anda ke akun ini.',
   noOrg: 'Tidak ada keanggotaan organisasi.',
   back: 'Semua anak',
   progress: 'Progres kursus',

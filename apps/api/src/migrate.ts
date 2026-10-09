@@ -13,7 +13,9 @@ export async function runMigrations(db: D1Like, dir?: string): Promise<string[]>
   const d = dir ?? migrationsDir();
   let files: string[] = [];
   try {
-    files = readdirSync(d).filter((f) => f.endsWith('.sql')).sort();
+    files = readdirSync(d)
+      .filter((f) => f.endsWith('.sql'))
+      .sort();
   } catch {
     return [];
   }
@@ -72,7 +74,10 @@ async function applyColumnPatches(db: D1Like): Promise<void> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, '/')}` || process.argv[1]?.endsWith('migrate.ts')) {
+if (
+  import.meta.url === `file://${process.argv[1]?.replace(/\\/g, '/')}` ||
+  process.argv[1]?.endsWith('migrate.ts')
+) {
   const dbPath = process.env.DATABASE_PATH ?? './.data/lms.db';
   const { mkdirSync } = await import('node:fs');
   mkdirSync('./.data', { recursive: true });

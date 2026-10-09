@@ -20,13 +20,19 @@ const SAFE_API_SUFFIX = '/branding';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(VERSION).then((cache) => cache.addAll(SHELL).catch(() => undefined)).then(() => self.skipWaiting())
+    caches
+      .open(VERSION)
+      .then((cache) => cache.addAll(SHELL).catch(() => undefined))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k)))).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
@@ -35,7 +41,10 @@ self.addEventListener('message', (event) => {
 });
 
 function isSafeApi(url) {
-  return SAFE_API_PREFIXES.some((p) => url.pathname.startsWith(p)) || url.pathname.endsWith(SAFE_API_SUFFIX);
+  return (
+    SAFE_API_PREFIXES.some((p) => url.pathname.startsWith(p)) ||
+    url.pathname.endsWith(SAFE_API_SUFFIX)
+  );
 }
 
 self.addEventListener('fetch', (event) => {
@@ -50,7 +59,10 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((res) => {
           const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put('/index.html', copy)).catch(() => undefined);
+          caches
+            .open(VERSION)
+            .then((c) => c.put('/index.html', copy))
+            .catch(() => undefined);
           return res;
         })
         .catch(() => caches.match('/index.html').then((r) => r ?? caches.match('/offline.html')))
@@ -65,7 +77,10 @@ self.addEventListener('fetch', (event) => {
         if (hit) return hit;
         return fetch(request).then((res) => {
           const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put(request, copy)).catch(() => undefined);
+          caches
+            .open(VERSION)
+            .then((c) => c.put(request, copy))
+            .catch(() => undefined);
           return res;
         });
       })
@@ -77,11 +92,16 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/') && isSafeApi(url)) {
     event.respondWith(
       caches.match(request).then((hit) => {
-        const net = fetch(request).then((res) => {
-          const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put(request, copy)).catch(() => undefined);
-          return res;
-        }).catch(() => hit);
+        const net = fetch(request)
+          .then((res) => {
+            const copy = res.clone();
+            caches
+              .open(VERSION)
+              .then((c) => c.put(request, copy))
+              .catch(() => undefined);
+            return res;
+          })
+          .catch(() => hit);
         return hit ?? net;
       })
     );
@@ -94,8 +114,12 @@ self.addEventListener('push', (event) => {
   let data = { title: 'LMS', body: 'You have a new notification.' };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
-  } catch { /* plain text payload */ }
-  event.waitUntil(self.registration.showNotification(data.title, { body: data.body, icon: '/icons/icon-192.png' }));
+  } catch {
+    /* plain text payload */
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, { body: data.body, icon: '/icons/icon-192.png' })
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {

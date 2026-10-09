@@ -49,7 +49,8 @@ function png(width, height, rgba) {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
   ihdr.writeUInt32BE(height, 4);
-  ihdr[8] = 8; ihdr[9] = 6;
+  ihdr[8] = 8;
+  ihdr[9] = 6;
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
     chunk('IHDR', ihdr),
@@ -69,7 +70,10 @@ function render(size, bg, accent, pad = 0) {
       const g = Math.round(g1 + (40 - g1) * t * 0.35);
       const b = Math.round(b1 + (60 - b1) * t * 0.35);
       const i = (y * size + x) * 4;
-      buf[i] = r; buf[i + 1] = g; buf[i + 2] = b; buf[i + 3] = 255;
+      buf[i] = r;
+      buf[i + 1] = g;
+      buf[i + 2] = b;
+      buf[i + 3] = 255;
     }
   }
   const cx = size / 2;
@@ -81,7 +85,9 @@ function render(size, bg, accent, pad = 0) {
         const dist = Math.hypot(x - cx, y - cy);
         if (Math.abs(dist - R2) < w) {
           const i = (y * size + x) * 4;
-          buf[i] = col[0]; buf[i + 1] = col[1]; buf[i + 2] = col[2];
+          buf[i] = col[0];
+          buf[i + 1] = col[1];
+          buf[i + 2] = col[2];
         }
       }
     }
@@ -93,7 +99,9 @@ function render(size, bg, accent, pad = 0) {
     for (let x = 0; x < size; x++) {
       if (Math.hypot(x - (cx + R * 0.45), y - (cy - R * 0.45)) < dr) {
         const i = (y * size + x) * 4;
-        buf[i] = accent[0]; buf[i + 1] = accent[1]; buf[i + 2] = accent[2];
+        buf[i] = accent[0];
+        buf[i + 1] = accent[1];
+        buf[i + 2] = accent[2];
       }
     }
   }
@@ -105,9 +113,15 @@ for (const app of APPS) {
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, 'icon-192.png'), png(192, 192, render(192, app.bg, app.accent)));
   writeFileSync(join(out, 'icon-512.png'), png(512, 512, render(512, app.bg, app.accent)));
-  writeFileSync(join(out, 'maskable-512.png'), png(512, 512, render(512, app.bg, app.accent, true)));
+  writeFileSync(
+    join(out, 'maskable-512.png'),
+    png(512, 512, render(512, app.bg, app.accent, true))
+  );
   writeFileSync(join(out, 'apple-touch-icon.png'), png(180, 180, render(180, app.bg, app.accent)));
   const [r, g, b] = app.bg;
-  writeFileSync(join(out, 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="rgb(${r},${g},${b})"/><circle cx="256" cy="256" r="120" fill="none" stroke="#fff" stroke-width="34"/><circle cx="352" cy="160" r="44" fill="#fff"/></svg>`);
+  writeFileSync(
+    join(out, 'icon.svg'),
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="rgb(${r},${g},${b})"/><circle cx="256" cy="256" r="120" fill="none" stroke="#fff" stroke-width="34"/><circle cx="352" cy="160" r="44" fill="#fff"/></svg>`
+  );
   console.log(`icons: ${app.dir}`);
 }

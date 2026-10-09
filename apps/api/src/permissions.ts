@@ -73,7 +73,3 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   parent: ['courses.view', 'lessons.view', 'reports.view'],
 };
 
-export function roleHasPermission(role: string, permission: string): boolean {
-  if (role === 'super_admin') return true;
-  return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
-}

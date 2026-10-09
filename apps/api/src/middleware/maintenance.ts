@@ -17,7 +17,10 @@ export function maintenance() {
     const now = Date.now();
     if (!cached || now - cached.at > 10_000) {
       try {
-        const row = await queryFirst<{ value: string }>(c.get('db'), "SELECT value FROM settings WHERE key = 'maintenance_mode'");
+        const row = await queryFirst<{ value: string }>(
+          c.get('db'),
+          "SELECT value FROM settings WHERE key = 'maintenance_mode'"
+        );
         cached = { value: row?.value === 'true', at: now };
       } catch {
         cached = { value: false, at: now };
@@ -33,7 +36,13 @@ export function maintenance() {
       return;
     }
     c.header('Retry-After', '300');
-    return c.json({ success: false, error: { code: 'MAINTENANCE', message: 'Service temporarily under maintenance' } }, 503);
+    return c.json(
+      {
+        success: false,
+        error: { code: 'MAINTENANCE', message: 'Service temporarily under maintenance' },
+      },
+      503
+    );
   });
 }
 

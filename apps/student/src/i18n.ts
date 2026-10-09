@@ -63,7 +63,8 @@ export const en = {
   myAttendance: 'My attendance',
   bundles: 'Bundles',
   couponCode: 'Coupon code (optional):',
-  sandboxNote: 'Sandboxed player — content cannot access your session. Use the buttons to record progress.',
+  sandboxNote:
+    'Sandboxed player — content cannot access your session. Use the buttons to record progress.',
   total: 'Total',
 };
 export const id: Record<keyof typeof en, string> = {
@@ -131,7 +132,8 @@ export const id: Record<keyof typeof en, string> = {
   myAttendance: 'Kehadiran saya',
   bundles: 'Paket',
   couponCode: 'Kode kupon (opsional):',
-  sandboxNote: 'Pemutar sandbox — konten tidak dapat mengakses sesi Anda. Gunakan tombol untuk mencatat progres.',
+  sandboxNote:
+    'Pemutar sandbox — konten tidak dapat mengakses sesi Anda. Gunakan tombol untuk mencatat progres.',
   total: 'Total',
 };
 export function getDict(l: string) {

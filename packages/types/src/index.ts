@@ -1,4 +1,5 @@
-export type Role = 'super_admin' | 'organization_admin' | 'teacher' | 'student' | 'parent' | 'staff';
+export type Role =
+  'super_admin' | 'organization_admin' | 'teacher' | 'student' | 'parent' | 'staff';
 export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending_verification';
 export type CourseStatus = 'draft' | 'published' | 'archived';
 export type EnrollmentStatus = 'active' | 'completed' | 'dropped' | 'suspended';

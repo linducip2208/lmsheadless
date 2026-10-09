@@ -26,4 +26,3 @@ the public branding endpoint) until ownership **and** routing are verified:
 
 Never trust a Host header alone for tenant resolution; the API continues to
 scope by authenticated membership, with the domain as a display/routing hint.
-

@@ -3,22 +3,33 @@ import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from 
 export async function renderData(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
   const d = t();
-  if (!orgId) { el.innerHTML = `<div class="alert alert-warning">${d.selectOrg}</div>`; return; }
-  const tabs: [string, string][] = [['imports', d.imports], ['ai', d.ai], ['exercises', d.exercises], ['email', d.email], ['invites', d.invites]];
+  if (!orgId) {
+    el.innerHTML = `<div class="alert alert-warning">${d.selectOrg}</div>`;
+    return;
+  }
+  const tabs: [string, string][] = [
+    ['imports', d.imports],
+    ['ai', d.ai],
+    ['exercises', d.exercises],
+    ['email', d.email],
+    ['invites', d.invites],
+  ];
   el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
     ${tabs.map(([k, label], i) => `<li class="nav-item" role="presentation"><button class="nav-link${i === 0 ? ' active' : ''}" data-tab="${k}" role="tab">${label}</button></li>`).join('')}
     </ul><div id="d-body"></div>`;
   const body = el.querySelector('#d-body') as HTMLElement;
-  el.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
-    el.querySelectorAll('[data-tab]').forEach((x) => x.classList.remove('active'));
-    b.classList.add('active');
-    const tab = (b as HTMLElement).dataset.tab ?? 'imports';
-    if (tab === 'imports') void renderImports(body, orgId);
-    else if (tab === 'ai') void renderAI(body, orgId);
-    else if (tab === 'exercises') void renderExercises(body, orgId);
-    else if (tab === 'email') void renderEmail(body, orgId);
-    else void renderInvites(body, orgId);
-  }));
+  el.querySelectorAll('[data-tab]').forEach((b) =>
+    b.addEventListener('click', () => {
+      el.querySelectorAll('[data-tab]').forEach((x) => x.classList.remove('active'));
+      b.classList.add('active');
+      const tab = (b as HTMLElement).dataset.tab ?? 'imports';
+      if (tab === 'imports') void renderImports(body, orgId);
+      else if (tab === 'ai') void renderAI(body, orgId);
+      else if (tab === 'exercises') void renderExercises(body, orgId);
+      else if (tab === 'email') void renderEmail(body, orgId);
+      else void renderInvites(body, orgId);
+    })
+  );
   await renderImports(body, orgId);
 }
 
@@ -32,12 +43,26 @@ async function renderImports(el: HTMLElement, orgId: string): Promise<void> {
     <div id="im-out" class="mt-2"></div></div></div><div id="im-jobs"></div>`;
   const loadJobs = async () => {
     const box = el.querySelector('#im-jobs') as HTMLElement;
-    const jobs = (await call<{ id: string; kind: string; status: string; total_rows: number; processed_rows: number }[]>('/api/v1/imports', {}, { organization_id: orgId }).catch(() => [])) as {
-      id: string; kind: string; status: string; total_rows: number; processed_rows: number;
+    const jobs = (await call<
+      { id: string; kind: string; status: string; total_rows: number; processed_rows: number }[]
+    >('/api/v1/imports', {}, { organization_id: orgId }).catch(() => [])) as {
+      id: string;
+      kind: string;
+      status: string;
+      total_rows: number;
+      processed_rows: number;
     }[];
-    box.innerHTML = jobs.length ? `<div class="card"><div class="card-header"><h3 class="card-title">${d.imports}</h3></div><div class="list-group list-group-flush">
-      ${jobs.map((j) => `<div class="list-group-item d-flex gap-2"><span><strong>${j.kind}</strong> · <span class="badge ${j.status === 'done' ? 'bg-green' : j.status === 'partial' ? 'bg-yellow' : 'bg-blue'}">${j.status}</span> · ${j.processed_rows}/${j.total_rows}</span>
-      <button class="btn btn-sm btn-outline-primary ms-auto" data-job="${j.id}">${d.view}</button></div><div data-jr="${j.id}"></div>`).join('')}</div></div>` : '';
+    box.innerHTML = jobs.length
+      ? `<div class="card"><div class="card-header"><h3 class="card-title">${d.imports}</h3></div><div class="list-group list-group-flush">
+      ${jobs
+        .map(
+          (
+            j
+          ) => `<div class="list-group-item d-flex gap-2"><span><strong>${j.kind}</strong> · <span class="badge ${j.status === 'done' ? 'bg-green' : j.status === 'partial' ? 'bg-yellow' : 'bg-blue'}">${j.status}</span> · ${j.processed_rows}/${j.total_rows}</span>
+      <button class="btn btn-sm btn-outline-primary ms-auto" data-job="${j.id}">${d.view}</button></div><div data-jr="${j.id}"></div>`
+        )
+        .join('')}</div></div>`
+      : '';
   };
   (el.querySelector('#im-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -46,28 +71,56 @@ async function renderImports(el: HTMLElement, orgId: string): Promise<void> {
     const form = new FormData();
     form.append('kind', (el.querySelector('#im-kind') as HTMLSelectElement).value);
     form.append('organization_id', orgId);
-    form.append('dry_run', (el.querySelector('#im-dry') as HTMLInputElement).checked ? 'true' : 'false');
+    form.append(
+      'dry_run',
+      (el.querySelector('#im-dry') as HTMLInputElement).checked ? 'true' : 'false'
+    );
     form.append('file', input.files[0]);
     const out = el.querySelector('#im-out') as HTMLElement;
     out.innerHTML = loadingHtml();
     try {
       const token = localStorage.getItem('lms-token-fallback');
-      const res = await fetch('/api/v1/imports', { method: 'POST', headers: token ? { authorization: `Bearer ${token}` } : {}, body: form, credentials: 'same-origin' });
-      const j = (await res.json()) as { success: boolean; data?: { valid?: number; processed?: number; total?: number; errors?: { row: number; errors: string[] }[] }; error?: { message: string } };
+      const res = await fetch('/api/v1/imports', {
+        method: 'POST',
+        headers: token ? { authorization: `Bearer ${token}` } : {},
+        body: form,
+        credentials: 'same-origin',
+      });
+      const j = (await res.json()) as {
+        success: boolean;
+        data?: {
+          valid?: number;
+          processed?: number;
+          total?: number;
+          errors?: { row: number; errors: string[] }[];
+        };
+        error?: { message: string };
+      };
       if (!j.success || !j.data) throw new Error(j.error?.message ?? d.failed);
-      out.innerHTML = `<div class="alert alert-info">${j.data.valid ?? j.data.processed} / ${j.data.total}. Errors: ${(j.data.errors ?? []).length}</div>` +
-        (j.data.errors ?? []).slice(0, 20).map((x) => `<div class="small">Row ${x.row}: ${x.errors.join('; ')}</div>`).join('');
+      out.innerHTML =
+        `<div class="alert alert-info">${j.data.valid ?? j.data.processed} / ${j.data.total}. Errors: ${(j.data.errors ?? []).length}</div>` +
+        (j.data.errors ?? [])
+          .slice(0, 20)
+          .map((x) => `<div class="small">Row ${x.row}: ${x.errors.join('; ')}</div>`)
+          .join('');
       await loadJobs();
-    } catch (err) { out.innerHTML = errorHtml(err); }
+    } catch (err) {
+      out.innerHTML = errorHtml(err);
+    }
   });
   el.querySelector('#im-jobs')?.addEventListener('click', async (e) => {
     const btn = (e.target as HTMLElement).closest('[data-job]') as HTMLElement | null;
     if (!btn?.dataset.job) return;
-    const det = (await call<{ error_report: { errors: { row: number; errors: string[] }[] } | null }>(`/api/v1/imports/${btn.dataset.job}`)) as {
+    const det = (await call<{
+      error_report: { errors: { row: number; errors: string[] }[] } | null;
+    }>(`/api/v1/imports/${btn.dataset.job}`)) as {
       error_report: { errors: { row: number; errors: string[] }[] } | null;
     };
     (el.querySelector(`[data-jr="${btn.dataset.job}"]`) as HTMLElement).innerHTML =
-      (det.error_report?.errors ?? []).slice(0, 30).map((x) => `<div class="small">Row ${x.row}: ${x.errors.join('; ')}</div>`).join('') || `<div class="small text-muted">${d.empty}</div>`;
+      (det.error_report?.errors ?? [])
+        .slice(0, 30)
+        .map((x) => `<div class="small">Row ${x.row}: ${x.errors.join('; ')}</div>`)
+        .join('') || `<div class="small text-muted">${d.empty}</div>`;
   });
   await loadJobs();
 }
@@ -90,32 +143,68 @@ async function renderAI(el: HTMLElement, orgId: string): Promise<void> {
     <div id="ai-jobs" class="mt-3"></div>`;
   const loadJobs = async () => {
     const box = el.querySelector('#ai-jobs') as HTMLElement;
-    const jobs = (await call<{ id: string; kind: string; status: string }[]>('/api/v1/ai/jobs', {}, { organization_id: orgId }).catch(() => [])) as { id: string; kind: string; status: string }[];
-    box.innerHTML = jobs.length ? `<div class="card"><div class="card-header"><h3 class="card-title">${d.ai}</h3></div><div class="list-group list-group-flush">
-      ${jobs.map((j) => `<div class="list-group-item d-flex gap-2"><span>${j.kind} · <span class="badge bg-blue">${j.status}</span></span>
-      ${j.status === 'completed' ? `<button class="btn btn-sm btn-outline-green ms-auto" data-review="${j.id}">${d.approve}</button>` : ''}</div>`).join('')}</div></div>` : '';
+    const jobs = (await call<{ id: string; kind: string; status: string }[]>(
+      '/api/v1/ai/jobs',
+      {},
+      { organization_id: orgId }
+    ).catch(() => [])) as { id: string; kind: string; status: string }[];
+    box.innerHTML = jobs.length
+      ? `<div class="card"><div class="card-header"><h3 class="card-title">${d.ai}</h3></div><div class="list-group list-group-flush">
+      ${jobs
+        .map(
+          (
+            j
+          ) => `<div class="list-group-item d-flex gap-2"><span>${j.kind} · <span class="badge bg-blue">${j.status}</span></span>
+      ${j.status === 'completed' ? `<button class="btn btn-sm btn-outline-green ms-auto" data-review="${j.id}">${d.approve}</button>` : ''}</div>`
+        )
+        .join('')}</div></div>`
+      : '';
   };
   (el.querySelector('#ai-cfg') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
-      await call('/api/v1/ai/config', { method: 'PUT', body: JSON.stringify({ organization_id: orgId, provider: (el.querySelector('#ai-p') as HTMLSelectElement).value, model: (el.querySelector('#ai-m') as HTMLInputElement).value || undefined, base_url: (el.querySelector('#ai-u') as HTMLInputElement).value || undefined, api_key: (el.querySelector('#ai-k') as HTMLInputElement).value || undefined, monthly_limit: Number((el.querySelector('#ai-l') as HTMLInputElement).value) }) });
+      await call('/api/v1/ai/config', {
+        method: 'PUT',
+        body: JSON.stringify({
+          organization_id: orgId,
+          provider: (el.querySelector('#ai-p') as HTMLSelectElement).value,
+          model: (el.querySelector('#ai-m') as HTMLInputElement).value || undefined,
+          base_url: (el.querySelector('#ai-u') as HTMLInputElement).value || undefined,
+          api_key: (el.querySelector('#ai-k') as HTMLInputElement).value || undefined,
+          monthly_limit: Number((el.querySelector('#ai-l') as HTMLInputElement).value),
+        }),
+      });
       toast(d.saved, 'success');
-    } catch (err) { toast(err instanceof Error ? err.message : d.failed, 'danger'); }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
   });
   (el.querySelector('#ai-job') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     const out = el.querySelector('#ai-out') as HTMLElement;
     out.innerHTML = loadingHtml();
     try {
-      const r = (await call<{ output?: string; note?: string }>('/api/v1/ai/jobs', { method: 'POST', body: JSON.stringify({ organization_id: orgId, kind: (el.querySelector('#ai-kind') as HTMLSelectElement).value, input_ref: (el.querySelector('#ai-in') as HTMLInputElement).value }) })) as { output?: string; note?: string };
+      const r = (await call<{ output?: string; note?: string }>('/api/v1/ai/jobs', {
+        method: 'POST',
+        body: JSON.stringify({
+          organization_id: orgId,
+          kind: (el.querySelector('#ai-kind') as HTMLSelectElement).value,
+          input_ref: (el.querySelector('#ai-in') as HTMLInputElement).value,
+        }),
+      })) as { output?: string; note?: string };
       out.innerHTML = `<div class="alert alert-warning">${r.note ?? ''}</div><pre class="card card-body">${(r.output ?? '').slice(0, 4000)}</pre>`;
       await loadJobs();
-    } catch (err) { out.innerHTML = errorHtml(err); }
+    } catch (err) {
+      out.innerHTML = errorHtml(err);
+    }
   });
   el.querySelector('#ai-jobs')?.addEventListener('click', async (e) => {
     const btn = (e.target as HTMLElement).closest('[data-review]') as HTMLElement | null;
     if (!btn?.dataset.review) return;
-    await call(`/api/v1/ai/jobs/${btn.dataset.review}/review`, { method: 'POST', body: JSON.stringify({ approve: true }) });
+    await call(`/api/v1/ai/jobs/${btn.dataset.review}/review`, {
+      method: 'POST',
+      body: JSON.stringify({ approve: true }),
+    });
     toast(d.saved, 'success');
     await loadJobs();
   });
@@ -132,10 +221,19 @@ async function renderExercises(el: HTMLElement, orgId: string): Promise<void> {
   (el.querySelector('#ex-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
-      await call('/api/v1/exercises', { method: 'POST', body: JSON.stringify({ course_id: (el.querySelector('#ex-c') as HTMLInputElement).value, title: (el.querySelector('#ex-t') as HTMLInputElement).value, statement: (el.querySelector('#ex-s') as HTMLTextAreaElement).value }) });
+      await call('/api/v1/exercises', {
+        method: 'POST',
+        body: JSON.stringify({
+          course_id: (el.querySelector('#ex-c') as HTMLInputElement).value,
+          title: (el.querySelector('#ex-t') as HTMLInputElement).value,
+          statement: (el.querySelector('#ex-s') as HTMLTextAreaElement).value,
+        }),
+      });
       toast(d.created, 'success');
       (el.querySelector('#ex-form') as HTMLFormElement).reset();
-    } catch (err) { (el.querySelector('#ex-out') as HTMLElement).innerHTML = errorHtml(err); }
+    } catch (err) {
+      (el.querySelector('#ex-out') as HTMLElement).innerHTML = errorHtml(err);
+    }
   });
   void orgId;
 }
@@ -152,17 +250,40 @@ async function renderEmail(el: HTMLElement, orgId: string): Promise<void> {
   const load = async () => {
     const box = el.querySelector('#em-list') as HTMLElement;
     try {
-      const items = (await call<{ id: string; to_email: string; subject: string; status: string }[]>('/api/v1/email/queue', {}, { organization_id: orgId })) as {
-        id: string; to_email: string; subject: string; status: string;
+      const items = (await call<
+        { id: string; to_email: string; subject: string; status: string }[]
+      >('/api/v1/email/queue', {}, { organization_id: orgId })) as {
+        id: string;
+        to_email: string;
+        subject: string;
+        status: string;
       }[];
-      box.innerHTML = items.length ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">To</th><th scope="col">${d.title}</th><th scope="col">${d.status}</th><th scope="col"></th></tr></thead><tbody>
-        ${items.map((m) => `<tr><td>${m.to_email}</td><td>${m.subject}</td><td><span class="badge ${m.status === 'sent' ? 'bg-green' : 'bg-yellow'}">${m.status}</span></td>
-        <td>${m.status !== 'sent' ? `<button class="btn btn-sm btn-outline-primary" data-send="${m.id}">${d.verify}</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : `<p class="text-muted">${d.empty}</p>`;
-    } catch (e) { box.innerHTML = errorHtml(e); }
+      box.innerHTML = items.length
+        ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">To</th><th scope="col">${d.title}</th><th scope="col">${d.status}</th><th scope="col"></th></tr></thead><tbody>
+        ${items
+          .map(
+            (
+              m
+            ) => `<tr><td>${m.to_email}</td><td>${m.subject}</td><td><span class="badge ${m.status === 'sent' ? 'bg-green' : 'bg-yellow'}">${m.status}</span></td>
+        <td>${m.status !== 'sent' ? `<button class="btn btn-sm btn-outline-primary" data-send="${m.id}">${d.verify}</button>` : ''}</td></tr>`
+          )
+          .join('')}</tbody></table></div>`
+        : `<p class="text-muted">${d.empty}</p>`;
+    } catch (e) {
+      box.innerHTML = errorHtml(e);
+    }
   };
   (el.querySelector('#em-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
-    await call('/api/v1/email/queue', { method: 'POST', body: JSON.stringify({ organization_id: orgId, to: (el.querySelector('#em-to') as HTMLInputElement).value, subject: (el.querySelector('#em-sub') as HTMLInputElement).value, body: (el.querySelector('#em-body') as HTMLTextAreaElement).value }) });
+    await call('/api/v1/email/queue', {
+      method: 'POST',
+      body: JSON.stringify({
+        organization_id: orgId,
+        to: (el.querySelector('#em-to') as HTMLInputElement).value,
+        subject: (el.querySelector('#em-sub') as HTMLInputElement).value,
+        body: (el.querySelector('#em-body') as HTMLTextAreaElement).value,
+      }),
+    });
     toast(d.created, 'success');
     await load();
   });
@@ -173,7 +294,9 @@ async function renderEmail(el: HTMLElement, orgId: string): Promise<void> {
       await call(`/api/v1/email/queue/${btn.dataset.send}/send`, { method: 'POST', body: '{}' });
       toast(d.saved, 'success');
       await load();
-    } catch (err) { toast(err instanceof Error ? err.message : d.failed, 'danger'); }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
   });
   await load();
 }
@@ -192,28 +315,58 @@ async function renderInvites(el: HTMLElement, orgId: string): Promise<void> {
   (el.querySelector('#in-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
-      const r = (await call<{ invite_url: string }>(`/api/v1/invitations`, { method: 'POST', body: JSON.stringify({ organization_id: orgId, email: (el.querySelector('#in-email') as HTMLInputElement).value, role: (el.querySelector('#in-role') as HTMLSelectElement).value }) })) as { invite_url: string };
-      (el.querySelector('#in-out') as HTMLElement).innerHTML = `<div class="alert alert-success"><code>${r.invite_url}</code></div>`;
-    } catch (err) { (el.querySelector('#in-out') as HTMLElement).innerHTML = errorHtml(err); }
+      const r = (await call<{ invite_url: string }>(`/api/v1/invitations`, {
+        method: 'POST',
+        body: JSON.stringify({
+          organization_id: orgId,
+          email: (el.querySelector('#in-email') as HTMLInputElement).value,
+          role: (el.querySelector('#in-role') as HTMLSelectElement).value,
+        }),
+      })) as { invite_url: string };
+      (el.querySelector('#in-out') as HTMLElement).innerHTML =
+        `<div class="alert alert-success"><code>${r.invite_url}</code></div>`;
+    } catch (err) {
+      (el.querySelector('#in-out') as HTMLElement).innerHTML = errorHtml(err);
+    }
   });
   const loadUnits = async () => {
     const box = el.querySelector('#ou-list') as HTMLElement;
-    const units = (await call<{ id: string; name: string }[]>('/api/v1/org-units', {}, { organization_id: orgId }).catch(() => [])) as { id: string; name: string }[];
-    box.innerHTML = units.map((u) => `<div class="d-flex gap-2 align-items-center mb-1"><span>${u.name}</span>
-      <button class="btn btn-sm btn-outline-primary ms-auto" data-unit="${u.id}">${d.create}</button></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
+    const units = (await call<{ id: string; name: string }[]>(
+      '/api/v1/org-units',
+      {},
+      { organization_id: orgId }
+    ).catch(() => [])) as { id: string; name: string }[];
+    box.innerHTML =
+      units
+        .map(
+          (u) => `<div class="d-flex gap-2 align-items-center mb-1"><span>${u.name}</span>
+      <button class="btn btn-sm btn-outline-primary ms-auto" data-unit="${u.id}">${d.create}</button></div>`
+        )
+        .join('') || `<p class="text-muted">${d.empty}</p>`;
   };
   (el.querySelector('#ou-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
-    await call('/api/v1/org-units', { method: 'POST', body: JSON.stringify({ organization_id: orgId, name: (el.querySelector('#ou-name') as HTMLInputElement).value }) });
+    await call('/api/v1/org-units', {
+      method: 'POST',
+      body: JSON.stringify({
+        organization_id: orgId,
+        name: (el.querySelector('#ou-name') as HTMLInputElement).value,
+      }),
+    });
     toast(d.created, 'success');
     await loadUnits();
   });
   el.querySelector('#ou-list')?.addEventListener('click', async (e) => {
     const btn = (e.target as HTMLElement).closest('[data-unit]') as HTMLElement | null;
     if (!btn?.dataset.unit) return;
-    const data = await modalForm(d.members, [{ name: 'user_id', label: `${d.users} ID`, required: true }]);
+    const data = await modalForm(d.members, [
+      { name: 'user_id', label: `${d.users} ID`, required: true },
+    ]);
     if (!data) return;
-    await call(`/api/v1/org-units/${btn.dataset.unit}/members`, { method: 'POST', body: JSON.stringify(data) });
+    await call(`/api/v1/org-units/${btn.dataset.unit}/members`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
     toast(d.created, 'success');
   });
   await loadUnits();

@@ -12,8 +12,12 @@ describe('PWA manifests', () => {
       const p = join(root, 'apps', app, 'public', 'manifest.webmanifest');
       expect(existsSync(p)).toBe(true);
       const m = JSON.parse(readFileSync(p, 'utf8')) as {
-        name: string; short_name: string; start_url: string; display: string;
-        theme_color: string; background_color: string;
+        name: string;
+        short_name: string;
+        start_url: string;
+        display: string;
+        theme_color: string;
+        background_color: string;
         icons: { src: string; sizes: string; type: string; purpose?: string }[];
       };
       expect(m.name.length).toBeGreaterThan(0);
@@ -64,13 +68,26 @@ describe('API surface honesty (OpenAPI matches implementation)', () => {
     const { runMigrations } = await import('../src/migrate.js');
     const db = await createNodeSqliteDb(':memory:');
     await runMigrations(db, join(root, 'migrations'));
-    const env = { DB: db, JWT_SECRET: 'x'.repeat(40), STORAGE_DRIVER: 'local', STORAGE_LOCAL_DIR: './.data/u' };
+    const env = {
+      DB: db,
+      JWT_SECRET: 'x'.repeat(40),
+      STORAGE_DRIVER: 'local',
+      STORAGE_LOCAL_DIR: './.data/u',
+    };
     const app = createApp(env, db);
     const res = await app.request('/api/v1/openapi.json');
     expect(res.status).toBe(200);
     const doc = (await res.json()) as { paths: Record<string, unknown> };
     const paths = Object.keys(doc.paths);
-    for (const must of ['/api/v1/auth/login', '/api/v1/courses', '/api/v1/quizzes', '/api/v1/assignments', '/api/v1/certificates/verify/{number}', '/api/v1/uploads', '/api/v1/search']) {
+    for (const must of [
+      '/api/v1/auth/login',
+      '/api/v1/courses',
+      '/api/v1/quizzes',
+      '/api/v1/assignments',
+      '/api/v1/certificates/verify/{number}',
+      '/api/v1/uploads',
+      '/api/v1/search',
+    ]) {
       expect(paths).toContain(must);
     }
     // Every documented non-public path must actually exist on the router.

@@ -8,7 +8,12 @@ import type { AppVars, AuthUser } from './types.js';
 export async function audit(
   c: Context<{ Variables: AppVars }>,
   action: string,
-  opts: { entity?: string; entityId?: string; organizationId?: string | null; metadata?: Record<string, unknown> } = {}
+  opts: {
+    entity?: string;
+    entityId?: string;
+    organizationId?: string | null;
+    metadata?: Record<string, unknown>;
+  } = {}
 ): Promise<void> {
   const user = c.get('user') as AuthUser | null;
   try {
