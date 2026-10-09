@@ -13,7 +13,8 @@ import {
 export async function renderCourses(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
   const d = t();
-  el.innerHTML = `<div id="course-list"></div><div id="builder" class="mt-3"></div>`;
+  el.innerHTML = `<div id="approvals" class="mb-3"></div><div id="course-list"></div><div id="builder" class="mt-3"></div>`;
+  await renderApprovals(el.querySelector('#approvals') as HTMLElement, orgId);
   const list = el.querySelector('#course-list') as HTMLElement;
   const builder = el.querySelector('#builder') as HTMLElement;
   await crud(list, {
@@ -114,6 +115,53 @@ export async function renderCourses(el: HTMLElement): Promise<void> {
       }
     }
   });
+}
+
+async function renderApprovals(el: HTMLElement, orgId: string | null): Promise<void> {
+  const d = t();
+  if (!orgId) return;
+  try {
+    const items = (await call<
+      { id: string; course_id: string; course_title: string; requested_by_name: string }[]
+    >(`/api/v1/publish-approvals?organization_id=${orgId}`)) as {
+      id: string;
+      course_id: string;
+      course_title: string;
+      requested_by_name: string;
+    }[];
+    if (!items.length) return;
+    el.innerHTML = `<div class="card border-yellow mb-3"><div class="card-header"><h3 class="card-title">${d.requestApproval} (${items.length})</h3></div>
+      <div class="list-group list-group-flush">${items
+        .map(
+          (a) => `<div class="list-group-item d-flex gap-2 align-items-center flex-wrap">
+      <span><strong>${a.course_title}</strong> <span class="text-muted">· ${a.requested_by_name}</span></span>
+      <span class="ms-auto d-flex gap-1"><button class="btn btn-sm btn-primary" data-approve="${a.id}">${d.approve}</button>
+      <button class="btn btn-sm btn-outline-danger" data-reject="${a.id}">${d.reject}</button></span></div>`
+        )
+        .join('')}</div></div>`;
+    el.querySelectorAll('[data-approve]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        await call(`/api/v1/publish-approvals/${(b as HTMLElement).dataset.approve}/approve`, {
+          method: 'POST',
+          body: '{}',
+        });
+        toast(d.saved, 'success');
+        await renderApprovals(el, orgId);
+      })
+    );
+    el.querySelectorAll('[data-reject]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        await call(`/api/v1/publish-approvals/${(b as HTMLElement).dataset.reject}/reject`, {
+          method: 'POST',
+          body: JSON.stringify({}),
+        });
+        toast(d.saved, 'success');
+        await renderApprovals(el, orgId);
+      })
+    );
+  } catch {
+    el.innerHTML = ''; // not privileged or unavailable: no approvals UI
+  }
 }
 
 async function renderBuilder(el: HTMLElement, courseId: string): Promise<void> {

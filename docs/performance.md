@@ -22,6 +22,18 @@ PASS GET /api/v1/reports/organization-summary p50=2.3ms p95=3.7ms budget=400ms
 PASS GET /api/v1/catalog/courses p50=1.2ms p95=1.6ms budget=250ms
 ```
 
+## Scale check (`npx tsx scripts/scale-check.mts`, 2026-10-09)
+
+1500 students / 20 courses / 4500 enrollments (in-memory SQLite):
+
+```
+PASS completion 44ms | engagement 7ms | attendance 3ms
+PASS teacher-activity 3ms | org-summary 5ms | search 1ms  (budget 2000ms each)
+```
+
+GROUP BY aggregation holds at this scale; revisit with production fixtures
+beyond ~100k enrollments.
+
 Re-run after report or auth changes; investigate any budget breach before release.
 
 ## Design rules that keep it fast

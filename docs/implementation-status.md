@@ -1,6 +1,12 @@
 # Implementation status (October 2026)
 
-## Shipped in 1.5.0 (this release)
+## Shipped in 1.6.0 (this release)
+
+- Marketplace auto-join on order/subscribe (public buyers), plans in shop.
+- Admin approval-queue UI; refresh-token pruning keeps reuse detection intact.
+- Scale fixtures + timings; static audits (links, envelopes) wired into CI.
+
+## Shipped in 1.5.0
 
 - Browser E2E for offline behavior (SW activation, offline shell, no private
   API data in caches) and accessibility smoke (named controls, label

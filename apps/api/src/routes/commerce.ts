@@ -285,8 +285,21 @@ commerce.post('/orders', requireAuth(), async (c) => {
       t('validation_failed', c.get('lang')),
       parsed.error.flatten()
     );
-  if (!canAccessOrg(user, parsed.data.organization_id))
-    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  if (!canAccessOrg(user, parsed.data.organization_id)) {
+    // Marketplace pattern (mirrors enrollment): buyers auto-join the selling
+    // organization as students so public catalog purchases work. Audited below.
+    const adb = c.get('db');
+    await execute(
+      adb,
+      'INSERT OR IGNORE INTO organization_members (id, organization_id, user_id, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      newId(),
+      parsed.data.organization_id,
+      user.id,
+      'student',
+      nowIso(),
+      nowIso()
+    );
+  }
   const db = c.get('db');
   const item = await priceReference(
     db,
@@ -981,8 +994,19 @@ commerce.post('/subscriptions', requireAuth(), async (c) => {
     body.plan_id
   );
   if (!plan) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
-  if (!canAccessOrg(user, plan.organization_id))
-    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  if (!canAccessOrg(user, plan.organization_id)) {
+    // Same marketplace auto-join as orders.
+    await execute(
+      db,
+      'INSERT OR IGNORE INTO organization_members (id, organization_id, user_id, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      newId(),
+      plan.organization_id,
+      user.id,
+      'student',
+      nowIso(),
+      nowIso()
+    );
+  }
   const now = nowIso();
   const periodEnd = new Date(
     Date.now() + (plan.interval === 'yearly' ? 365 : 30) * 86400000

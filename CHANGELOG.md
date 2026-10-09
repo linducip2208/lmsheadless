@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.0 — Marketplace & scale release
+
+Added:
+
+- Public purchase without prior membership (auto-join on order/subscribe)
+- Subscription plans in student shop
+- Publish-approval queue UI in admin courses
+- Refresh-token pruning (rotation chains preserved for reuse detection)
+- Scale fixtures: reports proven at 1500 students / 4500 enrollments
+- Static audits (hash links, envelope discipline) in CI
+
 ## 1.5.0 — Verification & evidence release
 
 Added:

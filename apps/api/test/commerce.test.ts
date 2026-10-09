@@ -456,6 +456,33 @@ describe('commerce core', () => {
   });
 });
 
+describe('marketplace auto-join', () => {
+  it('buyers outside the organization auto-join as students on order', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'guest');
+    const t = await mkUser(db, 't@guest.com', 'teacher', org);
+    await mkUser(db, 'guest@guest.com', null);
+    const tokT = (await login(app, 't@guest.com')).access_token;
+    const tokG = (await login(app, 'guest@guest.com')).access_token;
+    const c = await paidCourse(app, tokT, org, 'GUEST1', 50);
+    const order = await app.request('/api/v1/orders', {
+      method: 'POST',
+      headers: H(tokG),
+      body: JSON.stringify({ organization_id: org, kind: 'course', reference_id: c }),
+    });
+    expect(order.status).toBe(201);
+    const member = await queryFirst<{ role: string }>(
+      db,
+      'SELECT role FROM organization_members WHERE organization_id = ? AND user_id = (SELECT id FROM users WHERE email = ?)',
+      org,
+      'guest@guest.com'
+    );
+    expect(member?.role).toBe('student');
+    void t;
+    void db;
+  });
+});
+
 describe('public catalog', () => {
   it('lists only published public courses; instructor profiles hide emails', async () => {
     const { app, db } = await setup();

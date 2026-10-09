@@ -24,3 +24,4 @@ jobs:
       - run: npm run build
       - run: npm run audit
       - run: npm run contract
+      - run: npm run static-audit

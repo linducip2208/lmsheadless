@@ -283,6 +283,13 @@ auth.post('/refresh', async (c) => {
     replacementId,
     row.id
   );
+  // Hygiene: prune dead sessions (long-expired, never part of a rotation chain).
+  // Rotation chains are kept until expiry so reuse detection keeps working.
+  await execute(
+    db,
+    "DELETE FROM refresh_tokens WHERE user_id = ? AND expires_at < datetime('now', '-1 day') AND replaced_by IS NULL",
+    user.id
+  ).catch(() => undefined);
   if (cookieToken || c.req.query('cookie') === '1') {
     setCookie(c, REFRESH_COOKIE, refresh, {
       httpOnly: true,

@@ -486,6 +486,7 @@ async function gradesView(el: HTMLElement): Promise<void> {
 async function shopView(el: HTMLElement): Promise<void> {
   el.innerHTML = loading();
   try {
+    const orgId = currentOrg();
     const [courses, bundles, orders] = await Promise.all([
       call<{ id: string; title: string; code: string; price: number }[]>(
         '/api/v1/catalog/courses'
@@ -497,6 +498,13 @@ async function shopView(el: HTMLElement): Promise<void> {
         () => []
       ),
     ]);
+    const plans = orgId
+      ? ((await call<{ id: string; name: string; price: number; interval: string }[]>(
+          '/api/v1/subscription-plans',
+          {},
+          { organization_id: orgId }
+        ).catch(() => [])) as { id: string; name: string; price: number; interval: string }[])
+      : [];
     el.innerHTML = `<h2>🛍 ${d.shop}</h2>
       <h3>${d.courses}</h3><div class="row row-cards">${
         (courses as { id: string; title: string; code: string; price: number }[])
@@ -518,6 +526,17 @@ async function shopView(el: HTMLElement): Promise<void> {
           .join('') || `<p>${d.empty}</p>`
       }</div>
       <h3 class="mt-3">${d.orders}</h3><div id="ord">${(orders as { id: string; kind: string; total: number; status: string }[]).map((o) => `<div class="card card-body mb-2 py-2">${o.kind} · ${o.total} · <span class="badge ${o.status === 'paid' ? 'bg-green' : 'bg-yellow'}">${o.status}</span>${o.status === 'pending' ? `<div class="small text-muted">${d.pendingPayment}</div>` : ''}</div>`).join('') || `<p>${d.empty}</p>`}</div>
+      ${
+        plans.length
+          ? `<h3 class="mt-3">${d.plans}</h3><div class="row row-cards">${plans
+              .map(
+                (p) => `<div class="col-md-4 col-6"><div class="card h-100"><div class="card-body">
+      <h3 class="card-title">${p.name}</h3><p class="text-muted small">${p.price}/${p.interval}</p>
+      <button class="btn btn-sm btn-primary" data-plan="${p.id}">${d.buy}</button></div></div></div>`
+              )
+              .join('')}</div>`
+          : ''
+      }
       <div class="card mt-3"><div class="card-body"><form id="gift-f" class="d-flex gap-2">
       <input id="gift-code" class="form-control" placeholder="Gift code" required><button class="btn btn-outline-primary">${d.redeem}</button></form></div></div>`;
     el.querySelectorAll('[data-enroll]').forEach((b) =>
@@ -528,6 +547,23 @@ async function shopView(el: HTMLElement): Promise<void> {
             body: JSON.stringify({ course_id: (b as HTMLElement).dataset.enroll }),
           });
           toast(d.enrolled2, 'success');
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        }
+      })
+    );
+    el.querySelectorAll('[data-plan]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        try {
+          const r = (await call<{ id: string; status: string; note?: string }>(
+            '/api/v1/subscriptions',
+            { method: 'POST', body: JSON.stringify({ plan_id: (b as HTMLElement).dataset.plan }) }
+          )) as { id: string; status: string; note?: string };
+          toast(
+            `${r.status}${r.note ? ` — ${r.note}` : ''}`,
+            r.status === 'active' ? 'success' : 'info'
+          );
+          await shopView(el);
         } catch (err) {
           toast(err instanceof Error ? err.message : 'Failed', 'danger');
         }

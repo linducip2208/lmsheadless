@@ -66,6 +66,7 @@ export const en = {
   sandboxNote:
     'Sandboxed player — content cannot access your session. Use the buttons to record progress.',
   total: 'Total',
+  plans: 'Subscription plans',
 };
 export const id: Record<keyof typeof en, string> = {
   myLearning: 'Pembelajaranku',
@@ -135,6 +136,7 @@ export const id: Record<keyof typeof en, string> = {
   sandboxNote:
     'Pemutar sandbox — konten tidak dapat mengakses sesi Anda. Gunakan tombol untuk mencatat progres.',
   total: 'Total',
+  plans: 'Paket langganan',
 };
 export function getDict(l: string) {
   return l === 'id' ? id : en;
