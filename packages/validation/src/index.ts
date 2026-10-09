@@ -6,7 +6,7 @@ export const uuid = z.string().uuid().or(z.string().min(1).max(64));
 export const roleEnum = z.enum(['super_admin', 'organization_admin', 'teacher', 'student', 'parent', 'staff']);
 export const localeEnum = z.enum(['en', 'id']);
 export const courseStatus = z.enum(['draft', 'published', 'archived']);
-export const questionType = z.enum(['multiple_choice', 'true_false', 'short_answer']);
+export const questionType = z.enum(['multiple_choice', 'single_choice', 'true_false', 'short_answer', 'essay', 'matching', 'ordering']);
 export const attendanceStatus = z.enum(['present', 'absent', 'late', 'excused']);
 
 export const registerSchema = z.object({
@@ -88,6 +88,9 @@ export const quizSchema = z.object({
   max_attempts: z.number().int().min(1).max(100).optional(),
   time_limit_minutes: z.number().int().min(0).max(10080).optional(),
   shuffle_questions: z.boolean().optional(),
+  answer_release: z.enum(['after_submit', 'never']).optional(),
+  negative_marking: z.boolean().optional(),
+  cooldown_minutes: z.number().int().min(0).max(10080).optional(),
 });
 
 export const questionSchema = z.object({
@@ -96,8 +99,11 @@ export const questionSchema = z.object({
   prompt: z.string().min(1).max(5000),
   points: z.number().min(0).max(1000),
   position: z.number().int().min(0).max(10000).optional(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+  explanation: z.string().max(5000).optional(),
+  negative_points: z.number().min(0).max(1000).optional(),
   options: z
-    .array(z.object({ label: z.string().min(1).max(1000), is_correct: z.boolean() }))
+    .array(z.object({ label: z.string().min(1).max(1000), match_value: z.string().max(1000).optional(), is_correct: z.boolean() }))
     .max(20)
     .optional(),
   correct_answer: z.string().max(5000).optional(),
@@ -162,4 +168,121 @@ export const replySchema = z.object({
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).max(1000).optional(),
   per_page: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+export const tagSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  name: z.string().min(1).max(80),
+});
+
+export const prerequisiteSchema = z.object({
+  requires_course_id: z.string().min(1).max(64),
+});
+
+export const dripSchema = z.object({
+  lesson_id: z.string().min(1).max(64),
+  days_after_enrollment: z.number().int().min(0).max(3650).optional().nullable(),
+  unlock_at: z.string().max(64).optional().nullable(),
+});
+
+export const bankSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  course_id: z.string().min(1).max(64).optional().nullable(),
+  name: z.string().min(1).max(150),
+  description: z.string().max(2000).optional(),
+});
+
+export const bankQuestionSchema = z.object({
+  type: z.enum(['multiple_choice', 'single_choice', 'true_false', 'short_answer', 'essay', 'matching', 'ordering']),
+  prompt: z.string().min(1).max(5000),
+  points: z.number().min(0).max(1000),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+  category: z.string().max(100).optional(),
+  tags: z.string().max(500).optional(),
+  explanation: z.string().max(5000).optional(),
+  correct_answer: z.string().max(5000).optional(),
+  negative_points: z.number().min(0).max(1000).optional(),
+  options: z.array(z.object({
+    label: z.string().min(1).max(1000),
+    match_value: z.string().max(1000).optional(),
+    is_correct: z.boolean(),
+  })).max(20).optional(),
+});
+
+export const cohortSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  name: z.string().min(1).max(150),
+  description: z.string().max(2000).optional(),
+  start_date: z.string().max(32).optional(),
+  end_date: z.string().max(32).optional(),
+  capacity: z.number().int().min(1).max(100000).optional(),
+});
+
+export const programSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  name: z.string().min(1).max(150),
+  description: z.string().max(2000).optional(),
+});
+
+export const liveSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  course_id: z.string().min(1).max(64).optional().nullable(),
+  cohort_id: z.string().min(1).max(64).optional().nullable(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(5000).optional(),
+  provider: z.enum(['jitsi', 'meet', 'zoom', 'custom']).optional(),
+  meeting_url: z.string().max(2000).optional(),
+  starts_at: z.string().min(1).max(64),
+  ends_at: z.string().min(1).max(64),
+  timezone: z.string().max(64).optional(),
+  capacity: z.number().int().min(1).max(100000).optional(),
+});
+
+export const bundleSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  name: z.string().min(1).max(150),
+  description: z.string().max(5000).optional(),
+  price: z.number().min(0).max(100000000),
+  course_ids: z.array(z.string().min(1).max(64)).min(1).max(50),
+});
+
+export const couponSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  code: z.string().min(2).max(40).regex(/^[A-Za-z0-9_-]+$/),
+  kind: z.enum(['percent', 'fixed']),
+  value: z.number().min(0),
+  max_uses: z.number().int().min(1).max(1000000).optional(),
+  min_amount: z.number().min(0).optional(),
+  starts_at: z.string().max(64).optional(),
+  ends_at: z.string().max(64).optional(),
+});
+
+export const orderSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  kind: z.enum(['course', 'bundle', 'cohort']),
+  reference_id: z.string().min(1).max(64),
+  coupon_code: z.string().max(40).optional(),
+  affiliate_code: z.string().max(40).optional(),
+  currency: z.string().max(8).optional(),
+});
+
+export const invitationSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  email: z.string().email().max(255),
+  role: z.enum(['organization_admin', 'teacher', 'student', 'parent', 'staff']),
+});
+
+export const aiJobSchema = z.object({
+  organization_id: z.string().min(1).max(64),
+  kind: z.enum(['outline', 'lesson_draft', 'questions', 'summary']),
+  input_ref: z.string().max(2000).optional(),
+});
+
+export const exerciseSchema = z.object({
+  course_id: z.string().min(1).max(64),
+  lesson_id: z.string().min(1).max(64).optional().nullable(),
+  title: z.string().min(1).max(200),
+  statement: z.string().min(1).max(20000),
+  language: z.string().max(32).optional(),
+  examples: z.string().max(10000).optional(),
 });

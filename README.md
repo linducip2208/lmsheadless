@@ -11,7 +11,7 @@ purpose-built clients — one per role — so a Flutter Android/iOS app can cons
 the exact same API.
 
 - 👩‍💼 **Admin panel** — organizations, users, roles & permissions, course builder, quizzes, assignments & grading, attendance, grades, announcements, certificates, files, reports, settings, audit log
-- 👩‍🏫 **Teacher panel** — assigned courses, lesson/quiz/assignment authoring, grading queue, attendance recording, student progress
+- 👩‍🏫 **Teacher panel** — assigned courses, lesson and quiz authoring, grading queue, attendance, student progress
 - 🧑‍🎓 **Student portal (PWA)** — courses, lesson player, quizzes, assignment submission, discussions, grades, certificates, offline queue + sync
 - 👪 **Parent portal** — linked children only: progress, grades, attendance, announcements
 - 🌐 **Public website** — landing, features, solutions, pricing, docs, contact, public certificate verification
@@ -109,21 +109,37 @@ and sync with idempotency keys when back online. Push architecture is ready
 
 Each organization configures name, logo, colors, footer and support info via
 `PUT /api/v1/organizations/:id`; public-safe branding at
-`GET /api/v1/organizations/:id/branding`. Tenant isolation is tested
+`GET /api/v1/organizations/:id/branding`. Custom domains map via
+`POST /api/v1/organizations/:id/domain` (TXT verification; Cloudflare routing
+documented in `docs/white-label.md`). Tenant isolation is tested
 (org-vs-org, user-vs-user, parent scoping). See `docs/white-label.md`,
 `docs/multi-organization.md`.
+
+## Enterprise capabilities (v1.2)
+
+- **Authoring**: tags, prerequisites, drip scheduling, enrollment windows/capacity/waitlists, duplication, versions, publish approvals, CSV export
+- **Assessment**: question banks, pools, matching/ordering/essay, negative marking, cooldowns, autosave, answer-release policies, manual grading queue
+- **Cohorts & programs**: batches, learning paths with locks, competencies, milestones
+- **Live classes**: Jitsi/Meet/Zoom/custom providers, registration, capacity, attendance, ICS export
+- **Commerce**: bundles, coupons, orders, invoices, manual + signed-provider payments, webhooks with replay protection, refunds, subscriptions, commissions, affiliates, gifts
+- **SCORM 1.2**: validated import, sandboxed player, progress/resume tracking
+- **AI framework** (BYOK, review-gated), **coding exercises** (static review; execution gated), **email queue**, **invitations**, **CSV imports** (dry-run + row errors)
+- **Security**: refresh-token reuse detection, extended OWASP matrix tests
 
 ## Testing
 
 ```bash
-npm test            # 40 tests: auth, RBAC matrix, tenant isolation, IDOR,
-                    # courses, quiz (scoring/expiry/limits), assignments,
-                    # attendance, certificates, files, setup, search,
-                    # idempotency, CORS, rate limiting, PWA assets, OpenAPI honesty
+npm test            # 68+ tests: auth, RBAC matrix, tenant isolation, IDOR,
+                    # courses, quiz (scoring/expiry/limits/pools/manual),
+                    # assignments, attendance, certificates, files, setup, search,
+                    # idempotency, CORS, rate limiting, authoring, banks, cohorts,
+                    # live, commerce, webhooks, SCORM, AI-mock, imports, reuse,
+                    # journey E2E, PWA assets, OpenAPI honesty
 npm run typecheck
 npm run lint
 npm run build
-npm run audit       # migrations, FK/indexes, secrets, CDN, envelope, PWA assets
+npm run audit       # migrations, FK/indexes, secrets, CDN, envelope, RBAC, PWA, guards
+npm run contract    # every frontend API path resolves to a backend route
 ```
 
 ## Security
@@ -141,4 +157,8 @@ OWASP-style coverage is tested in `apps/api/test/security.test.ts`.
 
 `docs/api.md` · `architecture.md` · `cloudflare.md` · `customization.md` ·
 `deployment.md` · `flutter.md` · `multi-organization.md` · `pwa.md` ·
-`security.md` · `white-label.md`
+`security.md` · `white-label.md` · `course-authoring.md` · `assessment.md` ·
+`commerce.md` · `scorm.md` · `ai.md` · `exercises.md` · `backup-recovery.md` ·
+`troubleshooting.md` · `competitive-benchmark.md` · `feature-gap-matrix.md` ·
+`implementation-status.md` · `production-readiness.md` · `upgrade-guide.md` ·
+`capability-matrix.md`

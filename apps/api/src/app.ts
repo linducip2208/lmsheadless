@@ -6,6 +6,13 @@ import courses from './routes/courses.js';
 import assess from './routes/assessment.js';
 import ops from './routes/ops.js';
 import platform from './routes/platform.js';
+import authoring from './routes/authoring.js';
+import banks from './routes/banks.js';
+import cohorts from './routes/cohorts.js';
+import live from './routes/live.js';
+import commerce from './routes/commerce.js';
+import scorm from './routes/scorm.js';
+import growth from './routes/growth.js';
 import { authOptional, language, rateLimit, requestId } from './middleware/common.js';
 import { cors } from './middleware/cors.js';
 import { idempotency } from './middleware/idempotency.js';
@@ -37,8 +44,17 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.route('/api/v1/auth', auth);
   app.route('/api/v1/users', users);
   app.route('/api/v1/organizations', orgs);
+  // Static-first routers before param-heavy ones: Hono matches in
+  // registration order, so /courses/export must precede /courses/:id.
+  app.route('/api/v1', authoring);
   app.route('/api/v1', courses);
   app.route('/api/v1', assess);
+  app.route('/api/v1', banks);
+  app.route('/api/v1', cohorts);
+  app.route('/api/v1', live);
+  app.route('/api/v1', commerce);
+  app.route('/api/v1', scorm);
+  app.route('/api/v1', growth);
   app.route('/', ops);
   app.route('/', platform);
 

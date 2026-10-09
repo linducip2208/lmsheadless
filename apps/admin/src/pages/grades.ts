@@ -1,11 +1,12 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
 
 export async function renderGrades(el: HTMLElement): Promise<void> {
+  const d = t();
   el.innerHTML = `<div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
-    <div><label class="form-label" for="g-course">Course</label><select id="g-course" class="form-select"></select></div>
-    <div><label class="form-label" for="g-student">Student ID (optional)</label><input id="g-student" class="form-control" placeholder="Leave blank for all"></div>
-    <button class="btn btn-primary" id="g-load">Load</button>
-    <button class="btn btn-outline-primary" id="g-new">Record grade</button></div></div>
+    <div><label class="form-label" for="g-course">${d.courses}</label><select id="g-course" class="form-select"></select></div>
+    <div><label class="form-label" for="g-student">${d.users} ID</label><input id="g-student" class="form-control"></div>
+    <button class="btn btn-primary" id="g-load">${d.view}</button>
+    <button class="btn btn-outline-primary" id="g-new">${d.grade}</button></div></div>
     <div id="g-list"></div>`;
   const courseSel = el.querySelector('#g-course') as HTMLSelectElement;
   const studentInput = el.querySelector('#g-student') as HTMLInputElement;
@@ -23,28 +24,28 @@ export async function renderGrades(el: HTMLElement): Promise<void> {
         id: string; student_id: string; category: string; score: number; max_score: number; feedback: string | null;
       }[];
       list.innerHTML = grades.length ? `<div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table card-table">
-        <thead><tr><th scope="col">Student</th><th scope="col">Category</th><th scope="col">Score</th><th scope="col">Feedback</th></tr></thead>
+        <thead><tr><th scope="col">${d.students}</th><th scope="col">${d.status}</th><th scope="col">${d.total}</th><th scope="col">${d.feedback}</th></tr></thead>
         <tbody>${grades.map((g) => `<tr><td class="text-truncate" style="max-width:200px">${g.student_id.slice(0, 8)}…</td>
         <td>${g.category}</td><td><strong>${g.score}</strong> / ${g.max_score}</td><td>${g.feedback ?? '—'}</td></tr>`).join('')}</tbody></table></div></div></div>`
-        : '<div class="alert alert-info">No grades found.</div>';
+        : `<div class="alert alert-info">${d.empty}</div>`;
     } catch (e) { list.innerHTML = errorHtml(e); }
   };
   (el.querySelector('#g-load') as HTMLButtonElement).addEventListener('click', () => void load());
   (el.querySelector('#g-new') as HTMLButtonElement).addEventListener('click', async () => {
-    if (!courseSel.value) { toast('Select a course first', 'warning'); return; }
-    const data = await modalForm('Record grade', [
-      { name: 'student_id', label: 'Student ID', required: true },
-      { name: 'category', label: 'Category', value: 'general' },
-      { name: 'score', label: 'Score', type: 'number', required: true },
-      { name: 'max_score', label: 'Max score', type: 'number', value: '100' },
-      { name: 'feedback', label: 'Feedback', type: 'textarea' },
+    if (!courseSel.value) return;
+    const data = await modalForm(d.grade, [
+      { name: 'student_id', label: `${d.users} ID`, required: true },
+      { name: 'category', label: d.status, value: 'general' },
+      { name: 'score', label: d.total, type: 'number', required: true },
+      { name: 'max_score', label: d.maxScore, type: 'number', value: '100' },
+      { name: 'feedback', label: d.feedback, type: 'textarea' },
     ]);
     if (!data) return;
     try {
       await call('/api/v1/grades', { method: 'POST', body: JSON.stringify({ course_id: courseSel.value, ...data, score: Number(data.score), max_score: Number(data.max_score), feedback: data.feedback || undefined }) });
-      toast('Grade recorded', 'success');
+      toast(d.saved, 'success');
       await load();
-    } catch (e) { toast(e instanceof Error ? e.message : 'Failed', 'danger'); }
+    } catch (e) { toast(e instanceof Error ? e.message : d.failed, 'danger'); }
   });
   await load();
 }

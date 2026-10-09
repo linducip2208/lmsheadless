@@ -58,7 +58,7 @@ function shell(): void {
       <a href="#/" class="btn btn-sm btn-ghost-primary">🏠<br><small>${d.myLearning}</small></a>
       <a href="#/courses" class="btn btn-sm btn-ghost-primary">📚<br><small>${d.courses}</small></a>
       <a href="#/grades" class="btn btn-sm btn-ghost-primary">⭐<br><small>${d.grades}</small></a>
-      <a href="#/more" class="btn btn-sm btn-ghost-primary">⋯<br><small>More</small></a></div></nav></div>`;
+      <a href="#/more" class="btn btn-sm btn-ghost-primary">⋯<br><small>${d.more}</small></a></div></nav></div>`;
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
   bindOnlineIndicator();
@@ -75,6 +75,10 @@ async function home(el: HTMLElement): Promise<void> {
       call<{ title: string; body: string }[]>('/api/v1/notifications').catch(() => []),
     ]);
     el.innerHTML = `<h2>🏠 ${d.myLearning}</h2>
+      <div class="d-flex gap-1 flex-wrap mb-3">
+      <a class="btn btn-sm btn-outline-primary" href="#/shop">🛍 ${d.shop}</a>
+      <a class="btn btn-sm btn-outline-primary" href="#/live">📡 ${d.live}</a>
+      <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a></div>
       <h3 class="mt-3">${d.enrolled}</h3>
       ${(rep.enrollments as { course_title: string; progress_percent: number; course_id: string }[]).map((x) => `<a href="#/courses/${x.course_id}" class="card card-link mb-2"><div class="card-body"><strong>${x.course_title}</strong>
       <div class="progress mt-2" role="progressbar" aria-valuenow="${x.progress_percent}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${x.progress_percent}%"></div></div></div></a>`).join('') || `<p class="text-muted">${d.empty}</p>`}
@@ -113,7 +117,8 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
       call<{ id: string; title: string }[]>('/api/v1/quizzes', {}, { course_id: courseId }).catch(() => []),
       call<{ id: string; title: string; due_at: string | null }[]>('/api/v1/assignments', {}, { course_id: courseId }).catch(() => []),
     ]);
-    const tabs = [['learn', 'Learn'], ['quiz', `Quiz (${(quizzes as unknown[]).length})`], ['task', `Tasks (${(assignments as unknown[]).length})`], ['talk', 'Discussion']];
+    const scormPkgs = (await call<{ id: string; title: string }[]>(`/api/v1/scorm/packages`, {}, { course_id: courseId }).catch(() => [])) as { id: string; title: string }[];
+    const tabs = [['learn', d.learn], ['quiz', `${d.quiz} (${(quizzes as unknown[]).length})`], ['task', `${d.tasks} (${(assignments as unknown[]).length})`], ['talk', d.discussion], ['scorm', `${d.scorm} (${scormPkgs.length})`], ['code', d.exercises]];
     el.innerHTML = `<a href="#/courses" class="btn btn-sm btn-outline-secondary mb-2">← ${d.courses}</a>
       <h2>${String(course.title)}</h2><p class="text-muted">${String(course.description ?? '')}</p>
       <div class="alert alert-info">${d.progress}: ${(prog.progress as { percent: number } | undefined)?.percent ?? 0}%</div>
@@ -129,7 +134,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
         html += `<div class="card mb-2"><div class="card-header"><h3 class="card-title">${s.title}</h3></div><div class="list-group list-group-flush">`;
         for (const l of lessons) {
           html += `<div class="list-group-item"><div class="d-flex gap-2 align-items-center flex-wrap"><span class="badge bg-blue">${l.content_type}</span><strong>${l.title}</strong>
-            <button class="btn btn-sm btn-outline-green ms-auto" data-done="${l.id}">Mark done</button></div>
+            <button class="btn btn-sm btn-outline-green ms-auto" data-done="${l.id}">${d.markDone}</button></div>
             ${l.content_type === 'text' && l.body ? `<div class="mt-2">${l.body.slice(0, 2000)}</div>` : ''}
             ${l.video_url ? `<div class="mt-2 ratio ratio-16x9"><video controls preload="none" src="${l.video_url}" class="w-100"></video></div>` : ''}</div>`;
         }
@@ -141,18 +146,18 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
         try {
           if (!navigator.onLine) {
             enqueueOffline('POST', `/api/v1/lessons/${lid}/complete`, {});
-            toast('Offline — completion queued, will sync', 'warning');
+            toast(d.offlineQueued, 'warning');
             return;
           }
           await call(`/api/v1/lessons/${lid}/complete`, { method: 'POST' });
-          toast('Lesson completed', 'success');
+          toast(d.lessonCompleted, 'success');
           await courseDetail(el, courseId);
         } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
       }));
     };
     const renderQuiz = async () => {
       body.innerHTML = (quizzes as { id: string; title: string }[]).map((q) => `<div class="card mb-2"><div class="card-body">
-        <h3 class="card-title">${q.title}</h3><button class="btn btn-primary btn-sm" data-start="${q.id}">Start attempt</button>
+        <h3 class="card-title">${q.title}</h3><button class="btn btn-primary btn-sm" data-start="${q.id}">${d.start}</button>
         <div data-att="${q.id}" class="mt-2"></div></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
       body.querySelectorAll('[data-start]').forEach((b) => b.addEventListener('click', async () => {
         const qid = (b as HTMLElement).dataset.start ?? '';
@@ -162,11 +167,11 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
           const qs = (await call<{ id: string; type: string; prompt: string; options: { id: string; label: string }[] }[]>(`/api/v1/quizzes/${qid}/questions`)) as {
             id: string; type: string; prompt: string; options: { id: string; label: string }[];
           }[];
-          box.innerHTML = `<form id="quiz-form">${att.expires_at ? `<div class="alert alert-warning">Time limit — submit before ${att.expires_at.slice(11, 16)}</div>` : ''}
+          box.innerHTML = `<form id="quiz-form">${att.expires_at ? `<div class="alert alert-warning">${att.expires_at.slice(11, 16)}</div>` : ''}
             ${qs.map((q, i) => `<div class="mb-3"><strong>${i + 1}. ${q.prompt}</strong>
-            ${q.type === 'multiple_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${o.label}</label>`).join('') : `<input class="form-control" name="q_${q.id}" placeholder="Your answer">`}
+            ${q.type === 'multiple_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${o.label}</label>`).join('') : `<input class="form-control" name="q_${q.id}" placeholder="${d.answer}">`}
             </div>`).join('')}
-            <button class="btn btn-primary">Submit answers</button></form><div data-res class="mt-2"></div>`;
+            <button class="btn btn-primary">${d.submit}</button></form><div data-res class="mt-2"></div>`;
           (box.querySelector('#quiz-form') as HTMLFormElement).addEventListener('submit', async (e) => {
             e.preventDefault();
             const fd = new FormData(e.target as HTMLFormElement);
@@ -181,7 +186,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
               const res = (await call<{ score: number; passed: boolean }>(`/api/v1/quiz-attempts/${att.id}/submit`, {
                 method: 'POST', body: JSON.stringify({ answers }), headers: { 'Idempotency-Key': crypto.randomUUID() },
               })) as { score: number; passed: boolean };
-              (box.querySelector('[data-res]') as HTMLElement).innerHTML = `<div class="alert ${res.passed ? 'alert-success' : 'alert-warning'}">Score ${res.score} — ${res.passed ? 'Passed 🎉' : 'Not passed yet'}</div>`;
+              (box.querySelector('[data-res]') as HTMLElement).innerHTML = `<div class="alert ${res.passed ? 'alert-success' : 'alert-warning'}">${d.score} ${res.score} — ${res.passed ? d.passed : d.notPassed}</div>`;
             } catch (err) { toast(err instanceof Error ? err.message : 'Submit failed', 'danger'); }
           });
         } catch (err) { toast(err instanceof Error ? err.message : 'Cannot start', 'danger'); }
@@ -190,15 +195,15 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
     const renderTasks = async () => {
       body.innerHTML = (assignments as { id: string; title: string; description: string | null; due_at: string | null }[]).map((a) => `<div class="card mb-2"><div class="card-body">
         <h3 class="card-title">${a.title}</h3><p class="text-muted">${(a.description ?? '').slice(0, 400)}</p>
-        <p class="small">Due: ${a.due_at ?? '—'}</p><div data-sub="${a.id}"></div>
-        <form data-sform="${a.id}" class="d-flex gap-2"><input class="form-control" name="body" placeholder="Paste your answer / link…" required>
-        <button class="btn btn-primary btn-sm">Submit</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
+        <p class="small">${d.date}: ${a.due_at ?? '—'}</p><div data-sub="${a.id}"></div>
+        <form data-sform="${a.id}" class="d-flex gap-2"><input class="form-control" name="body" placeholder="${d.answer}" required>
+        <button class="btn btn-primary btn-sm">${d.submit}</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
       for (const a of assignments as { id: string }[]) {
         const subs = (await call<{ status: string; score: number | null; feedback: string | null }[]>(`/api/v1/assignments/${a.id}/submissions`).catch(() => [])) as {
           status: string; score: number | null; feedback: string | null;
         }[];
         const box = body.querySelector(`[data-sub="${a.id}"]`) as HTMLElement;
-        if (subs[0]) box.innerHTML = `<div class="alert ${subs[0].status === 'graded' ? 'alert-success' : 'alert-info'}">Status: ${subs[0].status}${subs[0].score !== null ? ` · Score ${subs[0].score}` : ''}${subs[0].feedback ? ` · ${subs[0].feedback}` : ''}</div>`;
+        if (subs[0]) box.innerHTML = `<div class="alert ${subs[0].status === 'graded' ? 'alert-success' : 'alert-info'}">${d.status}: ${subs[0].status}${subs[0].score !== null ? ` · ${d.score} ${subs[0].score}` : ''}${subs[0].feedback ? ` · ${subs[0].feedback}` : ''}</div>`;
       }
       body.querySelectorAll('[data-sform]').forEach((f) => (f as HTMLFormElement).addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -208,34 +213,34 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
           await call(`/api/v1/assignments/${aid}/submissions`, {
             method: 'POST', body: JSON.stringify({ body: String(text) }), headers: { 'Idempotency-Key': crypto.randomUUID() },
           });
-          toast('Submitted', 'success');
+          toast(d.quizSubmitted, 'success');
           await renderTasks();
-        } catch (err) { toast(err instanceof Error ? err.message : 'Submit failed', 'danger'); }
+        } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
       }));
     };
     const renderTalk = async () => {
       const threads = (await call<{ id: string; title: string; body: string }[]>('/api/v1/discussions', {}, { course_id: courseId }).catch(() => [])) as { id: string; title: string; body: string }[];
-      body.innerHTML = `<button class="btn btn-primary btn-sm mb-2" id="th-new">New thread</button>
-        ${threads.map((t) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${t.title}</h3><p>${t.body.slice(0, 400)}</p>
-        <div data-rep="${t.id}"></div><form data-rform="${t.id}" class="d-flex gap-2 mt-2"><input class="form-control" name="body" placeholder="Reply…" required><button class="btn btn-sm btn-outline-primary">Reply</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`}`;
+      body.innerHTML = `<button class="btn btn-primary btn-sm mb-2" id="th-new">${d.newThread}</button>
+        ${threads.map((x) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${x.title}</h3><p>${x.body.slice(0, 400)}</p>
+        <div data-rep="${x.id}"></div><form data-rform="${x.id}" class="d-flex gap-2 mt-2"><input class="form-control" name="body" placeholder="${d.reply}…" required><button class="btn btn-sm btn-outline-primary">${d.reply}</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`}`;
       for (const t of threads) {
         const reps = (await call<{ body: string }[]>(`/api/v1/discussions/${t.id}/replies`).catch(() => [])) as { body: string }[];
         (body.querySelector(`[data-rep="${t.id}"]`) as HTMLElement).innerHTML = reps.map((r) => `<div class="alert alert-info py-1 small">${r.body.slice(0, 300)}</div>`).join('');
       }
       (body.querySelector('#th-new') as HTMLButtonElement)?.addEventListener('click', async () => {
-        const title = prompt('Thread title:');
+        const title = prompt(`${d.newThread}:`);
         if (!title) return;
-        const text = prompt('Message:');
+        const text = prompt(`${d.answer}:`);
         if (!text) return;
         await call('/api/v1/discussions', { method: 'POST', body: JSON.stringify({ course_id: courseId, title, body: text }) });
-        toast('Posted', 'success');
+        toast(d.quizSubmitted, 'success');
         await renderTalk();
       });
       body.querySelectorAll('[data-rform]').forEach((f) => (f as HTMLFormElement).addEventListener('submit', async (e) => {
         e.preventDefault();
         const tid = (f as HTMLElement).dataset.rform ?? '';
         await call(`/api/v1/discussions/${tid}/replies`, { method: 'POST', body: JSON.stringify({ body: String(new FormData(f as HTMLFormElement).get('body')) }) });
-        toast('Replied', 'success');
+        toast(d.quizSubmitted, 'success');
         await renderTalk();
       }));
     };
@@ -246,6 +251,9 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
       if (tab === 'learn') void renderLearn();
       else if (tab === 'quiz') void renderQuiz();
       else if (tab === 'task') void renderTasks();
+      else if (tab === 'scorm') {
+        body.innerHTML = scormPkgs.map((p) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${p.title}</h3><a class="btn btn-sm btn-primary" href="#/scorm/${p.id}">${d.launch}</a></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`;
+      } else if (tab === 'code') void exercisesView(body, courseId);
       else void renderTalk();
     }));
     await renderLearn();
@@ -259,40 +267,173 @@ async function gradesView(el: HTMLElement): Promise<void> {
       enrollments: { course_title: string; progress_percent: number }[]; grades: { score: number; max_score?: number; category: string }[];
     };
     el.innerHTML = `<h2>${d.grades}</h2><div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table card-table">
-      <thead><tr><th>Category</th><th>Score</th></tr></thead><tbody>
-      ${rep.grades.map((g) => `<tr><td>${g.category}</td><td><strong>${g.score}</strong></td></tr>`).join('') || '<tr><td colspan="2">No grades yet.</td></tr>'}
+      <thead><tr><th>${d.category}</th><th>${d.score}</th></tr></thead><tbody>
+      ${rep.grades.map((g) => `<tr><td>${g.category}</td><td><strong>${g.score}</strong></td></tr>`).join('') || `<tr><td colspan="2">${d.empty}</td></tr>`}
       </tbody></table></div></div></div>
-      <h3 class="mt-3">Certificates</h3><div id="certs">${loading('')}</div>`;
+      <h3 class="mt-3">${d.certificates}</h3><div id="certs">${loading('')}</div>`;
     const certs = (await call<{ certificate_number: string; issued_at: string }[]>('/api/v1/certificates').catch(() => [])) as { certificate_number: string; issued_at: string }[];
-    (el.querySelector('#certs') as HTMLElement).innerHTML = certs.map((c) => `<div class="card card-body mb-2 py-2">🎓 <code>${c.certificate_number}</code> <span class="text-muted">· ${c.issued_at?.slice(0, 10) ?? ''}</span></div>`).join('') || '<p class="text-muted">No certificates yet — finish a course to earn one.</p>';
+    (el.querySelector('#certs') as HTMLElement).innerHTML = certs.map((c) => `<div class="card card-body mb-2 py-2">🎓 <code>${c.certificate_number}</code> <span class="text-muted">· ${c.issued_at?.slice(0, 10) ?? ''}</span></div>`).join('') || `<p class="text-muted">${d.noCertificates}</p>`;
   } catch (e) { el.innerHTML = errHtml(e); }
 }
 
-async function moreView(el: HTMLElement): Promise<void> {
-  const orgId = currentOrg() ?? (await myOrgs().then((o) => { if (o[0] && !currentOrg()) setCurrentOrg(o[0].id); return currentOrg(); }).catch(() => null));
+async function shopView(el: HTMLElement): Promise<void> {
+  el.innerHTML = loading();
+  try {
+    const [courses, bundles, orders] = await Promise.all([
+      call<{ id: string; title: string; code: string; price: number }[]>('/api/v1/catalog/courses').catch(() => []),
+      call<{ id: string; name: string; price: number }[]>('/api/v1/catalog/bundles').catch(() => []),
+      call<{ id: string; kind: string; total: number; status: string }[]>('/api/v1/orders').catch(() => []),
+    ]);
+    el.innerHTML = `<h2>🛍 ${d.shop}</h2>
+      <h3>${d.courses}</h3><div class="row row-cards">${(courses as { id: string; title: string; code: string; price: number }[]).map((c) => `<div class="col-md-4 col-6"><div class="card h-100"><div class="card-body">
+      <h3 class="card-title">${c.title}</h3><p class="text-muted small">${c.code} · ${c.price > 0 ? c.price : d.free}</p>
+      <div class="d-flex gap-1"><a class="btn btn-sm btn-outline-primary" href="#/courses/${c.id}">${d.continue}</a>
+      ${c.price > 0 ? `<button class="btn btn-sm btn-primary" data-buy="course:${c.id}">${d.buy}</button>` : `<button class="btn btn-sm btn-primary" data-enroll="${c.id}">${d.enroll}</button>`}</div></div></div></div>`).join('') || `<p>${d.empty}</p>`}</div>
+      <h3 class="mt-3">${d.bundles}</h3><div class="row row-cards">${(bundles as { id: string; name: string; price: number }[]).map((b) => `<div class="col-md-4 col-6"><div class="card h-100"><div class="card-body">
+      <h3 class="card-title">${b.name}</h3><p class="text-muted">${b.price}</p>
+      <button class="btn btn-sm btn-primary" data-buy="bundle:${b.id}">${d.buy}</button></div></div></div>`).join('') || `<p>${d.empty}</p>`}</div>
+      <h3 class="mt-3">${d.orders}</h3><div id="ord">${(orders as { id: string; kind: string; total: number; status: string }[]).map((o) => `<div class="card card-body mb-2 py-2">${o.kind} · ${o.total} · <span class="badge ${o.status === 'paid' ? 'bg-green' : 'bg-yellow'}">${o.status}</span>${o.status === 'pending' ? `<div class="small text-muted">${d.pendingPayment}</div>` : ''}</div>`).join('') || `<p>${d.empty}</p>`}</div>
+      <div class="card mt-3"><div class="card-body"><form id="gift-f" class="d-flex gap-2">
+      <input id="gift-code" class="form-control" placeholder="Gift code" required><button class="btn btn-outline-primary">${d.redeem}</button></form></div></div>`;
+    el.querySelectorAll('[data-enroll]').forEach((b) => b.addEventListener('click', async () => {
+      try {
+        await call('/api/v1/enrollments', { method: 'POST', body: JSON.stringify({ course_id: (b as HTMLElement).dataset.enroll }) });
+        toast(d.enrolled2, 'success');
+      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
+    }));
+    el.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', async () => {
+      const [kind, ref] = ((b as HTMLElement).dataset.buy ?? '').split(':');
+      const code = prompt(d.couponCode) || undefined;
+      try {
+        const r = (await call<{ id: string; total: number; status: string }>('/api/v1/orders', { method: 'POST', body: JSON.stringify({ organization_id: currentOrg() ?? undefined, kind, reference_id: ref, ...(code ? { coupon_code: code } : {}) }) })) as { id: string; total: number; status: string };
+        if (r.status === 'paid') { toast(d.enrolled2, 'success'); await shopView(el); return; }
+        const claim = confirm(`${d.pendingPayment}\n${d.total}: ${r.total}`);
+        if (claim) {
+          await call(`/api/v1/orders/${r.id}/payments/manual`, { method: 'POST', body: JSON.stringify({}) });
+          toast(d.pendingPayment, 'info');
+          await shopView(el);
+        }
+      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
+    }));
+    (el.querySelector('#gift-f') as HTMLFormElement).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await call('/api/v1/gifts/redeem', { method: 'POST', body: JSON.stringify({ code: (el.querySelector('#gift-code') as HTMLInputElement).value }) });
+        toast(d.enrolled2, 'success');
+        await shopView(el);
+      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
+    });
+  } catch (e) { el.innerHTML = errHtml(e); }
+}
+
+async function liveView(el: HTMLElement): Promise<void> {
+  el.innerHTML = loading();
+  try {
+    const orgId = currentOrg();
+    const items = (await call<{ id: string; title: string; starts_at: string; meeting_url: string | null }[]>('/api/v1/live-sessions', {}, orgId ? { organization_id: orgId, upcoming: '1' } : { upcoming: '1' }).catch(() => [])) as {
+      id: string; title: string; starts_at: string; meeting_url: string | null;
+    }[];
+    el.innerHTML = `<h2>📡 ${d.live}</h2>${items.map((s) => `<div class="card mb-2"><div class="card-body">
+      <h3 class="card-title">${s.title}</h3><p class="text-muted">${s.starts_at?.slice(0, 16).replace('T', ' ') ?? ''}</p>
+      <div class="d-flex gap-1"><button class="btn btn-sm btn-primary" data-reg="${s.id}">${d.register2}</button>
+      ${s.meeting_url ? `<a class="btn btn-sm btn-outline-primary" href="${s.meeting_url}" target="_blank" rel="noopener">${d.launch}</a>` : ''}</div></div></div>`).join('') || `<p>${d.empty}</p>`}`;
+    el.querySelectorAll('[data-reg]').forEach((b) => b.addEventListener('click', async () => {
+      try {
+        await call(`/api/v1/live-sessions/${(b as HTMLElement).dataset.reg}/register`, { method: 'POST', body: '{}' });
+        toast(d.registered, 'success');
+      } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
+    }));
+  } catch (e) { el.innerHTML = errHtml(e); }
+}
+
+async function programsView(el: HTMLElement): Promise<void> {
+  el.innerHTML = loading();
+  try {
+    const orgId = currentOrg();
+    const programs = (await call<{ id: string; name: string }[]>('/api/v1/programs', {}, orgId ? { organization_id: orgId } : {}).catch(() => [])) as { id: string; name: string }[];
+    el.innerHTML = `<h2>🗺 ${d.programs}</h2>${programs.map((p) => `<div class="card mb-2"><div class="card-body">
+      <h3 class="card-title">${p.name}</h3><button class="btn btn-sm btn-outline-primary" data-prog="${p.id}">${d.continue}</button>
+      <div data-pd="${p.id}" class="mt-2"></div></div></div>`).join('') || `<p>${d.empty}</p>`}`;
+    el.querySelectorAll('[data-prog]').forEach((b) => b.addEventListener('click', async () => {
+      const id = (b as HTMLElement).dataset.prog ?? '';
+      const det = (await call<{ courses: { course_id: string; course_title: string; locked: boolean; enrollment_status: string | null }[] }>(`/api/v1/programs/${id}`)) as {
+        courses: { course_id: string; course_title: string; locked: boolean; enrollment_status: string | null }[];
+      };
+      (el.querySelector(`[data-pd="${id}"]`) as HTMLElement).innerHTML = `<ol>${det.courses.map((x) => `<li>${x.course_title}
+        ${x.locked ? `<span class="badge bg-red">${d.locked}</span>` : x.enrollment_status ? `<span class="badge bg-green">${x.enrollment_status}</span>` : `<button class="btn btn-sm btn-primary" data-penroll="${x.course_id}">${d.enroll}</button>`}</li>`).join('')}</ol>`;
+      el.querySelectorAll('[data-penroll]').forEach((bb) => bb.addEventListener('click', async () => {
+        await call('/api/v1/enrollments', { method: 'POST', body: JSON.stringify({ course_id: (bb as HTMLElement).dataset.penroll }) });
+        toast(d.enrolled2, 'success');
+      }));
+    }));
+  } catch (e) { el.innerHTML = errHtml(e); }
+}
+
+async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
+  el.innerHTML = loading();
+  try {
+    const att = (await call<{ id: string; resumed: boolean }>(`/api/v1/scorm/attempts`, { method: 'POST', body: JSON.stringify({ package_id: pkgId }) })) as { id: string; resumed: boolean };
+    el.innerHTML = `<a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary mb-2">←</a>
+      <div class="ratio ratio-16x9 mb-2"><iframe title="SCORM content" sandbox="allow-scripts" src="/api/v1/scorm/content/${pkgId}/index.html" class="w-100 border rounded"></iframe></div>
+      <div class="alert alert-info">Sandboxed player — content cannot access your session. Use the buttons to record progress.</div>
+      <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" id="sc-bm">${d.bookmark}</button>
+      <button class="btn btn-primary" id="sc-done">${d.markSynced}</button></div><div id="sc-out" class="mt-2"></div>`;
+    (el.querySelector('#sc-bm') as HTMLButtonElement).addEventListener('click', async () => {
+      const loc = prompt('Bookmark (e.g. page 3):') ?? '';
+      await call(`/api/v1/scorm/attempts/${att.id}/commit`, { method: 'POST', body: JSON.stringify({ location: loc }) });
+      toast(d.bookmark, 'success');
+    });
+    (el.querySelector('#sc-done') as HTMLButtonElement).addEventListener('click', async () => {
+      await call(`/api/v1/scorm/attempts/${att.id}/commit`, { method: 'POST', body: JSON.stringify({ completion: 'completed', success: 'passed' }) });
+      (el.querySelector('#sc-out') as HTMLElement).innerHTML = `<div class="alert alert-success">${d.markSynced} ✓</div>`;
+    });
+  } catch (e) { el.innerHTML = errHtml(e); }
+}
+
+async function exercisesView(el: HTMLElement, courseId: string): Promise<void> {
+  const items = (await call<{ id: string; title: string; language: string }[]>(`/api/v1/exercises`, {}, { course_id: courseId }).catch(() => [])) as { id: string; title: string; language: string }[];
+  el.innerHTML = `<h3>💻 ${d.exercises}</h3>${items.map((x) => `<div class="card mb-2"><div class="card-body">
+    <h3 class="card-title">${x.title}</h3><span class="badge bg-blue">${x.language}</span>
+    <form data-ex="${x.id}" class="mt-2"><textarea name="code" class="form-control mb-2" rows="6" placeholder="// your code"></textarea>
+    <button class="btn btn-sm btn-primary">${d.submit} (review)</button></form></div></div>`).join('') || `<p class="text-muted">${d.empty}</p>`}`;
+  el.querySelectorAll('[data-ex]').forEach((f) => (f as HTMLFormElement).addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await call(`/api/v1/exercises/${(f as HTMLElement).dataset.ex}/submissions`, { method: 'POST', body: JSON.stringify({ code: String(new FormData(f as HTMLFormElement).get('code')) }) });
+      toast(d.submit, 'success');
+    } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
+  }));
+}
+
+async function moreView(el: HTMLElement): Promise<void> {  const orgId = currentOrg() ?? (await myOrgs().then((o) => { if (o[0] && !currentOrg()) setCurrentOrg(o[0].id); return currentOrg(); }).catch(() => null));
   el.innerHTML = loading();
   try {
     const [att, notifs] = await Promise.all([
       orgId ? call<{ records: { status: string; title: string; session_date: string }[]; attendance_pct: number }>(`/api/v1/attendance/student`, {}, { organization_id: orgId }).catch(() => ({ records: [], attendance_pct: 0 })) : Promise.resolve({ records: [], attendance_pct: 0 }),
       call<{ id: string; title: string; body: string; is_read: number }[]>('/api/v1/notifications').catch(() => []),
     ]);
-    el.innerHTML = `<h2>More</h2>
-      <div class="card mb-3"><div class="card-header"><h3 class="card-title">My attendance (${(att as { attendance_pct: number }).attendance_pct}%)</h3></div>
-      <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>Session</th><th>Date</th><th>Status</th></tr></thead><tbody>
-      ${((att as { records: { status: string; title: string; session_date: string }[] }).records).slice(0, 20).map((r) => `<tr><td>${r.title}</td><td>${r.session_date}</td><td><span class="badge ${r.status === 'present' ? 'bg-green' : 'bg-yellow'}">${r.status}</span></td></tr>`).join('') || '<tr><td colspan="3">No records.</td></tr>'}</tbody></table></div></div></div>
+    el.innerHTML = `<h2>${d.more}</h2>
+    <div class="d-flex gap-1 flex-wrap mb-3">
+      <a class="btn btn-sm btn-outline-primary" href="#/shop">🛍 ${d.shop}</a>
+      <a class="btn btn-sm btn-outline-primary" href="#/live">📡 ${d.live}</a>
+      <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a></div>
+      <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.myAttendance} (${(att as { attendance_pct: number }).attendance_pct}%)</h3></div>
+      <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>${d.session}</th><th>${d.date}</th><th>${d.status}</th></tr></thead><tbody>
+      ${((att as { records: { status: string; title: string; session_date: string }[] }).records).slice(0, 20).map((r) => `<tr><td>${r.title}</td><td>${r.session_date}</td><td><span class="badge ${r.status === 'present' ? 'bg-green' : 'bg-yellow'}">${r.status}</span></td></tr>`).join('') || `<tr><td colspan="3">${d.empty}</td></tr>`}</tbody></table></div></div></div>
       <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.announcements}</h3></div><div class="card-body">
       ${(notifs as { id: string; title: string; body: string; is_read: number }[]).map((n) => `<div class="alert ${n.is_read ? 'alert-info' : 'alert-success'} py-2"><strong>${n.title}</strong><br>${n.body}</div>`).join('') || '<p class="text-muted">None.</p>'}</div></div>
       <div class="card"><div class="card-header"><h3 class="card-title">${d.profile}</h3></div><div class="card-body">
       <p><strong>${getMe()?.name}</strong><br><span class="text-muted">${getMe()?.email}</span></p>
-      <form id="pw"><label class="form-label">New password</label><input type="password" id="npw" class="form-control mb-2" required>
-      <label class="form-label">Current password</label><input type="password" id="cpw" class="form-control mb-2" required>
-      <button class="btn btn-primary btn-sm">Change password</button></form>
-      <div class="mt-2"><button class="btn btn-sm btn-outline-primary" id="push-btn">Enable push notifications</button> <span id="push-st" class="text-muted small"></span></div></div></div>`;
+      <form id="pw"><label class="form-label">${d.newPassword}</label><input type="password" id="npw" class="form-control mb-2" required>
+      <label class="form-label">${d.currentPassword}</label><input type="password" id="cpw" class="form-control mb-2" required>
+      <button class="btn btn-primary btn-sm">${d.changePassword}</button></form>
+      <div class="mt-2"><button class="btn btn-sm btn-outline-primary" id="push-btn">${d.enablePush}</button> <span id="push-st" class="text-muted small"></span></div></div></div>`;
     (el.querySelector('#pw') as HTMLFormElement).addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
         await call('/api/v1/auth/password/change', { method: 'POST', body: JSON.stringify({ current_password: (el.querySelector('#cpw') as HTMLInputElement).value, new_password: (el.querySelector('#npw') as HTMLInputElement).value }) });
-        toast('Password changed', 'success');
+        toast(d.changePassword, 'success');
       } catch (err) { toast(err instanceof Error ? err.message : 'Failed', 'danger'); }
     });
     (el.querySelector('#push-btn') as HTMLButtonElement).addEventListener('click', async () => {
@@ -314,6 +455,10 @@ async function router(): Promise<void> {
   try {
     if (route === '/' || route === '') await home(view);
     else if (route === '/courses') await courseList(view);
+    else if (route === '/shop') await shopView(view);
+    else if (route === '/live') await liveView(view);
+    else if (route === '/programs') await programsView(view);
+    else if (route.startsWith('/scorm/')) await scormPlayer(view, route.split('/')[2]);
     else if (route.startsWith('/courses/')) await courseDetail(view, route.split('/')[2]);
     else if (route.startsWith('/grades')) await gradesView(view);
     else if (route.startsWith('/more')) await moreView(view);

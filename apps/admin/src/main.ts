@@ -1,6 +1,6 @@
 import '@tabler/core/dist/css/tabler.min.css';
 import { applyTheme, themeToggleHtml, bindThemeToggles, bindSwUpdates, onlineIndicatorHtml, bindOnlineIndicator, flushQueue } from '@lms/ui';
-import { ensureMe, login, logout, getMe, call, myOrgs, currentOrgId, setCurrentOrgId, applyBranding, toast } from './lib.js';
+import { ensureMe, login, logout, getMe, call, myOrgs, currentOrgId, setCurrentOrgId, applyBranding, toast, t, lang } from './lib.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderUsers } from './pages/users.js';
 import { renderOrgs } from './pages/orgs.js';
@@ -14,42 +14,64 @@ import { renderSocial } from './pages/social.js';
 import { renderCerts, renderFilesPage } from './pages/certs.js';
 import { renderReports } from './pages/reports.js';
 import { renderSettings } from './pages/settings.js';
+import { renderCommerce } from './pages/commerce.js';
+import { renderCohorts } from './pages/cohorts.js';
+import { renderLive } from './pages/live.js';
+import { renderScorm } from './pages/scorm.js';
+import { renderData } from './pages/data.js';
 
 const THEME_KEY = 'admin-theme';
 applyTheme(THEME_KEY);
 
-const NAV: { hash: string; label: string; title: string }[] = [
-  { hash: '#/', label: 'Dashboard', title: 'Dashboard' },
-  { hash: '#/users', label: 'Users', title: 'Users' },
-  { hash: '#/organizations', label: 'Organizations', title: 'Organizations' },
-  { hash: '#/roles', label: 'Roles', title: 'Roles & permissions' },
-  { hash: '#/courses', label: 'Courses', title: 'Courses' },
-  { hash: '#/quizzes', label: 'Quizzes', title: 'Quizzes' },
-  { hash: '#/assignments', label: 'Assignments', title: 'Assignments' },
-  { hash: '#/attendance', label: 'Attendance', title: 'Attendance' },
-  { hash: '#/grades', label: 'Grades', title: 'Grades' },
-  { hash: '#/community', label: 'Community', title: 'Announcements & discussions' },
-  { hash: '#/certificates', label: 'Certificates', title: 'Certificates' },
-  { hash: '#/files', label: 'Files', title: 'Files' },
-  { hash: '#/reports', label: 'Reports', title: 'Reports' },
-  { hash: '#/settings', label: 'Settings', title: 'Settings' },
-];
+function navItems(): { hash: string; label: string; title: string }[] {
+  const d = t();
+  return [
+    { hash: '#/', label: d.dashboard, title: d.dashboard },
+    { hash: '#/users', label: d.users, title: d.users },
+    { hash: '#/organizations', label: d.organizations, title: d.organizations },
+    { hash: '#/roles', label: d.roles, title: d.roles },
+    { hash: '#/courses', label: d.courses, title: d.courses },
+    { hash: '#/cohorts', label: d.cohorts, title: d.cohorts },
+    { hash: '#/quizzes', label: d.quizzes, title: d.quizzes },
+    { hash: '#/assignments', label: d.assignments, title: d.assignments },
+    { hash: '#/attendance', label: d.attendance, title: d.attendance },
+    { hash: '#/live', label: d.live, title: d.live },
+    { hash: '#/scorm', label: d.scorm, title: d.scorm },
+    { hash: '#/commerce', label: d.commerce, title: d.commerce },
+    { hash: '#/data', label: d.dataAi, title: d.dataAi },
+    { hash: '#/grades', label: d.grades, title: d.grades },
+    { hash: '#/community', label: d.community, title: d.community },
+    { hash: '#/certificates', label: d.certificates, title: d.certificates },
+    { hash: '#/files', label: d.files, title: d.files },
+    { hash: '#/reports', label: d.reports, title: d.reports },
+    { hash: '#/settings', label: d.settings, title: d.settings },
+  ];
+}
 
 async function loginPage(root: HTMLElement): Promise<void> {
+  const d = t();
   root.innerHTML = `<div class="row justify-content-center"><div class="col-md-4"><div class="card">
     <div class="card-body"><h2 class="card-title mb-1">LMS Admin</h2>
-    <p class="text-muted">Sign in to manage your organization.</p>
+    <p class="text-muted">${d.login} — ${d.organizations}</p>
     <form id="login-form">
-    <label class="form-label" for="email">Email</label>
+    <label class="form-label" for="email">${d.email}</label>
     <input id="email" type="email" class="form-control mb-2" required autocomplete="username">
-    <label class="form-label" for="password">Password</label>
+    <label class="form-label" for="password">${d.password}</label>
     <input id="password" type="password" class="form-control mb-3" required autocomplete="current-password">
     <div id="login-err"></div>
-    <button class="btn btn-primary w-100">Sign in</button></form>
-    <div class="mt-2 d-flex justify-content-between align-items-center"><span class="text-muted small">Tokens in memory · refresh in httpOnly cookie</span>${themeToggleHtml(THEME_KEY)}</div>
+    <button class="btn btn-primary w-100">${d.login}</button></form>
+    <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
+    <select id="login-lang" class="form-select form-select-sm w-auto" aria-label="Language">
+      <option value="en"${lang() === 'en' ? ' selected' : ''}>EN</option>
+      <option value="id"${lang() === 'id' ? ' selected' : ''}>ID</option>
+    </select>${themeToggleHtml(THEME_KEY)}</div>
     </div></div></div></div>`;
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
+  (root.querySelector('#login-lang') as HTMLSelectElement).addEventListener('change', (e) => {
+    localStorage.setItem('admin-locale', (e.target as HTMLSelectElement).value);
+    void loginPage(root);
+  });
   (root.querySelector('#login-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = (root.querySelector('#email') as HTMLInputElement).value;
@@ -83,7 +105,7 @@ async function shell(): Promise<void> {
       <h1 class="navbar-brand" id="brand-name">LMS Admin</h1>
       <div class="collapse navbar-collapse" id="sidebar-menu">
       <ul class="navbar-nav pt-lg-3" id="nav-list">
-        ${NAV.map((n) => `<li class="nav-item"><a class="nav-link" href="${n.hash}" data-nav="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`).join('')}
+        ${navItems().map((n) => `<li class="nav-item"><a class="nav-link" href="${n.hash}" data-nav="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`).join('')}
       </ul></div></div></aside>
     <div class="page-wrapper">
       <header class="navbar navbar-expand-md d-print-none sticky-top bg-white">
@@ -94,9 +116,13 @@ async function shell(): Promise<void> {
             <select id="org-sel" class="form-select form-select-sm w-auto" aria-label="Organization">
               ${orgs.map((o) => `<option value="${o.id}"${o.id === currentOrgId() ? ' selected' : ''}>${o.name}</option>`).join('')}
             </select>
+            <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language">
+              <option value="en"${lang() === 'en' ? ' selected' : ''}>EN</option>
+              <option value="id"${lang() === 'id' ? ' selected' : ''}>ID</option>
+            </select>
             ${themeToggleHtml(THEME_KEY)}
             <span class="text-muted small d-none d-md-inline">${me?.name ?? ''}</span>
-            <button id="logout" class="btn btn-sm btn-outline-danger">Logout</button>
+            <button id="logout" class="btn btn-sm btn-outline-danger">${t().logout}</button>
           </div></div></header>
       <div class="page-body"><div class="container-xl py-3" id="view"></div></div>
     </div></div>`;
@@ -108,6 +134,10 @@ async function shell(): Promise<void> {
   (document.getElementById('org-sel') as HTMLSelectElement).addEventListener('change', (e) => {
     setCurrentOrgId((e.target as HTMLSelectElement).value);
     void router();
+  });
+  (document.getElementById('lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
+    localStorage.setItem('admin-locale', (e.target as HTMLSelectElement).value);
+    location.reload();
   });
 }
 
@@ -125,7 +155,8 @@ async function router(): Promise<void> {
   }
   if (!document.getElementById('sidebar')) await shell();
   const route = hash.replace('#', '');
-  const item = NAV.find((n) => n.hash === `#${route}`) ?? (route.startsWith('/certificates') ? NAV[10] : NAV[0]);
+  const items = navItems();
+  const item = items.find((n) => n.hash === `#${route}`) ?? items[0];
   (document.getElementById('crumbs') as HTMLElement).innerHTML = `<li class="breadcrumb-item">Home</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`;
   document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('active', (a as HTMLElement).dataset.nav === item.hash));
   const view = document.getElementById('view') as HTMLElement;
@@ -135,6 +166,11 @@ async function router(): Promise<void> {
     else if (route.startsWith('/organizations')) await renderOrgs(view);
     else if (route.startsWith('/roles')) await renderRoles(view);
     else if (route.startsWith('/courses')) await renderCourses(view);
+    else if (route.startsWith('/cohorts')) await renderCohorts(view);
+    else if (route.startsWith('/live')) await renderLive(view);
+    else if (route.startsWith('/scorm')) await renderScorm(view);
+    else if (route.startsWith('/commerce')) await renderCommerce(view);
+    else if (route.startsWith('/data')) await renderData(view);
     else if (route.startsWith('/quizzes')) await renderQuizzes(view);
     else if (route.startsWith('/assignments')) await renderAssignments(view);
     else if (route.startsWith('/attendance')) await renderAttendance(view);

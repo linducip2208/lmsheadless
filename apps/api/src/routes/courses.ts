@@ -5,6 +5,9 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
+import { logActivity } from './growth.js';
+import { isPrivileged } from '../access.js';
+import { snapshotCourse } from './authoring.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -111,6 +114,7 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
     visibility: (v) => (v === 'private' || v === 'public' || v === 'unlisted' ? (v as string) : ''),
     start_at: (v) => (typeof v === 'string' && v.length <= 64 ? v : ''),
     end_at: (v) => (typeof v === 'string' && v.length <= 64 ? v : ''),
+    publish_at: (v) => (typeof v === 'string' && v.length <= 64 ? v : ''),
     enrollment_mode: (v) => (v === 'open' || v === 'approval' || v === 'closed' ? (v as string) : ''),
   };
   const sets: string[] = [];
@@ -128,6 +132,19 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
   params.push(nowIso(), c.req.param('id'));
   await execute(db, `UPDATE courses SET ${sets.join(', ')} WHERE id = ?`, ...params);
   if (body.status === 'published') {
+    // Approval workflow: teachers request, privileged roles publish directly.
+    const settings = await queryFirst<{ settings: string | null }>(db, 'SELECT settings FROM organizations WHERE id = ?', orgId);
+    let requireApproval = false;
+    try {
+      requireApproval = (JSON.parse(settings?.settings ?? '{}') as { require_approval?: string }).require_approval === 'true';
+    } catch { /* default off */ }
+    if (requireApproval && !isPrivileged(user, orgId)) {
+      await execute(db, 'UPDATE courses SET status = ?, review_status = ? WHERE id = ?', 'draft', 'pending', c.req.param('id'));
+      await execute(db, 'INSERT INTO publish_approvals (id, organization_id, course_id, requested_by, created_at) VALUES (?, ?, ?, ?, ?)', newId(), orgId, c.req.param('id'), user.id, nowIso());
+      await audit(c, 'publish.requested', { entity: 'course', entityId: c.req.param('id'), organizationId: orgId });
+      return ok(c, { updated: true, pending_approval: true });
+    }
+    await snapshotCourse(db, c.req.param('id'), user.id);
     await audit(c, 'course.published', { entity: 'course', entityId: c.req.param('id'), organizationId: orgId });
   }
   return ok(c, { updated: true });
@@ -225,9 +242,39 @@ courses.post('/enrollments', requireAuth(), async (c) => {
   }
   const existing = await queryFirst(db, 'SELECT id FROM enrollments WHERE course_id = ? AND student_id = ?', parsed.data.course_id, studentId);
   if (existing) return fail(c, 409, 'CONFLICT', t('enrolled', c.get('lang')));
+  // Enrollment rules: windows, capacity, prerequisites, paid entitlement.
+  const course = await queryFirst<{ price: number; capacity: number | null; enrollment_start: string | null; enrollment_end: string | null }>(
+    db, 'SELECT price, capacity, enrollment_start, enrollment_end FROM courses WHERE id = ?', parsed.data.course_id);
+  const nowMs = Date.now();
+  if (course?.enrollment_start && new Date(course.enrollment_start).getTime() > nowMs) {
+    return fail(c, 400, 'ENROLLMENT_CLOSED', 'Enrollment has not opened yet');
+  }
+  if (course?.enrollment_end && new Date(course.enrollment_end).getTime() < nowMs) {
+    return fail(c, 400, 'ENROLLMENT_CLOSED', 'Enrollment window has ended');
+  }
+  if (course?.capacity) {
+    const count = (await queryFirst<{ n: number }>(db, "SELECT COUNT(*) as n FROM enrollments WHERE course_id = ? AND status = 'active'", parsed.data.course_id))?.n ?? 0;
+    if (count >= course.capacity) {
+      return fail(c, 400, 'COURSE_FULL', 'Course is full; join the waitlist', { waitlist: true });
+    }
+  }
+  const prereqs = await queryAll<{ requires_course_id: string }>(db, 'SELECT requires_course_id FROM course_prerequisites WHERE course_id = ?', parsed.data.course_id);
+  for (const p of prereqs) {
+    const done = await queryFirst(db, "SELECT id FROM enrollments WHERE course_id = ? AND student_id = ? AND status = 'completed'", p.requires_course_id, studentId);
+    if (!done) {
+      return fail(c, 400, 'PREREQUISITE_NOT_MET', 'Complete the prerequisite course first', { requires_course_id: p.requires_course_id });
+    }
+  }
+  if ((course?.price ?? 0) > 0) {
+    const ent = await queryFirst<{ expires_at: string | null }>(db, 'SELECT expires_at FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?', studentId, 'course', parsed.data.course_id);
+    if (!ent || (ent.expires_at && new Date(ent.expires_at).getTime() < nowMs)) {
+      return fail(c, 402, 'PAYMENT_REQUIRED', 'This is a paid course; purchase or request an administrative grant first');
+    }
+  }
   const now = nowIso();
   await execute(db, 'INSERT INTO enrollments (id, course_id, student_id, status, enrolled_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
     newId(), parsed.data.course_id, studentId, parsed.data.status ?? 'active', now, now, now);
+  await audit(c, 'enrollment.created', { entity: 'enrollment', organizationId: orgId, metadata: { course_id: parsed.data.course_id, student_id: studentId } });
   return created(c, { enrolled: true });
 });
 
@@ -253,8 +300,37 @@ courses.post('/lessons/:lessonId/complete', requireAuth(), async (c) => {
   if (!lesson) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const orgId = await courseOrg(db, lesson.course_id);
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const enr = await queryFirst(db, 'SELECT id FROM enrollments WHERE course_id = ? AND student_id = ?', lesson.course_id, user.id);
+  const enr = await queryFirst<{ id: string; enrolled_at: string }>(db, 'SELECT id, enrolled_at FROM enrollments WHERE course_id = ? AND student_id = ?', lesson.course_id, user.id);
   if (!enr && !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (enr) {
+    // Paid access expiry.
+    const course = await queryFirst<{ price: number }>(db, 'SELECT price FROM courses WHERE id = ?', lesson.course_id);
+    if ((course?.price ?? 0) > 0) {
+      const ent = await queryFirst<{ expires_at: string | null }>(db, 'SELECT expires_at FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?', user.id, 'course', lesson.course_id);
+      if (!ent || (ent.expires_at && new Date(ent.expires_at).getTime() < Date.now())) {
+        return fail(c, 403, 'ACCESS_EXPIRED', 'Course access has expired');
+      }
+    }
+    // Lesson prerequisites must be completed first.
+    const lpre = await queryAll<{ requires_lesson_id: string }>(db, 'SELECT requires_lesson_id FROM lesson_prerequisites WHERE lesson_id = ?', lesson.id);
+    for (const p of lpre) {
+      const done = await queryFirst(db, 'SELECT id FROM lesson_progress WHERE lesson_id = ? AND student_id = ? AND is_completed = 1', p.requires_lesson_id, user.id);
+      if (!done) return fail(c, 400, 'PREREQUISITE_NOT_MET', 'Complete the prerequisite lesson first', { requires_lesson_id: p.requires_lesson_id });
+    }
+    // Drip schedule.
+    const drip = await queryFirst<{ days_after_enrollment: number | null; unlock_at: string | null }>(db, 'SELECT days_after_enrollment, unlock_at FROM drip_rules WHERE lesson_id = ?', lesson.id);
+    if (drip) {
+      if (drip.unlock_at && new Date(drip.unlock_at).getTime() > Date.now()) {
+        return fail(c, 400, 'LESSON_LOCKED', 'This lesson unlocks later', { unlock_at: drip.unlock_at });
+      }
+      if (drip.days_after_enrollment !== null && enr.enrolled_at) {
+        const unlock = new Date(enr.enrolled_at).getTime() + drip.days_after_enrollment * 86400000;
+        if (unlock > Date.now()) {
+          return fail(c, 400, 'LESSON_LOCKED', 'This lesson unlocks later', { unlock_at: new Date(unlock).toISOString() });
+        }
+      }
+    }
+  }
   const now = nowIso();
   await execute(db, 'INSERT INTO lesson_progress (id, lesson_id, student_id, course_id, is_completed, completed_at, last_activity_at, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?) ON CONFLICT(lesson_id, student_id) DO UPDATE SET is_completed = 1, completed_at = excluded.completed_at, last_activity_at = excluded.last_activity_at, updated_at = excluded.updated_at',
     newId(), lesson.id, user.id, lesson.course_id, now, now, now, now);
@@ -265,10 +341,14 @@ courses.post('/lessons/:lessonId/complete', requireAuth(), async (c) => {
   await execute(db, 'INSERT INTO course_progress (id, course_id, student_id, percent, last_activity_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(course_id, student_id) DO UPDATE SET percent = excluded.percent, last_activity_at = excluded.last_activity_at, updated_at = excluded.updated_at',
     newId(), lesson.course_id, user.id, percent, now, now, now);
   await execute(db, 'UPDATE enrollments SET progress_percent = ?, updated_at = ? WHERE course_id = ? AND student_id = ?', percent, now, lesson.course_id, user.id);
+  await logActivity(db, { organization_id: orgId, user_id: user.id, kind: 'lesson.complete', entity: 'lesson', entity_id: lesson.id });
   if (percent >= 100) {
-    const certNum = `CERT-${new Date().getUTCFullYear()}-${user.id.slice(0, 8).toUpperCase()}-${lesson.course_id.slice(0, 8).toUpperCase()}`;
-    await execute(db, 'INSERT OR IGNORE INTO certificates (id, organization_id, course_id, student_id, certificate_number, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      newId(), orgId, lesson.course_id, user.id, certNum, now, now);
+    const existingCert = await queryFirst(db, 'SELECT id FROM certificates WHERE course_id = ? AND student_id = ? AND revoked_at IS NULL', lesson.course_id, user.id);
+    if (!existingCert) {
+      const certNum = `CERT-${new Date().getUTCFullYear()}-${user.id.slice(0, 8).toUpperCase()}-${lesson.course_id.slice(0, 8).toUpperCase()}`;
+      await execute(db, 'INSERT INTO certificates (id, organization_id, course_id, student_id, certificate_number, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        newId(), orgId, lesson.course_id, user.id, certNum, now, now);
+    }
   }
   return ok(c, { completed: true, progress_percent: percent });
 });

@@ -4,6 +4,7 @@ import {
   bindOnlineIndicator, toast, modalForm, type ApiClient,
 } from '@lms/ui';
 import { getDict } from './i18n.js';
+import { banksView, liveView, cohortsView, aiView, exercisesView } from './panels.js';
 
 const THEME_KEY = 'teacher-theme';
 applyTheme(THEME_KEY);
@@ -22,8 +23,13 @@ function errHtml(e: unknown): string {
 const NAV = [
   { hash: '#/', label: d.dashboard },
   { hash: '#/courses', label: d.myCourses },
+  { hash: '#/banks', label: d.banks },
   { hash: '#/grading', label: d.grading },
   { hash: '#/attendance', label: d.attendance },
+  { hash: '#/live', label: d.live },
+  { hash: '#/cohorts', label: d.cohorts },
+  { hash: '#/ai', label: d.ai },
+  { hash: '#/exercises', label: d.exercises },
   { hash: '#/students', label: d.students },
   { hash: '#/profile', label: d.profile },
 ];
@@ -281,6 +287,11 @@ async function router(): Promise<void> {
       view.innerHTML = `<div class="row row-cards">${courses.map((c) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3>${c.title}</h3><p class="text-muted">${c.code}</p><a class="btn btn-primary" href="#/courses/${c.id}">Open</a></div></div></div>`).join('')}</div>`;
     } else if (route.startsWith('/courses/')) await courseDetail(view, route.split('/')[2]);
     else if (route.startsWith('/grading')) await grading(view);
+    else if (route === '/banks') await banksView(view, client, currentOrg());
+    else if (route === '/live') await liveView(view, client, currentOrg());
+    else if (route === '/cohorts') await cohortsView(view, client, currentOrg());
+    else if (route === '/ai') await aiView(view, client, currentOrg());
+    else if (route === '/exercises') await exercisesView(view, client, currentOrg());
     else if (route.startsWith('/attendance')) await attendanceView(view);
     else if (route.startsWith('/students')) await studentsView(view);
     else if (route.startsWith('/profile')) await profile(view);

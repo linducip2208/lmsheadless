@@ -7,6 +7,7 @@ import { hashPassword, randomToken, sha256Hex, signAccessToken, verifyPassword }
 import { created, fail, ok } from '../respond.js';
 import { requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
+import { logActivity } from './growth.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -79,6 +80,7 @@ auth.post('/login', async (c) => {
     });
   }
   await audit(c, 'auth.login', { entity: 'user', entityId: row.id });
+  await logActivity(db, { user_id: row.id, kind: 'auth.login', entity: 'user', entity_id: row.id });
   return ok(c, { access_token: token, refresh_token: refresh, user: { id: row.id, email: row.email, name: row.name, memberships } });
 });
 
@@ -90,19 +92,30 @@ auth.post('/refresh', async (c) => {
   if (!parsed.success) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), parsed.error.flatten());
   const db = c.get('db');
   const hash = await sha256Hex(parsed.data.refresh_token);
-  const row = await queryFirst<{ id: string; user_id: string; expires_at: string; revoked_at: string | null }>(
-    db, 'SELECT id, user_id, expires_at, revoked_at FROM refresh_tokens WHERE token_hash = ?', hash
+  const row = await queryFirst<{ id: string; user_id: string; expires_at: string; revoked_at: string | null; replaced_by: string | null }>(
+    db, 'SELECT id, user_id, expires_at, revoked_at, replaced_by FROM refresh_tokens WHERE token_hash = ?', hash
   );
-  if (!row || row.revoked_at || new Date(row.expires_at).getTime() < Date.now()) {
+  if (!row) {
+    return fail(c, 401, 'INVALID_REFRESH', t('unauthorized', c.get('lang')));
+  }
+  // Reuse detection: a rotated (replaced) token presented again means the
+  // old token was stolen — revoke the whole session family.
+  if (row.revoked_at && row.replaced_by) {
+    await execute(db, 'UPDATE refresh_tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL', nowIso(), row.user_id);
+    await audit(c, 'auth.reuse_detected', { entity: 'user', entityId: row.user_id });
+    return fail(c, 401, 'REUSE_DETECTED', 'Session reuse detected; all sessions revoked. Please log in again.');
+  }
+  if (row.revoked_at || new Date(row.expires_at).getTime() < Date.now()) {
     return fail(c, 401, 'INVALID_REFRESH', t('unauthorized', c.get('lang')));
   }
   const user = await queryFirst<{ id: string; email: string; status: string }>(db, 'SELECT id, email, status FROM users WHERE id = ? AND deleted_at IS NULL', row.user_id);
   if (!user || user.status !== 'active') return fail(c, 401, 'INVALID_REFRESH', t('unauthorized', c.get('lang')));
-  await execute(db, 'UPDATE refresh_tokens SET revoked_at = ? WHERE id = ?', nowIso(), row.id);
   const token = await signAccessToken(c.get('env').JWT_SECRET, user.id, user.email);
   const refresh = randomToken();
   const exp = new Date(Date.now() + 30 * 86400_000).toISOString();
-  await execute(db, 'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)', newId(), user.id, await sha256Hex(refresh), exp, nowIso());
+  const replacementId = newId();
+  await execute(db, 'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)', replacementId, user.id, await sha256Hex(refresh), exp, nowIso());
+  await execute(db, 'UPDATE refresh_tokens SET revoked_at = ?, replaced_by = ? WHERE id = ?', nowIso(), replacementId, row.id);
   if (cookieToken || c.req.query('cookie') === '1') {
     setCookie(c, REFRESH_COOKIE, refresh, {
       httpOnly: true, sameSite: 'Lax', path: '/', maxAge: 30 * 86400,

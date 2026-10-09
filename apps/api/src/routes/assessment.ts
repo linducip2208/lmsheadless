@@ -4,6 +4,8 @@ import { newId, nowIso } from '@lms/shared';
 import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
+import { hasEntitlement } from '../access.js';
+import { logActivity } from './growth.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -51,9 +53,10 @@ assess.post('/quizzes', requireAuth(), async (c) => {
   if (!orgId || !canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const nid = newId();
   const now = nowIso();
-  await execute(db, 'INSERT INTO quizzes (id, course_id, lesson_id, organization_id, title, description, passing_score, max_attempts, time_limit_minutes, shuffle_questions, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  await execute(db, 'INSERT INTO quizzes (id, course_id, lesson_id, organization_id, title, description, passing_score, max_attempts, time_limit_minutes, shuffle_questions, answer_release, negative_marking, cooldown_minutes, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     nid, parsed.data.course_id, parsed.data.lesson_id ?? null, orgId, parsed.data.title, parsed.data.description ?? null,
-    parsed.data.passing_score, parsed.data.max_attempts ?? 3, parsed.data.time_limit_minutes ?? 0, parsed.data.shuffle_questions ? 1 : 0, user.id, now, now);
+    parsed.data.passing_score, parsed.data.max_attempts ?? 3, parsed.data.time_limit_minutes ?? 0, parsed.data.shuffle_questions ? 1 : 0,
+    parsed.data.answer_release ?? 'after_submit', parsed.data.negative_marking ? 1 : 0, parsed.data.cooldown_minutes ?? 0, user.id, now, now);
   return created(c, { id: nid });
 });
 
@@ -77,18 +80,29 @@ assess.post('/quizzes/:id/questions', requireAuth(), async (c) => {
   const body = await c.req.json().catch(() => null);
   const parsed = questionSchema.safeParse({ ...(body as object ?? {}), quiz_id: c.req.param('id') });
   if (!parsed.success) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), parsed.error.flatten());
-  if (parsed.data.type === 'multiple_choice' && (!parsed.data.options || parsed.data.options.filter((o) => o.is_correct).length !== 1)) {
-    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), { options: 'Exactly one correct option required' });
+  if (parsed.data.type === 'multiple_choice' || parsed.data.type === 'single_choice') {
+    const correct = (parsed.data.options ?? []).filter((o) => o.is_correct).length;
+    if (!parsed.data.options || (parsed.data.type === 'multiple_choice' && correct < 1) || (parsed.data.type === 'single_choice' && correct !== 1)) {
+      return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), { options: parsed.data.type === 'single_choice' ? 'Exactly one correct option required' : 'At least one correct option required' });
+    }
+  }
+  if ((parsed.data.type === 'matching' || parsed.data.type === 'ordering') && (!parsed.data.options || parsed.data.options.length < 2 || parsed.data.options.some((o) => !o.match_value))) {
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), { options: 'Matching/ordering options require match_value on every option' });
   }
   const qid = newId();
   const now = nowIso();
-  await execute(db, 'INSERT INTO questions (id, quiz_id, type, prompt, points, position, correct_answer, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    qid, c.req.param('id'), parsed.data.type, parsed.data.prompt, parsed.data.points, parsed.data.position ?? 0, parsed.data.correct_answer ?? null, now, now);
+  await execute(db, 'INSERT INTO questions (id, quiz_id, type, prompt, points, position, correct_answer, difficulty, explanation, negative_points, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    qid, c.req.param('id'), parsed.data.type, parsed.data.prompt, parsed.data.points, parsed.data.position ?? 0, parsed.data.correct_answer ?? null,
+    parsed.data.difficulty ?? 'medium', parsed.data.explanation ?? null, parsed.data.negative_points ?? 0, now, now);
   if (parsed.data.options) {
     let pos = 0;
     for (const o of parsed.data.options) {
+      const optId = newId();
       await execute(db, 'INSERT INTO question_options (id, question_id, label, is_correct, position, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-        newId(), qid, o.label.slice(0, 1000), o.is_correct ? 1 : 0, pos++, now);
+        optId, qid, o.label.slice(0, 1000), o.is_correct ? 1 : 0, pos++, now);
+      if (o.match_value) {
+        await execute(db, 'UPDATE question_options SET match_value = ? WHERE id = ?', o.match_value, optId).catch(() => undefined);
+      }
     }
   }
   return created(c, { id: qid });
@@ -99,10 +113,10 @@ assess.get('/quizzes/:id/questions', requireAuth(), async (c) => {
   const db = c.get('db');
   const orgId = await quizOrg(db, c.req.param('id'));
   if (!orgId || !canAccessOrg(user, orgId)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const questions = await queryAll<{ id: string; type: string; prompt: string; points: number; position: number }>(db, 'SELECT id, type, prompt, points, position FROM questions WHERE quiz_id = ? ORDER BY position ASC', c.req.param('id'));
+  const questions = await queryAll<{ id: string; type: string; prompt: string; points: number; position: number; difficulty: string }>(db, 'SELECT id, type, prompt, points, position, difficulty FROM questions WHERE quiz_id = ? ORDER BY position ASC', c.req.param('id'));
   const role = orgRole(user, orgId);
   const isStudent = role === 'student';
-  const quiz = await queryFirst<{ shuffle_questions: number }>(db, 'SELECT shuffle_questions FROM quizzes WHERE id = ?', c.req.param('id'));
+  const quiz = await queryFirst<{ shuffle_questions: number; answer_release: string }>(db, 'SELECT shuffle_questions, answer_release FROM quizzes WHERE id = ?', c.req.param('id'));
   const list = [...questions];
   // Randomize order per fetch for students when the quiz enables shuffling.
   // Correctness is never exposed; only the presentation order changes.
@@ -115,10 +129,12 @@ assess.get('/quizzes/:id/questions', requireAuth(), async (c) => {
   const out: unknown[] = [];
   for (const q of list) {
     const opts = await queryAll<{ id: string; label: string; position: number }>(db, 'SELECT id, label, position FROM question_options WHERE question_id = ? ORDER BY position ASC', q.id);
+    // Ordering questions leak answers through position: shuffle per fetch for students.
+    const shown = isStudent && q.type === 'ordering' ? [...opts].sort(() => Math.random() - 0.5) : opts;
     // Never leak correctness to students via read API.
-    out.push(isStudent ? { ...q, options: opts } : { ...q, options: await queryAll(db, 'SELECT * FROM question_options WHERE question_id = ? ORDER BY position ASC', q.id) });
+    out.push(isStudent ? { ...q, options: shown } : { ...q, options: await queryAll(db, 'SELECT * FROM question_options WHERE question_id = ? ORDER BY position ASC', q.id) });
   }
-  return ok(c, out);
+  return ok(c, out, { answer_release: quiz?.answer_release ?? 'after_submit' });
 });
 
 // Attempt: start + submit answers + auto-score
@@ -140,18 +156,54 @@ assess.get('/quizzes/:id/attempts', requireAuth(), async (c) => {
 assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');
-  const quiz = await queryFirst<{ id: string; max_attempts: number; organization_id: string; time_limit_minutes: number }>(db, 'SELECT id, max_attempts, organization_id, time_limit_minutes FROM quizzes WHERE id = ?', c.req.param('id'));
+  const quiz = await queryFirst<{ id: string; max_attempts: number; organization_id: string; time_limit_minutes: number; cooldown_minutes: number; answer_release: string; course_id: string }>(db, 'SELECT q.id, q.max_attempts, q.organization_id, q.time_limit_minutes, q.cooldown_minutes, q.answer_release, q.course_id FROM quizzes q WHERE q.id = ?', c.req.param('id'));
   if (!quiz) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   if (!canAccessOrg(user, quiz.organization_id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  const course = await queryFirst<{ price: number }>(db, 'SELECT price FROM courses WHERE id = ?', quiz.course_id);
+  if (!(await hasEntitlement(db, user.id, quiz.course_id, course?.price ?? 0))) {
+    const enr = await queryFirst(db, 'SELECT id FROM enrollments WHERE course_id = ? AND student_id = ?', quiz.course_id, user.id);
+    if (!enr) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    if ((course?.price ?? 0) > 0) return fail(c, 403, 'ACCESS_EXPIRED', 'Course access has expired');
+  }
   // One active attempt per student: resume instead of duplicating.
   const active = await queryFirst<{ id: string }>(db, "SELECT id FROM quiz_attempts WHERE quiz_id = ? AND student_id = ? AND status = 'in_progress'", quiz.id, user.id);
   if (active) return ok(c, { id: active.id, resumed: true });
   const count = (await queryFirst<{ n: number }>(db, 'SELECT COUNT(*) as n FROM quiz_attempts WHERE quiz_id = ? AND student_id = ?', quiz.id, user.id))?.n ?? 0;
   if (count >= quiz.max_attempts) return fail(c, 400, 'ATTEMPT_LIMIT', t('attempt_limit', c.get('lang')));
+  // Cooldown between attempts.
+  if (quiz.cooldown_minutes > 0) {
+    const last = await queryFirst<{ submitted_at: string | null }>(db, 'SELECT submitted_at FROM quiz_attempts WHERE quiz_id = ? AND student_id = ? AND submitted_at IS NOT NULL ORDER BY submitted_at DESC LIMIT 1', quiz.id, user.id);
+    if (last?.submitted_at) {
+      const waitMs = quiz.cooldown_minutes * 60000 - (Date.now() - new Date(last.submitted_at).getTime());
+      if (waitMs > 0) return fail(c, 400, 'COOLDOWN', 'Please wait before starting a new attempt', { retry_after_seconds: Math.ceil(waitMs / 1000) });
+    }
+  }
   const nid = newId();
   const now = nowIso();
   const expiresAt = quiz.time_limit_minutes > 0 ? new Date(Date.now() + quiz.time_limit_minutes * 60000).toISOString() : null;
   await execute(db, 'INSERT INTO quiz_attempts (id, quiz_id, student_id, status, started_at, expires_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', nid, quiz.id, user.id, 'in_progress', now, expiresAt, now, now);
+  // Snapshot random pools on first attempt (documented behavior).
+  const pools = await queryAll<{ bank_id: string; pick_count: number }>(db, 'SELECT bank_id, pick_count FROM quiz_pools WHERE quiz_id = ?', quiz.id);
+  if (pools.length) {
+    const maxPos = (await queryFirst<{ v: number | null }>(db, 'SELECT MAX(position) as v FROM questions WHERE quiz_id = ?', quiz.id))?.v ?? -1;
+    let pos = maxPos + 1;
+    for (const pool of pools) {
+      const bankQs = await queryAll<{ id: string; type: string; prompt: string; points: number; difficulty: string; explanation: string | null; correct_answer: string | null; negative_points: number }>(
+        db, 'SELECT id, type, prompt, points, difficulty, explanation, correct_answer, negative_points FROM bank_questions WHERE bank_id = ? ORDER BY RANDOM() LIMIT ?', pool.bank_id, Math.min(pool.pick_count, 100));
+      for (const bq of bankQs) {
+        const qnid = newId();
+        await execute(db, 'INSERT INTO questions (id, quiz_id, type, prompt, points, position, correct_answer, difficulty, explanation, negative_points, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          qnid, quiz.id, bq.type, bq.prompt, bq.points, pos++, bq.correct_answer, bq.difficulty, bq.explanation, bq.negative_points, now, now);
+        const opts = await queryAll<{ label: string; match_value: string | null; is_correct: number; position: number }>(db, 'SELECT label, match_value, is_correct, position FROM bank_options WHERE bank_question_id = ? ORDER BY position ASC', bq.id);
+        for (const o of opts) {
+          const optId = newId();
+          await execute(db, 'INSERT INTO question_options (id, question_id, label, is_correct, position, created_at) VALUES (?, ?, ?, ?, ?, ?)', optId, qnid, o.label, o.is_correct, o.position, now);
+          if (o.match_value) await execute(db, 'UPDATE question_options SET match_value = ? WHERE id = ?', o.match_value, optId).catch(() => undefined);
+        }
+      }
+    }
+    await execute(db, 'DELETE FROM quiz_pools WHERE quiz_id = ?', quiz.id);
+  }
   return created(c, { id: nid, expires_at: expiresAt });
 });
 
@@ -172,33 +224,61 @@ assess.post('/quiz-attempts/:attemptId/submit', requireAuth(), async (c) => {
   }
   const orgId = await quizOrg(db, attempt.quiz_id);
   if (!orgId) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
-  const quiz = await queryFirst<{ passing_score: number }>(db, 'SELECT passing_score FROM quizzes WHERE id = ?', attempt.quiz_id);
+  const quiz = await queryFirst<{ passing_score: number; answer_release: string; negative_marking: number }>(db, 'SELECT passing_score, answer_release, negative_marking FROM quizzes WHERE id = ?', attempt.quiz_id);
   let earned = 0;
   let total = 0;
+  let needsReview = false;
   const now = nowIso();
   for (const a of body.answers.slice(0, 200)) {
     if (!a.question_id) continue;
-    const q = await queryFirst<{ id: string; type: string; points: number; correct_answer: string | null }>(db, 'SELECT id, type, points, correct_answer FROM questions WHERE id = ? AND quiz_id = ?', a.question_id, attempt.quiz_id);
+    const q = await queryFirst<{ id: string; type: string; points: number; correct_answer: string | null; negative_points: number }>(db, 'SELECT id, type, points, correct_answer, negative_points FROM questions WHERE id = ? AND quiz_id = ?', a.question_id, attempt.quiz_id);
     if (!q) continue;
     total += q.points;
     let correct = 0;
-    if (q.type === 'multiple_choice' && a.option_id) {
+    let pending = false;
+    if ((q.type === 'multiple_choice' || q.type === 'single_choice') && a.option_id) {
       const opt = await queryFirst<{ is_correct: number }>(db, 'SELECT is_correct FROM question_options WHERE id = ? AND question_id = ?', a.option_id, q.id);
       correct = opt?.is_correct === 1 ? 1 : 0;
     } else if (q.type === 'true_false' && typeof a.answer_text === 'string') {
       correct = (a.answer_text.toLowerCase() === (q.correct_answer ?? '').toLowerCase()) ? 1 : 0;
     } else if (q.type === 'short_answer' && typeof a.answer_text === 'string') {
       correct = (a.answer_text.trim().toLowerCase() === (q.correct_answer ?? '').trim().toLowerCase()) ? 1 : 0;
+    } else if (q.type === 'essay') {
+      pending = true; // manual grading queue
+    } else if (q.type === 'matching' && typeof a.answer_text === 'string') {
+      try {
+        const pairs = (JSON.parse(a.answer_text) as { pairs?: Record<string, string> }).pairs ?? {};
+        const opts = await queryAll<{ id: string; match_value: string | null }>(db, 'SELECT id, match_value FROM question_options WHERE question_id = ?', q.id);
+        const keys = Object.keys(pairs);
+        correct = opts.length > 0 && keys.length === opts.length && opts.every((o) => pairs[o.id] === (o.match_value ?? '')) ? 1 : 0;
+      } catch { correct = 0; }
+    } else if (q.type === 'ordering' && typeof a.answer_text === 'string') {
+      try {
+        const order = (JSON.parse(a.answer_text) as { order?: string[] }).order ?? [];
+        const opts = await queryAll<{ id: string }>(db, 'SELECT id FROM question_options WHERE question_id = ? ORDER BY position ASC', q.id);
+        correct = order.length === opts.length && opts.every((o, i) => o.id === order[i]) ? 1 : 0;
+      } catch { correct = 0; }
     }
-    const pts = correct ? q.points : 0;
+    if (pending) needsReview = true;
+    let pts = correct ? q.points : 0;
+    if (!correct && !pending && q.negative_points > 0 && (quiz?.negative_marking === 1)) {
+      pts = -Math.min(q.negative_points, q.points);
+    }
     earned += pts;
     await execute(db, 'INSERT INTO quiz_answers (id, attempt_id, question_id, option_id, answer_text, is_correct, points_awarded, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(attempt_id, question_id) DO UPDATE SET option_id = excluded.option_id, answer_text = excluded.answer_text, is_correct = excluded.is_correct, points_awarded = excluded.points_awarded',
-      newId(), attempt.id, q.id, a.option_id ?? null, (a.answer_text ?? '').slice(0, 5000), correct, pts, now);
+      newId(), attempt.id, q.id, a.option_id ?? null, (a.answer_text ?? '').slice(0, 5000), pending ? null : correct, pending ? 0 : pts, now);
   }
-  const pct = total === 0 ? 0 : Math.round((earned / total) * 10000) / 100;
+  const raw = total === 0 ? 0 : Math.round((earned / total) * 10000) / 100;
+  const pct = Math.max(0, raw);
   const passed = pct >= (quiz?.passing_score ?? 70) ? 1 : 0;
-  await execute(db, 'UPDATE quiz_attempts SET status = ?, score = ?, passed = ?, submitted_at = ?, updated_at = ? WHERE id = ?', 'graded', pct, passed, now, now, attempt.id);
-  return ok(c, { score: pct, passed: passed === 1, earned, total });
+  const status = needsReview ? 'submitted' : 'graded';
+  await execute(db, 'UPDATE quiz_attempts SET status = ?, score = ?, passed = ?, submitted_at = ?, updated_at = ? WHERE id = ?', status, pct, passed, now, now, attempt.id);
+  await execute(db, 'DELETE FROM attempt_autosaves WHERE attempt_id = ?', attempt.id);
+  await logActivity(db, { organization_id: orgId, user_id: user.id, kind: 'quiz.submit', entity: 'quiz_attempt', entity_id: attempt.id });
+  if (quiz?.answer_release === 'never') {
+    return ok(c, { submitted: true, needs_review: needsReview });
+  }
+  return ok(c, { score: pct, passed: passed === 1, earned, total, needs_review: needsReview });
 });
 
 // ---- Assignments ----
@@ -247,9 +327,15 @@ assess.get('/assignments/:id/submissions', requireAuth(), async (c) => {
 
 assess.post('/assignments/:id/submissions', requireAuth(), async (c) => {  const user = c.get('user') as AuthUser;
   const db = c.get('db');
-  const asg = await queryFirst<{ id: string; organization_id: string; due_at: string | null; allow_resubmit: number }>(db, 'SELECT id, organization_id, due_at, allow_resubmit FROM assignments WHERE id = ?', c.req.param('id'));
+  const asg = await queryFirst<{ id: string; organization_id: string; due_at: string | null; allow_resubmit: number; course_id: string }>(db, 'SELECT id, organization_id, due_at, allow_resubmit, course_id FROM assignments WHERE id = ?', c.req.param('id'));
   if (!asg) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   if (!canAccessOrg(user, asg.organization_id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  const asgCourse = await queryFirst<{ price: number }>(db, 'SELECT price FROM courses WHERE id = ?', asg.course_id);
+  if (!(await hasEntitlement(db, user.id, asg.course_id, asgCourse?.price ?? 0))) {
+    const enr = await queryFirst(db, 'SELECT id FROM enrollments WHERE course_id = ? AND student_id = ?', asg.course_id, user.id);
+    if (!enr) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    if ((asgCourse?.price ?? 0) > 0) return fail(c, 403, 'ACCESS_EXPIRED', 'Course access has expired');
+  }
   const body = (await c.req.json().catch(() => null)) as { body?: string } | null;
   if (!body?.body || body.body.length < 1) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   const prior = await queryFirst<{ status: string }>(db, 'SELECT status FROM submissions WHERE assignment_id = ? AND student_id = ?', asg.id, user.id);

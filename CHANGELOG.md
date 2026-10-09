@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0 — Enterprise release
+
+Added (all with tests + docs + portal UI):
+
+- Advanced authoring (tags, prerequisites, drip, windows/capacity/waitlists, duplication, versions, approvals, CSV export)
+- Question banks, pools, matching/ordering/essay, negative marking, cooldowns, autosave, answer-release policies
+- Cohorts, programs/paths with locks, competencies; live classes (multi-provider + ICS)
+- Commerce (bundles/coupons/orders/invoices/manual + signed webhooks/refunds/subscriptions/commissions/affiliates/gifts) + public catalog
+- SCORM 1.2 import/launch/track/resume with sandboxing (2004 honestly deferred)
+- AI framework (BYOK, review-gated, mocked paths tested), coding exercises (static review), email queue, invitations, org units, CSV imports
+- Refresh-token reuse detection, per-student attendance, grading queue, instructor courses
+- Bilingual portals (EN/ID) with locale switching, custom-domain mapping, capability matrix vs competitors
+
 ## 1.1.0 — Product release
 
 Added:

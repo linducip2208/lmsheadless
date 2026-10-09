@@ -61,11 +61,47 @@ export function openApiDocument() {
     ['/settings', 'get', 'Global settings (super_admin)', ['settings']],
     ['/setup', 'post', 'First-run setup (locked afterwards)', ['settings']],
     ['/audit-logs', 'get', 'Audit logs', ['settings']],
+    ['/course-tags', 'get', 'Course tags', ['authoring']],
+    ['/courses/{id}/prerequisites', 'get', 'Course prerequisites', ['authoring']],
+    ['/courses/{id}/drip', 'get', 'Drip rules', ['authoring']],
+    ['/courses/{id}/waitlist', 'get', 'Waitlist', ['authoring']],
+    ['/courses/{id}/duplicate', 'post', 'Duplicate course (structure only)', ['authoring']],
+    ['/courses/{id}/versions', 'get', 'Version history', ['authoring']],
+    ['/courses/{id}/request-approval', 'post', 'Request publish approval', ['authoring']],
+    ['/publish-approvals', 'get', 'Pending approvals', ['authoring']],
+    ['/courses/export', 'get', 'Export courses CSV', ['authoring']],
+    ['/question-banks', 'get', 'Question banks', ['assessment']],
+    ['/quiz-attempts/{attemptId}/autosave', 'put', 'Autosave answers', ['assessment']],
+    ['/cohorts', 'get', 'Cohorts', ['cohorts']],
+    ['/programs', 'get', 'Programs/paths', ['cohorts']],
+    ['/competencies/student', 'get', 'Competency evidence', ['cohorts']],
+    ['/live-sessions', 'get', 'Live sessions', ['live']],
+    ['/bundles', 'get', 'Bundles', ['commerce']],
+    ['/coupons', 'post', 'Create coupon', ['commerce']],
+    ['/orders', 'get', 'Orders', ['commerce']],
+    ['/orders/{id}/refund', 'post', 'Refund order', ['commerce']],
+    ['/payments/webhooks/{provider}', 'post', 'Signed payment webhook', ['commerce']],
+    ['/affiliates', 'post', 'Create affiliate', ['commerce']],
+    ['/gifts/redeem', 'post', 'Redeem gift', ['commerce']],
+    ['/commissions', 'get', 'Commissions', ['commerce']],
+    ['/commerce/revenue', 'get', 'Revenue report', ['reports']],
+    ['/scorm/upload', 'post', 'Import SCORM 1.2 package', ['scorm']],
+    ['/scorm/attempts', 'post', 'Start/resume SCORM attempt', ['scorm']],
+    ['/ai/jobs', 'post', 'AI draft job (review-gated)', ['ai']],
+    ['/exercises', 'get', 'Coding exercises', ['exercises']],
+    ['/email/queue', 'get', 'Email queue', ['notifications']],
+    ['/invitations', 'post', 'Invite user', ['users']],
+    ['/imports', 'post', 'CSV import (dry-run capable)', ['imports']],
+    ['/reports/engagement', 'get', 'Engagement analytics', ['reports']],
+    ['/reports/export', 'get', 'CSV export', ['reports']],
+    ['/catalog/courses', 'get', 'Public course catalog', ['catalog']],
+    ['/catalog/bundles/{id}', 'get', 'Public bundle detail', ['catalog']],
   ];
   for (const [p, method, summary, tags] of routes) {
     const isPublic =
       p.includes('verify') ||
       p.includes('branding') ||
+      p.startsWith('/catalog/') ||
       ['/auth/register', '/auth/login', '/auth/refresh', '/setup'].some((pub) => p === pub || p.startsWith(`${pub}/`));
     paths[`/api/v1${p}`] = { [method]: def(summary, tags, !isPublic, method === 'post') };
   }

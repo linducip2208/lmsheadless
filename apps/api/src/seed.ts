@@ -124,6 +124,24 @@ async function main() {
     newId(), orgId, 'Default', '<h1>Certificate of Completion</h1><p>{{student}} - {{course}}</p>', now, now);
   await execute(db, 'INSERT INTO announcements (id, organization_id, title, body, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
     newId(), orgId, 'Selamat datang di Demo Academy', 'Semester baru dimulai 1 Juli 2026.', adminId, now, now);
+  // Enterprise demo slice: bundle, coupon, cohort + program, live session, bank.
+  const bundleId = newId();
+  await execute(db, 'INSERT INTO bundles (id, organization_id, name, description, price, status, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    bundleId, orgId, 'Paket Matematika', 'Bundel contoh untuk etalase.', 0, 'published', teacherId, now, now);
+  await execute(db, 'INSERT INTO bundle_courses (bundle_id, course_id) VALUES (?, ?)', bundleId, courseId);
+  await execute(db, 'INSERT INTO coupons (id, organization_id, code, kind, value, created_at) VALUES (?, ?, ?, ?, ?, ?)', newId(), orgId, 'HEMAT10', 'percent', 10, now);
+  const cohortId = newId();
+  await execute(db, 'INSERT INTO cohorts (id, organization_id, name, description, capacity, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    cohortId, orgId, 'Angkatan 2026-A', 'Batch contoh.', 100, teacherId, now, now);
+  await execute(db, 'INSERT INTO cohort_members (id, cohort_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', newId(), cohortId, studentId, 'student', now);
+  await execute(db, 'INSERT INTO cohort_courses (cohort_id, course_id) VALUES (?, ?)', cohortId, courseId);
+  const programId = newId();
+  await execute(db, 'INSERT INTO programs (id, organization_id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)', programId, orgId, 'Jalur Matematika', 'Program contoh satu kursus.', now, now);
+  await execute(db, 'INSERT INTO program_courses (id, program_id, course_id, position, created_at) VALUES (?, ?, ?, ?, ?)', newId(), programId, courseId, 0, now);
+  await execute(db, 'INSERT INTO live_sessions (id, organization_id, course_id, title, provider, meeting_url, starts_at, ends_at, status, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    newId(), orgId, courseId, 'Sesi perkenalan', 'jitsi', 'https://meet.jit.si/lms-demo-intro', '2026-11-01T10:00:00Z', '2026-11-01T11:00:00Z', 'scheduled', teacherId, now, now);
+  const bankId = newId();
+  await execute(db, 'INSERT INTO question_banks (id, organization_id, course_id, name, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)', bankId, orgId, courseId, 'Bank Aljabar', teacherId, now, now);
   // eslint-disable-next-line no-console
   console.log(`Seed done. org=${orgId} course=${courseId}. Demo logins: superadmin/admin/teacher/student/parent/staff@example.com / ${PASS}`);
 }

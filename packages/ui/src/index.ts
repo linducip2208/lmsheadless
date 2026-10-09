@@ -204,7 +204,7 @@ export function toast(message: string, kind: 'success' | 'danger' | 'info' | 'wa
 }
 
 // ---- Confirm dialog + modal ----
-export function confirmDialog(title: string, message: string, confirmLabel = 'Delete'): Promise<boolean> {
+export function confirmDialog(title: string, message: string, confirmLabel = 'Delete', cancelLabel = 'Cancel'): Promise<boolean> {
   return new Promise((resolve) => {
     const wrap = document.createElement('div');
     wrap.className = 'modal modal-blur fade show d-block';
@@ -217,7 +217,7 @@ export function confirmDialog(title: string, message: string, confirmLabel = 'De
       <div class="modal-footer"><button class="btn btn-link link-secondary me-auto" data-x>Cancel</button>
       <button class="btn btn-danger" data-ok>${confirmLabel}</button></div></div></div>`;
     (wrap.querySelector('.text-muted') as HTMLElement).textContent = message;
-    (wrap.querySelector('[data-x]') as HTMLElement).textContent = 'Cancel';
+    (wrap.querySelector('[data-x]') as HTMLButtonElement).textContent = cancelLabel;
     const done = (v: boolean) => { wrap.remove(); resolve(v); };
     (wrap.querySelector('[data-ok]') as HTMLButtonElement).addEventListener('click', () => done(true));
     (wrap.querySelector('[data-x]') as HTMLButtonElement).addEventListener('click', () => done(false));
@@ -226,7 +226,11 @@ export function confirmDialog(title: string, message: string, confirmLabel = 'De
   });
 }
 
-export function modalForm(title: string, fields: { name: string; label: string; type?: string; value?: string; options?: { value: string; label: string }[]; required?: boolean }[]): Promise<Record<string, string> | null> {
+export function modalForm(
+  title: string,
+  fields: { name: string; label: string; type?: string; value?: string; options?: { value: string; label: string }[]; required?: boolean }[],
+  labels: { save?: string; cancel?: string } = {}
+): Promise<Record<string, string> | null> {
   return new Promise((resolve) => {
     const wrap = document.createElement('div');
     wrap.className = 'modal modal-blur fade show d-block';
@@ -235,8 +239,8 @@ export function modalForm(title: string, fields: { name: string; label: string; 
     wrap.innerHTML = `<div class="modal-dialog modal-dialog-centered" role="document"><form class="modal-content">
       <div class="modal-header"><h5 class="modal-title"></h5><button type="button" class="btn-close" data-x aria-label="Close"></button></div>
       <div class="modal-body"></div>
-      <div class="modal-footer"><button type="button" class="btn btn-link link-secondary me-auto" data-x>Cancel</button>
-      <button type="submit" class="btn btn-primary">Save</button></div></form></div>`;
+      <div class="modal-footer"><button type="button" class="btn btn-link link-secondary me-auto" data-x>${labels.cancel ?? 'Cancel'}</button>
+      <button type="submit" class="btn btn-primary">${labels.save ?? 'Save'}</button></div></form></div>`;
     (wrap.querySelector('.modal-title') as HTMLElement).textContent = title;
     const body = wrap.querySelector('.modal-body') as HTMLElement;
     for (const f of fields) {

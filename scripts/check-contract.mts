@@ -24,7 +24,7 @@ function matchRoute(method: string, segments: string[]): boolean {
   return routes.some((r) => {
     if (r.pattern.length !== segments.length) return false;
     if (r.method !== method && r.method !== 'ALL') return false;
-    return r.pattern.every((seg, i) => seg.startsWith(':') || seg === segments[i]);
+    return r.pattern.every((seg, i) => seg.startsWith(':') || seg === '*' || seg === segments[i]);
   });
 }
 

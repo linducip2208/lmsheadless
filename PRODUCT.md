@@ -11,15 +11,18 @@ parent) and is ready for a Flutter Android/iOS client.
 
 - Organizations, users, 6 roles, 29 granular permissions (server-enforced)
 - Academic: years, terms, classes, class members, subjects
-- Courses: categories, instructors, sections, lessons (text/video/document/image/external), ordering, drafts, visibility, enrollment modes
-- Enrollment + deterministic progress + completion certificates
-- Quizzes: multiple choice, true/false, short answer; shuffle, time limits, attempt limits, expiry, auto + manual grading
+- Courses: categories, tags, instructors, sections, lessons (text/video/document/image/external), ordering, drafts, visibility, enrollment modes, prerequisites, drip, windows/capacity/waitlists, duplication, versions, publish approvals
+- Enrollment + deterministic progress + completion certificates (revoke/bulk/expiry)
+- Quizzes: banks, pools, 7 question types, shuffle, time limits, cooldowns, attempt limits, expiry, auto + manual grading, negative marking, answer-release policies, autosave
 - Assignments: due dates, resubmission rules, submissions, grading + feedback
+- Cohorts/batches, programs/learning paths, competencies; live classes (multi-provider)
+- Commerce: bundles, coupons, orders, invoices, manual + signed-provider payments, webhooks, refunds, subscriptions, commissions, affiliates, gifts
+- SCORM 1.2 (validated import, sandboxed player, tracking); AI framework (BYOK, review-gated); coding exercises (static review)
 - Grades, attendance (sessions/records/reports), announcements, notifications (preferences, push architecture), discussions
-- Certificates with public verification page
-- Reports: organization summary, completion, quiz performance, attendance, teacher activity, student progress
+- Certificates with public verification page (+ QR-ready verify URLs)
+- Reports: organization summary, completion, quiz performance, attendance, teacher activity, student progress, engagement, CSV exports
 - Files: validated uploads, authorized downloads (R2 in production)
-- Search, audit logging, settings, first-run setup (locked), white-label branding
+- Search, audit logging, activity log, settings, first-run setup (locked), white-label branding + custom domains
 - PWA: installable apps, offline shell, safe sync with idempotency keys
 - OpenAPI + human API docs; CORS, rate limiting, request IDs
 

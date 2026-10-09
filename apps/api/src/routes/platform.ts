@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { newId, nowIso } from '@lms/shared';
 import { execute, queryAll, queryFirst } from '../db.js';
-import { hashPassword } from '../crypto.js';
+import { hashPassword, randomToken } from '../crypto.js';
 import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { roleHasPermission, PERMISSIONS, ROLE_PERMISSIONS } from '../permissions.js';
@@ -148,6 +148,40 @@ platform.put('/api/v1/organizations/:id', requireAuth(), async (c) => {
   await execute(db, `UPDATE organizations SET ${sets.join(', ')} WHERE id = ?`, ...params);
   await audit(c, 'organization.updated', { entity: 'organization', entityId: id, organizationId: id });
   return ok(c, { updated: true });
+});
+
+// ---------- Custom domain mapping (verified ownership required) ----------
+platform.post('/api/v1/organizations/:id/domain', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const id = c.req.param('id');
+  if (!can(user, id, 'settings.manage')) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as { hostname?: string } | null;
+  const hostname = (body?.hostname ?? '').toLowerCase().trim();
+  if (!/^(?=.{3,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(hostname)) {
+    return fail(c, 400, 'VALIDATION_ERROR', 'Invalid hostname');
+  }
+  if (['localhost'].some((banned) => hostname === banned || hostname.endsWith('.localhost'))) {
+    return fail(c, 400, 'VALIDATION_ERROR', 'Hostname not allowed');
+  }
+  const db = c.get('db');
+  const row = await queryFirst<{ settings: string | null }>(db, 'SELECT settings FROM organizations WHERE id = ? AND deleted_at IS NULL', id);
+  if (!row) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const merged = readOrgSettings(row);
+  merged.custom_domain = hostname;
+  merged.domain_status = 'pending';
+  if (!merged.domain_token) merged.domain_token = randomToken(16);
+  await execute(db, 'UPDATE organizations SET settings = ?, updated_at = ? WHERE id = ?', JSON.stringify(merged), nowIso(), id);
+  await audit(c, 'organization.domain_mapped', { entity: 'organization', entityId: id, organizationId: id, metadata: { hostname } });
+  return created(c, {
+    hostname,
+    status: 'pending',
+    verification: {
+      type: 'TXT',
+      host: `_lms-verify.${hostname}`,
+      value: merged.domain_token,
+    },
+    note: 'Add the TXT record, then configure Cloudflare routing (see docs/white-label.md). The domain is NOT active until ownership and routing are verified.',
+  });
 });
 
 // ---------- Roles & permissions ----------

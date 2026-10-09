@@ -5,6 +5,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
+import { orgSetting } from '../access.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { objectKey, putObject, validateUpload } from '../storage.js';
 import { t } from '../i18n.js';
@@ -66,11 +67,16 @@ ops.get('/api/v1/attendance/sessions', requireAuth(), async (c) => {
 ops.get('/api/v1/certificates/verify/:number', async (c) => {
   const row = await queryFirst(
     c.get('db'),
-    'SELECT cert.certificate_number, cert.issued_at, u.name as student_name, co.title as course_title, o.name as organization_name FROM certificates cert JOIN users u ON u.id = cert.student_id JOIN courses co ON co.id = cert.course_id JOIN organizations o ON o.id = cert.organization_id WHERE cert.certificate_number = ?',
+    'SELECT cert.certificate_number, cert.issued_at, cert.expires_at, cert.revoked_at, u.name as student_name, co.title as course_title, o.name as organization_name FROM certificates cert JOIN users u ON u.id = cert.student_id JOIN courses co ON co.id = cert.course_id JOIN organizations o ON o.id = cert.organization_id WHERE cert.certificate_number = ?',
     c.req.param('number')
   );
   if (!row) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
-  return ok(c, { valid: true, certificate: row });
+  const rec = row as { revoked_at: string | null; expires_at: string | null };
+  if (rec.revoked_at) {
+    return ok(c, { valid: false, reason: 'revoked', certificate: { ...(row as object), revoked_at: undefined } });
+  }
+  const expired = rec.expires_at && new Date(rec.expires_at).getTime() < Date.now();
+  return ok(c, { valid: !expired, ...(expired ? { reason: 'expired' } : {}), certificate: row });
 });
 
 ops.get('/api/v1/certificates', requireAuth(), async (c) => {
@@ -101,11 +107,57 @@ ops.post('/api/v1/certificates/issue', requireAuth(), async (c) => {
   const role = orgRole(user, course.organization_id);
   if (role !== 'super_admin' && role !== 'organization_admin' && role !== 'teacher') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const now = nowIso();
+  // Idempotent per student+course (no duplicate credentials on re-issue).
+  const existing = await queryFirst<{ certificate_number: string }>(db, 'SELECT certificate_number FROM certificates WHERE course_id = ? AND student_id = ? AND revoked_at IS NULL', body.course_id, body.student_id);
+  if (existing) return ok(c, { certificate_number: existing.certificate_number, existing: true });
+  const validityDays = Number((await orgSetting(db, course.organization_id, 'cert_validity_days')) || 0);
+  const expiresAt = validityDays > 0 ? new Date(Date.now() + validityDays * 86400000).toISOString() : null;
   const num = `CERT-${new Date().getUTCFullYear()}-${body.student_id.slice(0, 8).toUpperCase()}-${body.course_id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
-  await execute(db, 'INSERT OR IGNORE INTO certificates (id, organization_id, course_id, student_id, template_id, certificate_number, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    newId(), course.organization_id, body.course_id, body.student_id, body.template_id ?? null, num, now, now);
+  await execute(db, 'INSERT INTO certificates (id, organization_id, course_id, student_id, template_id, certificate_number, issued_at, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    newId(), course.organization_id, body.course_id, body.student_id, body.template_id ?? null, num, now, expiresAt, now);
   await audit(c, 'certificate.issued', { entity: 'certificate', organizationId: course.organization_id, metadata: { course_id: body.course_id, student_id: body.student_id } });
-  return created(c, { certificate_number: num });
+  return created(c, { certificate_number: num, verify_url: `/verify/${num}`, expires_at: expiresAt });
+});
+
+ops.post('/api/v1/certificates/bulk-issue', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const body = (await c.req.json().catch(() => null)) as { course_id?: string; student_ids?: string[] } | null;
+  if (!body?.course_id || !Array.isArray(body.student_ids) || body.student_ids.length < 1 || body.student_ids.length > 500) {
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  }
+  const db = c.get('db');
+  const course = await queryFirst<{ organization_id: string }>(db, 'SELECT organization_id FROM courses WHERE id = ?', body.course_id);
+  if (!course || !canAccessOrg(user, course.organization_id)) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  const role = orgRole(user, course.organization_id);
+  if (role !== 'super_admin' && role !== 'organization_admin' && role !== 'teacher') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const now = nowIso();
+  let issued = 0;
+  let skipped = 0;
+  for (const sid of body.student_ids.filter((x) => typeof x === 'string')) {
+    const member = await queryFirst(db, 'SELECT user_id FROM organization_members WHERE organization_id = ? AND user_id = ?', course.organization_id, sid);
+    if (!member) { skipped++; continue; }
+    const existing = await queryFirst(db, 'SELECT id FROM certificates WHERE course_id = ? AND student_id = ? AND revoked_at IS NULL', body.course_id, sid);
+    if (existing) { skipped++; continue; }
+    const num = `CERT-${new Date().getUTCFullYear()}-${sid.slice(0, 8).toUpperCase()}-${(body.course_id as string).slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}${issued}`;
+    await execute(db, 'INSERT INTO certificates (id, organization_id, course_id, student_id, certificate_number, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      newId(), course.organization_id, body.course_id, sid, num, now, now);
+    issued++;
+  }
+  await audit(c, 'certificates.bulk_issued', { entity: 'course', entityId: body.course_id, organizationId: course.organization_id, metadata: { issued, skipped } });
+  return created(c, { issued, skipped });
+});
+
+ops.post('/api/v1/certificates/:id/revoke', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const cert = await queryFirst<{ organization_id: string; revoked_at: string | null }>(db, 'SELECT organization_id, revoked_at FROM certificates WHERE id = ?', c.req.param('id'));
+  if (!cert) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const role = orgRole(user, cert.organization_id);
+  if (role !== 'super_admin' && role !== 'organization_admin' && role !== 'teacher') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (cert.revoked_at) return fail(c, 400, 'VALIDATION_ERROR', 'Already revoked');
+  await execute(db, 'UPDATE certificates SET revoked_at = ? WHERE id = ?', nowIso(), c.req.param('id'));
+  await audit(c, 'certificate.revoked', { entity: 'certificate', entityId: c.req.param('id'), organizationId: cert.organization_id });
+  return ok(c, { revoked: true });
 });
 
 // ---------- Announcements / notifications ----------

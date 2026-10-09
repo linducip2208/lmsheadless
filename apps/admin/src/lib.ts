@@ -1,8 +1,17 @@
 import { createClient, toast, modalForm, confirmDialog, formatDateTime, type ApiClient } from '@lms/ui';
+import { getDict, type Dict } from './i18n.js';
 
 export { toast, modalForm, confirmDialog, formatDateTime };
 export type { ApiClient };
 export type { Me } from '@lms/ui';
+
+export function lang(): string {
+  return localStorage.getItem('admin-locale') ?? 'en';
+}
+
+export function t(): Dict {
+  return getDict(lang());
+}
 
 export const client: ApiClient = createClient({ orgKey: 'admin-org', loginRedirect: '#/login' });
 export const { call, login, logout, ensureMe, getMe, myOrgs } = client;
@@ -14,16 +23,17 @@ export function applyBranding(brand: Record<string, string>): void {
   if (brand.primary_color) document.documentElement.style.setProperty('--tblr-primary', brand.primary_color);
 }
 
-export function loadingHtml(msg = 'Loading...'): string {
-  return `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status" aria-label="Loading"></div><span>${msg}</span></div>`;
+export function loadingHtml(msg?: string): string {
+  const m = msg ?? t().loading;
+  return `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status" aria-label="Loading"></div><span>${m}</span></div>`;
 }
 
-export function emptyHtml(msg = 'No data yet.'): string {
-  return `<div class="empty"><div class="empty-img"></div><p class="empty-title">${msg}</p></div>`;
+export function emptyHtml(msg?: string): string {
+  return `<div class="empty"><div class="empty-img"></div><p class="empty-title">${msg ?? t().empty}</p></div>`;
 }
 
 export function errorHtml(e: unknown): string {
-  const msg = e instanceof Error ? e.message : 'Something went wrong.';
+  const msg = e instanceof Error ? e.message : t().error;
   return `<div class="alert alert-danger" role="alert">${msg}</div>`;
 }
 
@@ -50,11 +60,13 @@ export interface CrudConfig {
 
 // Generic searchable table + create/edit/delete with toasts + confirms.
 export async function crud(el: HTMLElement, cfg: CrudConfig): Promise<void> {
+  const d = t();
   el.innerHTML = `<div class="card"><div class="card-header d-flex gap-2 align-items-center flex-wrap">
-    <input id="crud-q" class="form-control w-auto" type="search" placeholder="Search..." aria-label="Search">
-    ${cfg.createFields ? `<button class="btn btn-primary ms-auto" id="crud-new">Create</button>` : ''}
+    <input id="crud-q" class="form-control w-auto" type="search" placeholder="${d.search}" aria-label="${d.search}">
+    ${cfg.createFields ? `<button class="btn btn-primary ms-auto" id="crud-new">${d.create}</button>` : ''}
     </div><div class="card-body p-0" id="crud-body">${loadingHtml()}</div></div>`;
   const body = el.querySelector('#crud-body') as HTMLElement;
+  const labels = { save: d.save, cancel: d.cancel };
   const load = async () => {
     const q = (el.querySelector('#crud-q') as HTMLInputElement | null)?.value ?? '';
     try {
@@ -65,28 +77,28 @@ export async function crud(el: HTMLElement, cfg: CrudConfig): Promise<void> {
       const withActions = cfg.editFields || cfg.deletable;
       const cols = withActions ? [...cfg.cols, { key: '__a', label: '', render: (_v: unknown, row: Record<string, unknown>) => {
         const id = String(row.id ?? '');
-        return `<span class="d-flex gap-1">${cfg.editFields ? `<button class="btn btn-sm btn-outline-primary" data-edit="${id}">Edit</button>` : ''}${cfg.deletable && cfg.deletable(row) ? `<button class="btn btn-sm btn-outline-danger" data-del="${id}">Delete</button>` : ''}</span>`;
+        return `<span class="d-flex gap-1">${cfg.editFields ? `<button class="btn btn-sm btn-outline-primary" data-edit="${id}">${d.edit}</button>` : ''}${cfg.deletable && cfg.deletable(row) ? `<button class="btn btn-sm btn-outline-danger" data-del="${id}">${d.delete}</button>` : ''}</span>`;
       } }] : cfg.cols;
       body.innerHTML = tableHtml(rows, cols);
       body.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', async () => {
         const row = rows.find((x) => String(x.id) === (b as HTMLElement).dataset.edit) ?? {};
-        const data = await modalForm('Edit', cfg.editFields?.(row) ?? []);
+        const data = await modalForm(d.edit, cfg.editFields?.(row) ?? [], labels);
         if (!data) return;
         try {
           await call(`${cfg.endpoint}/${(b as HTMLElement).dataset.edit}`, { method: 'PATCH', body: JSON.stringify(data) });
-          toast('Saved', 'success');
+          toast(d.saved, 'success');
           cfg.onChanged?.();
           await load();
-        } catch (e) { toast(e instanceof Error ? e.message : 'Save failed', 'danger'); }
+        } catch (e) { toast(e instanceof Error ? e.message : d.failed, 'danger'); }
       }));
       body.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', async () => {
-        if (!(await confirmDialog('Delete?', 'This action cannot be undone.', 'Delete'))) return;
+        if (!(await confirmDialog(d.confirmDelete, d.confirmDeleteBody, d.delete, d.cancel))) return;
         try {
           await call(`${cfg.endpoint}/${(b as HTMLElement).dataset.del}`, { method: 'DELETE' });
-          toast('Deleted', 'success');
+          toast(d.deleted, 'success');
           cfg.onChanged?.();
           await load();
-        } catch (e) { toast(e instanceof Error ? e.message : 'Delete failed', 'danger'); }
+        } catch (e) { toast(e instanceof Error ? e.message : d.failed, 'danger'); }
       }));
     } catch (e) {
       body.innerHTML = errorHtml(e);
@@ -94,14 +106,14 @@ export async function crud(el: HTMLElement, cfg: CrudConfig): Promise<void> {
   };
   (el.querySelector('#crud-q') as HTMLInputElement | null)?.addEventListener('input', () => void load());
   el.querySelector('#crud-new')?.addEventListener('click', async () => {
-    const data = await modalForm(cfg.createTitle ?? 'Create', cfg.createFields ?? []);
+    const data = await modalForm(cfg.createTitle ?? d.create, cfg.createFields ?? [], labels);
     if (!data) return;
     try {
       await call(cfg.endpoint, { method: 'POST', body: JSON.stringify(data) });
-      toast('Created', 'success');
+      toast(d.created, 'success');
       cfg.onChanged?.();
       await load();
-    } catch (e) { toast(e instanceof Error ? e.message : 'Create failed', 'danger'); }
+    } catch (e) { toast(e instanceof Error ? e.message : d.failed, 'danger'); }
   });
   await load();
 }

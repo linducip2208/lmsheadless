@@ -1,5 +1,6 @@
 import '@tabler/core/dist/css/tabler.min.css';
 import './style.css';
+import { getDict, type WebDict } from './i18n.js';
 
 const PORTALS: Record<string, string> = {
   admin: 'http://localhost:5173',
@@ -11,6 +12,11 @@ try {
   const override = JSON.parse(localStorage.getItem('portal-urls') ?? '{}') as Record<string, string>;
   for (const [k, v] of Object.entries(override)) if (typeof v === 'string') PORTALS[k] = v;
 } catch { /* defaults */ }
+
+function lang(): string {
+  return localStorage.getItem('web-locale') ?? 'en';
+}
+let t: WebDict = getDict(lang());
 
 const META: Record<string, [string, string]> = {
   '/': ['LMS Headless — API-first learning platform', 'API-first, Cloudflare-native LMS. Web + PWA + Flutter-ready, multi-organization, white-label.'],
@@ -31,226 +37,269 @@ function header(active = ''): string {
     <a class="navbar-brand" href="#/"><span class="brand-mark">L</span> LMS Headless</a>
     <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Menu"><span class="navbar-toggler-icon"></span></button>
     <div class="collapse navbar-collapse" id="nav"><ul class="navbar-nav ms-auto">
-    ${link('/features', 'Features')}${link('/solutions', 'Solutions')}${link('/pricing', 'Pricing')}${link('/documentation', 'Docs')}${link('/about', 'About')}${link('/contact', 'Contact')}
-    <li class="nav-item ms-2"><a class="btn btn-outline-primary" href="#/login">Sign in</a></li>
-    <li class="nav-item ms-2"><a class="btn btn-primary" href="#/register">Get started</a></li>
+    ${link('/features', t.features)}${link('/catalog', t.catalog)}${link('/solutions', t.solutions)}${link('/pricing', t.pricing)}${link('/documentation', t.docs)}${link('/about', t.about)}${link('/contact', t.contact)}
+    <li class="nav-item ms-2"><select id="lang-sel" class="form-select form-select-sm" aria-label="Language"><option value="en"${lang() === 'en' ? ' selected' : ''}>EN</option><option value="id"${lang() === 'id' ? ' selected' : ''}>ID</option></select></li>
+    <li class="nav-item ms-2"><a class="btn btn-outline-primary" href="#/login">${t.signIn}</a></li>
+    <li class="nav-item ms-2"><a class="btn btn-primary" href="#/register">${t.getStarted}</a></li>
     </ul></div></div></header>`;
 }
 
 function footer(): string {
   return `<footer class="footer footer-transparent mt-5 border-top"><div class="container-xl"><div class="row">
-    <div class="col-md-4"><h4>LMS Headless</h4><p class="text-muted">API-first learning management system.<br>Web + PWA · Flutter-ready API · Cloudflare-native.</p></div>
-    <div class="col-md-2"><h4>Product</h4><ul class="list-unstyled"><li><a href="#/features">Features</a></li><li><a href="#/pricing">Pricing</a></li><li><a href="#/documentation">Documentation</a></li></ul></div>
-    <div class="col-md-2"><h4>Solutions</h4><ul class="list-unstyled"><li><a href="#/schools">Schools</a></li><li><a href="#/training">Training</a></li><li><a href="#/corporate">Corporate</a></li></ul></div>
-    <div class="col-md-2"><h4>Company</h4><ul class="list-unstyled"><li><a href="#/about">About</a></li><li><a href="#/contact">Contact</a></li><li><a href="#/verify/DEMO">Verify certificate</a></li></ul></div>
-    <div class="col-md-2"><h4>Portals</h4><ul class="list-unstyled"><li><a href="${PORTALS.admin}">Admin</a></li><li><a href="${PORTALS.teacher}">Teacher</a></li><li><a href="${PORTALS.student}">Student</a></li><li><a href="${PORTALS.parent}">Parent</a></li></ul></div>
-  </div><div class="text-muted small mt-3">© 2026 LMS Headless. Demo dataset only — no real customer data. Licensing terms are set by the product owner (see LICENSE).</div></div></footer>`;
+    <div class="col-md-4"><h4>LMS Headless</h4><p class="text-muted">${t.footerTag}</p></div>
+    <div class="col-md-2"><h4>${t.product}</h4><ul class="list-unstyled"><li><a href="#/features">${t.features}</a></li><li><a href="#/pricing">${t.pricing}</a></li><li><a href="#/documentation">${t.documentation}</a></li></ul></div>
+    <div class="col-md-2"><h4>${t.solutions}</h4><ul class="list-unstyled"><li><a href="#/schools">${t.schools}</a></li><li><a href="#/training">${t.training}</a></li><li><a href="#/corporate">${t.corporate}</a></li></ul></div>
+    <div class="col-md-2"><h4>${t.company}</h4><ul class="list-unstyled"><li><a href="#/about">${t.about}</a></li><li><a href="#/contact">${t.contact}</a></li><li><a href="#/verify/DEMO">${t.verifyNumber}</a></li></ul></div>
+    <div class="col-md-2"><h4>${t.portals}</h4><ul class="list-unstyled"><li><a href="${PORTALS.admin}">${t.admin}</a></li><li><a href="${PORTALS.teacher}">${t.teacher}</a></li><li><a href="${PORTALS.student}">${t.student}</a></li><li><a href="${PORTALS.parent}">${t.parent}</a></li></ul></div>
+  </div><div class="text-muted small mt-3">${t.footerNote}</div></div></footer>`;
 }
 
 function cta(): string {
   return `<section class="cta-band"><div class="container-xl text-center py-5">
-    <h2>Run your academy on an API-first LMS</h2>
-    <p class="text-muted">Spin up an organization, invite teachers, publish your first course today.</p>
-    <a class="btn btn-primary btn-lg" href="#/register">Get started</a>
-    <a class="btn btn-outline-primary btn-lg ms-2" href="#/documentation">Read the docs</a></div></section>`;
+    <h2>${t.ctaTitle}</h2>
+    <p class="text-muted">${t.ctaSub}</p>
+    <a class="btn btn-primary btn-lg" href="#/register">${t.getStarted}</a>
+    <a class="btn btn-outline-primary btn-lg ms-2" href="#/documentation">${t.readDocs}</a></div></section>`;
 }
 
-// Simplified static preview of the actual admin UI (illustrative mock).
 function previewDashboard(): string {
-  return `<div class="preview" aria-label="Product preview of the admin dashboard">
+  return `<div class="preview" aria-label="Product preview">
     <div class="preview-bar"><span></span><span></span><span></span></div>
     <div class="preview-body"><div class="preview-side"><i></i><i></i><i></i><i></i><i></i></div>
     <div class="preview-main"><div class="preview-cards"><b></b><b></b><b></b></div><div class="preview-chart"><i style="height:60%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:70%"></i><i style="height:95%"></i></div>
-    <div class="preview-rows"><u></u><u></u><u></u></div></div></div>
-    <div class="preview-cap">Product preview — actual admin dashboard</div></div>`;
+    <div class="preview-rows"><u></u><u></u><u></u></div></div></div></div>`;
 }
 
 function previewCourse(): string {
-  return `<div class="preview" aria-label="Product preview of the course player">
+  return `<div class="preview" aria-label="Product preview">
     <div class="preview-bar"><span></span><span></span><span></span></div>
     <div class="preview-body"><div class="preview-main"><div class="preview-video"></div>
     <div class="preview-rows"><u></u><u></u></div>
-    <div class="preview-progress"><i style="width:64%"></i></div></div></div>
-    <div class="preview-cap">Product preview — student course player</div></div>`;
+    <div class="preview-progress"><i style="width:64%"></i></div></div></div></div>`;
 }
 
 function previewMobile(): string {
-  return `<div class="preview phone" aria-label="Product preview of the student mobile app">
+  return `<div class="preview phone" aria-label="Product preview">
     <div class="preview-notch"></div><div class="preview-cards col"><b></b><b></b></div>
     <div class="preview-progress"><i style="width:42%"></i></div>
-    <div class="preview-rows"><u></u><u></u></div><div class="preview-nav"><i></i><i></i><i></i><i></i></div>
-    <div class="preview-cap">Product preview — student PWA on mobile</div></div>`;
+    <div class="preview-rows"><u></u><u></u></div><div class="preview-nav"><i></i><i></i><i></i><i></i></div></div>`;
 }
 
 function home(): string {
   const features: [string, string][] = [
-    ['📚 Course builder', 'Sections, lessons, ordering, drafts, rich content, video and documents.'],
-    ['📝 Quiz engine', 'Multiple choice, true/false, short answer, attempts, time limits, auto + manual grading.'],
-    ['📤 Assignments', 'Instructions, due dates, resubmission rules, teacher review and feedback.'],
-    ['🗓 Attendance', 'Sessions per class or course, present/absent/late/excused, percentage reports.'],
-    ['⭐ Grades', 'Categories, scores, feedback, role-scoped visibility for students and parents.'],
-    ['🎓 Certificates', 'Templates, issuance on completion, public verification page.'],
-    ['📊 Progress & reports', 'Lesson, quiz and assignment completion; organization, course and teacher reports.'],
-    ['🔔 Notifications', 'Announcements fan-out, unread counts, preferences, push architecture.'],
-    ['🏷 White-label', 'Per-organization name, logo, colors, footer and support info.'],
-    ['🏢 Multi-organization', 'Strict tenant isolation tested org-vs-org, user-vs-user.'],
-    ['🔌 API-first', 'Everything important is REST under /api/v1 with OpenAPI docs.'],
-    ['📱 PWA + Flutter-ready', 'Installable apps with offline shell; stable JSON for Flutter clients.'],
+    [t.fCourseBuilder, t.fCourseBuilderD],
+    [t.fQuiz, t.fQuizD],
+    [t.fAssign, t.fAssignD],
+    [t.fAttend, t.fAttendD],
+    [t.fGrades, t.fGradesD],
+    [t.fCerts, t.fCertsD],
+    [t.fProgress, t.fProgressD],
+    [t.fNotif, t.fNotifD],
+    [t.fWhite, t.fWhiteD],
+    [t.fMulti, t.fMultiD],
+    [t.fApi, t.fApiD],
+    [t.fPwa, t.fPwaD],
   ];
   const roles: [string, string][] = [
-    ['Admin', 'Organizations, users, roles, branding, settings, reports, audit log.'],
-    ['Teacher', 'Assigned courses, lesson and quiz authoring, grading queue, attendance, student progress.'],
-    ['Student', 'Enrolled courses, progress, quizzes, assignments, grades, certificates — mobile-first PWA.'],
-    ['Parent', 'Linked children only: progress, grades, attendance, announcements.'],
-    ['Staff', 'Operational access: attendance, announcements, reports.'],
+    [t.roleAdmin, t.roleAdminD],
+    [t.roleTeacher, t.roleTeacherD],
+    [t.roleStudent, t.roleStudentD],
+    [t.roleParent, t.roleParentD],
+    [t.roleStaff, t.roleStaffD],
   ];
-  const faqs: [string, string][] = [
+  const faqs: [string, string][] = lang() === 'id' ? [
+    ['Apakah ada aplikasi mobile?', 'Portal siswa adalah PWA yang dapat dipasang dengan shell offline, dan REST API dirancang untuk klien Flutter Android/iOS.'],
+    ['Bisakah satu instalasi melayani banyak sekolah?', 'Ya. Organisasi adalah tenant terisolasi dengan pengguna, kursus, merek, dan laporan masing-masing.'],
+    ['Bisakah memakai merek sendiri?', 'Ya. Setiap organisasi mengatur nama, logo, warna, footer, dan info dukungan.'],
+    ['Di mana data dihosting?', 'Cloudflare-native: Workers untuk API, D1 untuk database, R2 untuk berkas, KV untuk rate limiting. SQLite lokal untuk development.'],
+    ['Apakah surel/push termasuk?', 'Arsitekturnya (preferensi notifikasi, langganan push) sudah ada. Penyedia pengiriman butuh kredensial Anda sendiri — tidak ada yang dipalsukan.'],
+  ] : [
     ['Is there a mobile app?', 'The student portal is an installable PWA with an offline shell, and the REST API is designed for a Flutter Android/iOS client.'],
     ['Can one installation serve many schools?', 'Yes. Organizations are isolated tenants with their own users, courses, branding and reports.'],
     ['Can I use my own brand?', 'Yes. Each organization configures its name, logo, colors, footer and support info.'],
-    ['Where is data hosted?', 'Cloudflare-native: Workers for API, D1 for database, R2 for files, KV for rate limiting. Local SQLite/filesystem for development.'],
+    ['Where is data hosted?', 'Cloudflare-native: Workers for API, D1 for database, R2 for files, KV for rate limiting. Local SQLite for development.'],
     ['Is email/push included?', 'The architecture (notification preferences, push subscriptions) is built in. Delivery providers need your own credentials — nothing is faked.'],
   ];
   return `
   <section class="hero"><div class="container-xl row align-items-center">
-    <div class="col-md-6"><span class="badge bg-blue mb-2">API-first · Cloudflare-native · PWA</span>
-    <h1 class="display-4">The headless LMS for schools, training & companies</h1>
-    <p class="lead text-muted">Courses, quizzes, assignments, attendance, grades and certificates — delivered through a clean REST API to web portals, installable PWAs and your future Flutter app.</p>
-    <a class="btn btn-primary btn-lg" href="#/register">Get started</a>
-    <a class="btn btn-outline-primary btn-lg ms-2" href="#/documentation">API docs</a>
-    <div class="mt-3 small text-muted">Multi-organization · White-label · Roles for admin, teacher, student, parent, staff</div></div>
+    <div class="col-md-6"><span class="badge bg-blue mb-2">${t.tagline}</span>
+    <h1 class="display-4">${t.heroTitle}</h1>
+    <p class="lead text-muted">${t.heroSub}</p>
+    <a class="btn btn-primary btn-lg" href="#/register">${t.getStarted}</a>
+    <a class="btn btn-outline-primary btn-lg ms-2" href="#/documentation">${t.apiDocs}</a>
+    <div class="mt-3 small text-muted">${t.rolesNote}</div></div>
     <div class="col-md-6">${previewDashboard()}</div></div></section>
   <section class="container-xl py-4"><div class="row row-cards">
-    ${features.map(([t, x]) => `<div class="col-sm-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="card-title">${t}</h3><p class="text-muted">${x}</p></div></div></div>`).join('')}
+    ${features.map(([x, y]) => `<div class="col-sm-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="card-title">${x}</h3><p class="text-muted">${y}</p></div></div></div>`).join('')}
   </div></section>
-  <section class="container-xl py-4"><h2>One platform, five experiences</h2>
-  <p class="text-muted">Each role gets a purpose-built portal — not one dashboard with a different menu.</p>
-  <div class="row row-cards">${roles.map(([t, x]) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${t}</h3><p class="text-muted">${x}</p></div></div></div>`).join('')}</div></section>
-  <section class="container-xl py-4"><h2>See the product</h2><div class="row">${`<div class="col-md-6">${previewCourse()}</div><div class="col-md-6">${previewMobile()}</div>`}</div></section>
-  <section class="container-xl py-4"><h2>Architecture</h2>
-  <div class="arch"><span>Web + PWA portals</span>→<span>REST /api/v1</span>→<span>Hono on Workers</span>→<span>D1 · R2 · KV</span></div>
-  <p class="text-muted">SQLite locally, D1 in production. Files in R2 (local disk in dev). Rate limiting in KV with a safe local fallback.</p></section>
-  <section class="container-xl py-4"><h2>Pricing</h2>
+  <section class="container-xl py-4"><h2>${t.fiveExperiences}</h2>
+  <p class="text-muted">${t.fiveExperiencesSub}</p>
+  <div class="row row-cards">${roles.map(([x, y]) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${x}</h3><p class="text-muted">${y}</p></div></div></div>`).join('')}</div></section>
+  <section class="container-xl py-4"><h2>${t.seeProduct}</h2><div class="row">${`<div class="col-md-6">${previewCourse()}</div><div class="col-md-6">${previewMobile()}</div>`}</div></section>
+  <section class="container-xl py-4"><h2>${t.architecture}</h2>
+  <div class="arch"><span>${t.archLine}</span></div>
+  <p class="text-muted">${t.architectureSub}</p></section>
+  <section class="container-xl py-4"><h2>${t.pricing}</h2>
   <div class="row row-cards">
-    ${[['Self-hosted', 'Run it yourself', ['Full source', 'SQLite + local files', 'Community docs'], 'Start free'], ['Cloud', 'We host it for you', ['Managed Workers + D1 + R2', 'White-label onboarding', 'Email support'], 'Contact us'], ['Enterprise', 'For groups & companies', ['SSO & custom integrations', 'SLA & training', 'Flutter app delivery'], 'Contact us']].map(([t, s, pts, ctaBtn]) => `<div class="col-md-4"><div class="card h-100"><div class="card-body text-center"><h3>${t}</h3><p class="text-muted">${s}</p><ul class="list-unstyled text-start">${(pts as string[]).map((p) => `<li>✓ ${p}</li>`).join('')}</ul><a class="btn btn-primary" href="#/contact">${ctaBtn}</a></div></div></div>`).join('')}
-  </div><p class="text-muted small mt-2">Illustrative plans — contact us for an actual quote. Final license terms are set by the product owner.</p></section>
-  <section class="container-xl py-4"><h2>FAQ</h2>
+    ${[[t.startFree, t.pricingLead, ['Full source', 'SQLite + local files', 'Community docs']], ['Cloud', 'Managed hosting', ['Workers + D1 + R2', 'White-label onboarding', 'Email support']], ['Enterprise', 'Groups & companies', ['SSO & integrations', 'SLA & training', 'Flutter delivery']]].map(([x, s, pts]) => `<div class="col-md-4"><div class="card h-100"><div class="card-body text-center"><h3>${x}</h3><p class="text-muted">${s}</p><ul class="list-unstyled text-start">${(pts as string[]).map((p) => `<li>✓ ${p}</li>`).join('')}</ul><a class="btn btn-primary" href="#/contact">${t.contactUs}</a></div></div></div>`).join('')}
+  </div><p class="text-muted small mt-2">${t.pricingNote}</p></section>
+  <section class="container-xl py-4"><h2>${t.faq}</h2>
   ${faqs.map(([q, a]) => `<details class="mb-2"><summary><strong>${q}</strong></summary><p class="text-muted mt-1">${a}</p></details>`).join('')}</section>
   ${cta()}`;
 }
 
 function featuresPage(): string {
-  const groups: [string, string[]][] = [
-    ['Teaching', ['Course builder with sections, lessons and ordering', 'Rich text, video, documents, images, external resources', 'Draft/published lesson states', 'Question management with reordering', 'Quiz shuffle, time limits, attempt limits, expiry handling', 'Manual grading for short answers', 'Assignments with due dates and resubmission rules']],
-    ['Tracking', ['Lesson/course/quiz/assignment progress', 'Attendance sessions and percentage reports', 'Grade categories, scores and feedback', 'Organization, completion, quiz-performance and teacher-activity reports']],
-    ['Engagement', ['Announcements with notification fan-out', 'Notification center with unread counts and preferences', 'Course discussions with moderation', 'Certificates with public verification']],
-    ['Platform', ['REST API under /api/v1 with OpenAPI', 'Installable PWAs with offline shell and safe sync', 'Flutter-ready JSON: pagination, stable IDs, idempotency keys', 'Multi-organization tenant isolation', 'White-label branding per organization', 'Audit logging, CORS, rate limiting, secure uploads']],
+  const groups: [string, string[]][] = lang() === 'id' ? [
+    ['Mengajar', ['Penyusun kursus dengan bab, pelajaran, dan urutan', 'Teks kaya, video, dokumen, gambar, sumber eksternal', 'Status draf/terbit', 'Bank soal dengan pengacakan dan penilaian manual', 'Batas waktu, batas percobaan, nilai negatif', 'Tugas dengan tenggat dan aturan kirim ulang']],
+    ['Pelacakan', ['Progres pelajaran, kuis, dan tugas', 'Kehadiran dan laporan persentase', 'Nilai, kategori, dan umpan balik', 'Laporan organisasi, penyelesaian, dan aktivitas guru']],
+    ['Platform', ['REST API /api/v1 dengan OpenAPI', 'PWA terpasang dengan sinkronisasi aman', 'JSON siap-Flutter dengan idempotency', 'Isolasi tenant multi-organisasi', 'White-label per organisasi', 'Log audit, CORS, rate limiting']],
+  ] : [
+    ['Teaching', ['Course builder with sections, lessons and ordering', 'Rich text, video, documents, images, external resources', 'Draft/published states', 'Question banks with shuffle and manual grading', 'Time limits, attempt limits, negative marking', 'Assignments with due dates and resubmission rules']],
+    ['Tracking', ['Lesson, quiz and assignment progress', 'Attendance with percentage reports', 'Grades, categories and feedback', 'Organization, completion and teacher-activity reports']],
+    ['Platform', ['REST API /api/v1 with OpenAPI', 'Installable PWAs with safe sync', 'Flutter-ready JSON with idempotency', 'Multi-organization tenant isolation', 'Per-organization white-label', 'Audit logging, CORS, rate limiting']],
   ];
-  return `<div class="container-xl py-4"><h1>Features</h1><p class="text-muted">Everything below is implemented and tested — no mock features.</p>
-  ${groups.map(([t, items]) => `<h2 class="mt-4">${t}</h2><ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>`).join('')}</div>${cta()}`;
+  return `<div class="container-xl py-4"><h1>${t.features}</h1><p class="text-muted">${t.featuresLead}</p>
+  ${groups.map(([x, items]) => `<h2 class="mt-4">${x}</h2><ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>`).join('')}</div>${cta()}`;
 }
 
-function solutionPage(kind: 'solutions' | 'schools' | 'training' | 'corporate'): string {
-  const data: Record<string, [string, string, string[]]> = {
-    solutions: ['Solutions', 'One platform for every kind of learning organization.', ['K-12 schools: classes, subjects, attendance, parent visibility', 'Training centers: course catalogs, quizzes, certificates', 'Companies: onboarding tracks, compliance records, reports']],
-    schools: ['For schools', 'Academic years, terms, classes and subjects — plus parents in the loop.', ['Class rosters and homeroom teachers', 'Attendance per session with excused/absent/late', 'Grades visible to students and linked parents', 'Announcements to the whole organization']],
-    training: ['For training centers', 'Sell and deliver courses with proof of completion.', ['Course catalog with visibility controls', 'Quizzes with passing scores and attempt limits', 'Certificates with public verification links', 'Progress reports per student and cohort']],
-    corporate: ['For companies', 'Onboard and upskill teams with auditable records.', ['Organization per department or client', 'Role-based access for admins, trainers and staff', 'Audit logs for grades, publishing and certificates', 'API access for HR/HRIS integrations']],
+function solutionPage(kind: string): string {
+  const data: Record<string, [string, string, string[]]> = lang() === 'id' ? {
+    solutions: [t.solutions, t.solutionsLead, ['Sekolah: kelas, mata pelajaran, kehadiran, visibilitas orang tua', 'Pelatihan: katalog, kuis, sertifikat', 'Perusahaan: onboarding, catatan kepatuhan, laporan']],
+    schools: [t.schools, 'Tahun ajaran, semester, kelas — plus orang tua dalam lingkaran.', ['Daftar kelas dan wali kelas', 'Kehadiran per sesi', 'Nilai terlihat oleh siswa dan orang tua tertaut', 'Pengumuman seluruh organisasi']],
+    training: [t.training, 'Jual dan sajikan kursus dengan bukti penyelesaian.', ['Katalog dengan kontrol visibilitas', 'Kuis dengan ambang lulus dan batas percobaan', 'Sertifikat dengan tautan verifikasi publik', 'Laporan progres per siswa dan kohor']],
+    corporate: [t.corporate, 'Onboarding dan upskilling dengan catatan teraudit.', ['Organisasi per departemen atau klien', 'Akses berbasis peran', 'Log audit untuk nilai dan sertifikat', 'Akses API untuk integrasi HR']],
+  } : {
+    solutions: [t.solutions, t.solutionsLead, ['K-12 schools: classes, subjects, attendance, parent visibility', 'Training centers: catalogs, quizzes, certificates', 'Companies: onboarding tracks, compliance records, reports']],
+    schools: [t.schools, 'Academic years, terms, classes and subjects — plus parents in the loop.', ['Class rosters and homeroom teachers', 'Attendance per session', 'Grades visible to students and linked parents', 'Organization announcements']],
+    training: [t.training, 'Sell and deliver courses with proof of completion.', ['Catalog with visibility controls', 'Quizzes with passing scores and attempt limits', 'Certificates with public verification links', 'Progress reports per student and cohort']],
+    corporate: [t.corporate, 'Onboard and upskill teams with auditable records.', ['Organization per department or client', 'Role-based access', 'Audit logs for grades and certificates', 'API access for HR integrations']],
   };
-  const [t, s, items] = data[kind];
-  return `<div class="container-xl py-4"><h1>${t}</h1><p class="lead text-muted">${s}</p>
+  const [x, s, items] = data[kind] ?? data.solutions;
+  return `<div class="container-xl py-4"><h1>${x}</h1><p class="lead text-muted">${s}</p>
   <ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>
   <div class="row mt-4"><div class="col-md-6">${previewDashboard()}</div><div class="col-md-6">${previewCourse()}</div></div></div>${cta()}`;
 }
 
 function pricingPage(): string {
-  return `<div class="container-xl py-4"><h1>Pricing</h1><p class="text-muted">Start with a demo organization, upgrade when you grow.</p>
+  return `<div class="container-xl py-4"><h1>${t.pricing}</h1><p class="text-muted">${t.pricingLead}</p>
   <div class="row row-cards">
-  ${[['Starter', 'For pilots & small academies', ['Up to 3 organizations', 'White-label branding', 'PWA portals', 'Community docs']], ['Growth', 'For schools & training centers', ['Unlimited courses & students*', 'Certificates & verification', 'Reports & audit log', 'Email support']], ['Enterprise', 'For groups & companies', ['Custom domains', 'SSO & integrations', 'SLA & onboarding', 'Flutter app delivery']]].map(([t, s, pts]) => `<div class="col-md-4"><div class="card h-100"><div class="card-body text-center"><h3>${t}</h3><p class="text-muted">${s}</p><ul class="list-unstyled text-start">${(pts as string[]).map((p) => `<li>✓ ${p}</li>`).join('')}</ul><a class="btn btn-primary" href="#/contact">Contact us</a></div></div></div>`).join('')}
-  </div><p class="text-muted small mt-3">* Fair-use limits apply on managed hosting. Illustrative plans — request an actual quote. License terms are set by the product owner.</p></div>${cta()}`;
+  ${[[t.startFree, t.pricingLead, ['3 organizations', 'White-label', 'PWA portals']], ['Growth', t.solutions, ['Unlimited courses*', 'Certificates', 'Reports']], ['Enterprise', t.corporate, ['Custom domains', 'SSO', 'SLA']]].map(([x, s, pts]) => `<div class="col-md-4"><div class="card h-100"><div class="card-body text-center"><h3>${x}</h3><p class="text-muted">${s}</p><ul class="list-unstyled text-start">${(pts as string[]).map((p) => `<li>✓ ${p}</li>`).join('')}</ul><a class="btn btn-primary" href="#/contact">${t.contactUs}</a></div></div></div>`).join('')}
+  </div><p class="text-muted small mt-3">${t.fairUse}</p></div>${cta()}`;
 }
 
 function docsPage(): string {
-  return `<div class="container-xl py-4"><h1>Documentation</h1>
+  return `<div class="container-xl py-4"><h1>${t.documentation}</h1>
   <div class="row row-cards">
-  ${[['API reference', 'REST /api/v1 with OpenAPI JSON and human docs.', '/api/v1/docs'], ['Local development', 'SQLite + local files, migrate, seed, dev servers.', '#/documentation'], ['Cloudflare deploy', 'Workers + D1 + R2 + KV setup guide.', '#/documentation'], ['Flutter integration', 'Auth, pagination, offline and idempotency patterns.', '#/documentation'], ['White-label', 'Per-organization branding via settings API.', '#/documentation'], ['Multi-organization', 'Tenant model and isolation guarantees.', '#/documentation']].map(([t, x, href]) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${t}</h3><p class="text-muted">${x}</p><a href="${href}" class="btn btn-sm btn-outline-primary">Open</a></div></div></div>`).join('')}
+  ${[['API', '/api/v1/docs'], ['Flutter', '#/documentation'], ['White-label', '#/documentation'], ['PWA', '#/documentation'], ['Cloudflare', '#/documentation'], ['Security', '#/documentation']].map(([x, href]) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${x}</h3><a href="${href}" class="btn btn-sm btn-outline-primary">${t.view ?? 'Open'}</a></div></div></div>`).join('')}
   </div>
-  <h2 class="mt-4">Quickstart</h2>
+  <h2 class="mt-4">${t.quickstart}</h2>
   <pre class="card card-body"><code>npm install
 npm run db:migrate
 npm run db:seed
-npm run dev          # API :8787
-npm run dev:admin    # Admin :5173</code></pre>
-  <h2 class="mt-4">Auth in 30 seconds</h2>
+npm run dev</code></pre>
+  <h2 class="mt-4">${t.auth30}</h2>
   <pre class="card card-body"><code>POST /api/v1/auth/login {"email","password"}
-# → {"access_token","refresh_token"}
 GET /api/v1/courses  # Authorization: Bearer &lt;token&gt;</code></pre>
-  <p class="text-muted">Full guides live in the repository <code>docs/</code> folder and PRODUCT.md.</p></div>${cta()}`;
+  <p class="text-muted">${t.docsGuidesNote}</p></div>${cta()}`;
 }
 
 function aboutPage(): string {
-  return `<div class="container-xl py-4"><h1>About</h1>
-  <p class="lead text-muted">LMS Headless is an API-first learning management system built for organizations that outgrow spreadsheets and closed SaaS.</p>
-  <h2>Principles</h2><ul><li>API-first: every important action is REST.</li><li>Portable: SQLite locally, Cloudflare D1 in production.</li><li>Honest software: no fake metrics, no fake integrations — email and push providers need your own credentials.</li><li>Tested: authentication, authorization, tenant isolation and learning flows are covered by automated tests.</li></ul>
-  <h2>Technology</h2><p class="text-muted">TypeScript, Hono, Cloudflare Workers/D1/R2/KV, Tabler UI, Vite PWAs.</p></div>${cta()}`;
+  return `<div class="container-xl py-4"><h1>${t.about}</h1>
+  <p class="lead text-muted">${t.aboutLead}</p>
+  <h2>${t.principles}</h2><ul><li>API-first</li><li>SQLite / D1</li><li>${t.faq}</li></ul>
+  <h2>${t.technology}</h2><p class="text-muted">TypeScript, Hono, Workers/D1/R2/KV, Tabler, Vite.</p></div>${cta()}`;
 }
 
 function contactPage(): string {
-  return `<div class="container-xl py-4"><h1>Contact</h1>
+  return `<div class="container-xl py-4"><h1>${t.contact}</h1>
   <div class="row"><div class="col-md-6"><div class="card"><div class="card-body"><form id="cform">
-  <label class="form-label" for="cn">Name</label><input id="cn" class="form-control mb-2" required>
-  <label class="form-label" for="ce">Email</label><input id="ce" type="email" class="form-control mb-2" required>
-  <label class="form-label" for="cm">Message</label><textarea id="cm" class="form-control mb-3" rows="5" required></textarea>
-  <button class="btn btn-primary">Send via email</button></form>
-  <p class="text-muted small mt-2">This opens your email client — no message is stored on our servers from this page.</p></div></div></div>
-  <div class="col-md-6"><h2>Portals</h2><ul><li><a href="${PORTALS.admin}">Admin panel</a></li><li><a href="${PORTALS.teacher}">Teacher panel</a></li><li><a href="${PORTALS.student}">Student portal</a></li><li><a href="${PORTALS.parent}">Parent portal</a></li></ul>
-  <h2>API</h2><p><a href="/api/v1/docs">API documentation</a> · <a href="/api/v1/openapi.json">OpenAPI JSON</a></p></div></div></div>`;
+  <label class="form-label" for="cn">${t.name}</label><input id="cn" class="form-control mb-2" required>
+  <label class="form-label" for="ce">${t.email}</label><input id="ce" type="email" class="form-control mb-2" required>
+  <label class="form-label" for="cm">${t.message}</label><textarea id="cm" class="form-control mb-3" rows="5" required></textarea>
+  <button class="btn btn-primary">${t.sendViaEmail}</button></form>
+  <p class="text-muted small mt-2">${t.contactNote}</p></div></div></div>
+  <div class="col-md-6"><h2>${t.portals}</h2><ul><li><a href="${PORTALS.admin}">${t.admin}</a></li><li><a href="${PORTALS.teacher}">${t.teacher}</a></li><li><a href="${PORTALS.student}">${t.student}</a></li><li><a href="${PORTALS.parent}">${t.parent}</a></li></ul>
+  <h2>API</h2><p><a href="/api/v1/docs">API</a> · <a href="/api/v1/openapi.json">OpenAPI</a></p></div></div></div>`;
 }
 
 function loginPage(): string {
   return `<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-md-5"><div class="card"><div class="card-body">
-  <h1>Sign in</h1><p class="text-muted">Authenticate, then choose your portal.</p>
-  <form id="lform"><label class="form-label" for="le">Email</label><input id="le" type="email" class="form-control mb-2" required>
-  <label class="form-label" for="lp">Password</label><input id="lp" type="password" class="form-control mb-3" required>
-  <div id="lerr"></div><button class="btn btn-primary w-100">Sign in</button></form>
+  <h1>${t.signIn}</h1><p class="text-muted">${t.authenticate}</p>
+  <form id="lform"><label class="form-label" for="le">${t.email}</label><input id="le" type="email" class="form-control mb-2" required>
+  <label class="form-label" for="lp">${t.password}</label><input id="lp" type="password" class="form-control mb-3" required>
+  <div id="lerr"></div><button class="btn btn-primary w-100">${t.signIn}</button></form>
   <div id="roles" class="mt-3"></div>
-  <p class="mt-3">No account? <a href="#/register">Register</a> · Demo: student@example.com / Password123!</p></div></div></div></div></div>`;
+  <p class="mt-3">${t.noAccount} <a href="#/register">${t.register}</a> · ${t.loginDemo}</p></div></div></div></div></div>`;
 }
 
 async function verifyPage(num: string): Promise<string> {
   try {
     const res = await fetch(`/api/v1/certificates/verify/${encodeURIComponent(num)}`);
-    const j = (await res.json()) as { success: boolean; data?: { certificate: Record<string, string> }; error?: { message: string } };
-    if (!j.success || !j.data) return `<div class="container-xl py-5"><div class="alert alert-danger">Certificate not found.</div></div>`;
-    const c = j.data.certificate;
+    const j = (await res.json()) as { success: boolean; data?: { valid?: boolean; certificate: Record<string, string> }; error?: { message: string } };
+    if (!j.success || !j.data) return `<div class="container-xl py-5"><div class="alert alert-danger">${t.verifyFail}</div></div>`;
+    const cc = j.data.certificate;
     return `<div class="container-xl py-5"><div class="card"><div class="card-body text-center">
-      <div class="display-6">🎓</div><h1>Certificate verified</h1>
-      <p><strong>${c.student_name}</strong> completed <strong>${c.course_title}</strong></p>
-      <p class="text-muted">${c.organization_name} · issued ${c.issued_at?.slice(0, 10) ?? ''}</p>
-      <code>${c.certificate_number}</code></div></div></div>`;
+      <div class="display-6">🎓</div><h1>${t.verifyTitle}</h1>
+      <p><strong>${cc.student_name}</strong> ${t.completed} <strong>${cc.course_title}</strong></p>
+      <p class="text-muted">${cc.organization_name} · ${t.issued} ${cc.issued_at?.slice(0, 10) ?? ''}</p>
+      <code>${cc.certificate_number}</code></div></div></div>`;
   } catch {
-    return `<div class="container-xl py-5"><div class="alert alert-danger">Verification service unavailable (API offline?).</div></div>`;
+    return `<div class="container-xl py-5"><div class="alert alert-danger">${t.verifyServiceDown}</div></div>`;
   }
 }
 
 function registerPage(): string {
   return `<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-md-5"><div class="card"><div class="card-body">
-  <h1>Create account</h1><p class="text-muted">Try the demo organization as a student.</p>
-  <form id="rform"><label class="form-label" for="rn">Full name</label><input id="rn" class="form-control mb-2" required>
-  <label class="form-label" for="re">Email</label><input id="re" type="email" class="form-control mb-2" required>
-  <label class="form-label" for="rp">Password (min 8 chars)</label><input id="rp" type="password" class="form-control mb-3" required minlength="8">
-  <div id="rerr"></div><button class="btn btn-primary w-100">Register</button></form>
+  <h1>${t.createAccount}</h1><p class="text-muted">${t.tryDemo}</p>
+  <form id="rform"><label class="form-label" for="rn">${t.fullName}</label><input id="rn" class="form-control mb-2" required>
+  <label class="form-label" for="re">${t.email}</label><input id="re" type="email" class="form-control mb-2" required>
+  <label class="form-label" for="rp">${t.password}</label><input id="rp" type="password" class="form-control mb-3" required minlength="8">
+  <div id="rerr"></div><button class="btn btn-primary w-100">${t.register}</button></form>
   <div id="rok" class="mt-3"></div></div></div></div></div></div>`;
 }
 
+function catalogPage(): string {
+  return `<div class="container-xl py-4"><h1>${t.catalog}</h1>
+  <p class="text-muted">${t.publishedCatalog}</p>
+  <form id="cat-q" class="d-flex gap-2 mb-3"><input id="cat-input" class="form-control" placeholder="${t.search}…"><button class="btn btn-primary">${t.search}</button></form>
+  <div id="cat-list"><p>${t.loading ?? 'Loading…'}</p></div>
+  <h2 class="mt-4">${t.bundlesTitle}</h2><div id="cat-bundles"><p>…</p></div></div>`;
+}
+
+async function bundlePage(id: string): Promise<string> {
+  try {
+    const res = await fetch(`/api/v1/catalog/bundles/${encodeURIComponent(id)}`);
+    if (!res.ok) return `<div class="container-xl py-5"><div class="alert alert-warning">${t.bundleNotFound}</div></div>`;
+    return `<div class="container-xl py-4" data-bundle="${id}"><p>…</p></div>`;
+  } catch {
+    return `<div class="container-xl py-5"><div class="alert alert-danger">${t.catalogUnavailable}</div></div>`;
+  }
+}
+
+async function instructorPage(id: string): Promise<string> {
+  try {
+    const res = await fetch(`/api/v1/catalog/instructors/${encodeURIComponent(id)}`);
+    const j = (await res.json()) as { success: boolean; data?: { instructor: { name: string }; courses: { id: string; title: string; price: number }[] } };
+    if (!j.success || !j.data) return `<div class="container-xl py-5"><div class="alert alert-warning">${t.instructorNotFound}</div></div>`;
+    return `<div class="container-xl py-4"><h1>${j.data.instructor.name}</h1><p class="text-muted">${t.teacher}</p>
+      <h2>${t.courses ?? 'Courses'}</h2><div class="row">${j.data.courses.map((c) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${c.title}</h3><p>${c.price > 0 ? c.price : ''}</p><a class="btn btn-sm btn-primary" href="${PORTALS.student}">${t.learn}</a></div></div></div>`).join('') || `<p>${t.noPublicCourses}</p>`}</div></div>`;
+  } catch {
+    return `<div class="container-xl py-5"><div class="alert alert-danger">${t.catalogUnavailable}</div></div>`;
+  }
+}
+
 async function router(): Promise<void> {
+  t = getDict(lang());
   const app = document.getElementById('app') as HTMLElement;
   const raw = location.hash.replace('#', '') || '/';
   const [path] = raw.split('?');
   let body = '';
   if (path === '/' || path === '') { body = home(); setMeta('/'); }
   else if (path === '/features') { body = featuresPage(); setMeta('/features'); }
-  else if (['/solutions', '/schools', '/training', '/corporate'].includes(path)) { body = solutionPage(path.slice(1) as 'solutions'); setMeta('/'); }
+  else if (path === '/catalog') { body = catalogPage(); setMeta('/features'); }
+  else if (path.startsWith('/bundles/')) { body = await bundlePage(path.split('/')[2] ?? ''); setMeta('/features'); }
+  else if (path.startsWith('/instructors/')) { body = await instructorPage(path.split('/')[2] ?? ''); setMeta('/features'); }
+  else if (['/solutions', '/schools', '/training', '/corporate'].includes(path)) { body = solutionPage(path.slice(1)); setMeta('/'); }
   else if (path === '/pricing') { body = pricingPage(); setMeta('/pricing'); }
   else if (path === '/documentation') { body = docsPage(); setMeta('/'); }
   else if (path === '/about') { body = aboutPage(); setMeta('/'); }
@@ -258,10 +307,48 @@ async function router(): Promise<void> {
   else if (path === '/login') { body = loginPage(); setMeta('/'); }
   else if (path === '/register') { body = registerPage(); setMeta('/'); }
   else if (path.startsWith('/verify/')) { body = await verifyPage(path.split('/')[2] ?? ''); setMeta('/verify'); }
-  else body = `<div class="container-xl py-5"><div class="alert alert-warning">Page not found. <a href="#/">Home</a></div></div>`;
-  const isBare = path.startsWith('/verify/');
-  app.innerHTML = isBare ? `${header()}${body}${footer()}` : `${header(path)}${body}${footer()}`;
+  else body = `<div class="container-xl py-5"><div class="alert alert-warning">${t.pageNotFound} <a href="#/">${t.home}</a></div></div>`;
+  app.innerHTML = `${header(path)}${body}${footer()}`;
   window.scrollTo(0, 0);
+  (document.getElementById('lang-sel') as HTMLSelectElement | null)?.addEventListener('change', (e) => {
+    localStorage.setItem('web-locale', (e.target as HTMLSelectElement).value);
+    t = getDict(lang());
+    void router();
+  });
+
+  const catForm = document.getElementById('cat-q') as HTMLFormElement | null;
+  const loadCatalog = async (q = '') => {
+    const list = document.getElementById('cat-list');
+    const bun = document.getElementById('cat-bundles');
+    if (!list || !bun) return;
+    try {
+      const [cr, br] = await Promise.all([
+        fetch(`/api/v1/catalog/courses${q ? `?q=${encodeURIComponent(q)}` : ''}`).then((r) => r.json()),
+        fetch('/api/v1/catalog/bundles').then((r) => r.json()),
+      ]);
+      const courses = (cr as { data?: { id: string; title: string; code: string; price: number }[] }).data ?? [];
+      const bundles = (br as { data?: { id: string; name: string; price: number }[] }).data ?? [];
+      list.innerHTML = courses.length ? `<div class="row">${courses.map((c) => `<div class="col-md-4"><div class="card mb-3"><div class="card-body"><h3 class="card-title">${c.title}</h3><p class="text-muted">${c.code} · ${c.price > 0 ? c.price : ''}</p><a class="btn btn-sm btn-primary" href="${PORTALS.student}">${t.learn}</a></div></div></div>`).join('')}</div>` : `<p class="text-muted">${t.noCourses}</p>`;
+      bun.innerHTML = bundles.length ? `<div class="row">${bundles.map((b) => `<div class="col-md-4"><div class="card mb-3"><div class="card-body"><h3 class="card-title">${b.name}</h3><p>${b.price}</p><a class="btn btn-sm btn-outline-primary" href="#/bundles/${b.id}">${t.view ?? 'View'}</a></div></div></div>`).join('')}</div>` : `<p class="text-muted">${t.noBundles}</p>`;
+    } catch {
+      if (list) list.innerHTML = `<div class="alert alert-danger">${t.catalogUnavailable}</div>`;
+    }
+  };
+  if (catForm) {
+    void loadCatalog();
+    catForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      void loadCatalog((document.getElementById('cat-input') as HTMLInputElement).value);
+    });
+  }
+  const bundleBox = document.querySelector('[data-bundle]') as HTMLElement | null;
+  if (bundleBox) {
+    const id = bundleBox.dataset.bundle ?? '';
+    fetch(`/api/v1/catalog/bundles/${id}`).then((r) => r.json()).then((j) => {
+      const det = (j as { success: boolean; data?: { bundle: { name: string; description: string | null; price: number }; courses: { title: string; price: number }[] } });
+      bundleBox.innerHTML = det.success && det.data ? `<h1>${det.data.bundle.name}</h1><p class="text-muted">${det.data.bundle.description ?? ''}</p><p><strong>${det.data.bundle.price}</strong></p><ul>${det.data.courses.map((c) => `<li>${c.title} (${c.price})</li>`).join('')}</ul><a class="btn btn-primary" href="${PORTALS.student}">${t.getStarted}</a>` : `<div class="alert alert-warning">${t.bundleNotFound}</div>`;
+    }).catch(() => { bundleBox.innerHTML = `<div class="alert alert-danger">${t.catalogUnavailable}</div>`; });
+  }
 
   const cform = document.getElementById('cform') as HTMLFormElement | null;
   cform?.addEventListener('submit', (e) => {
@@ -283,8 +370,8 @@ async function router(): Promise<void> {
       const roles = j.data.user.memberships.map((m) => m.role);
       const primary = roles.includes('organization_admin') || roles.includes('super_admin') ? 'admin' : roles.includes('teacher') ? 'teacher' : roles.includes('parent') ? 'parent' : 'student';
       sessionStorage.setItem('lms-token', j.data.access_token);
-      (document.getElementById('roles') as HTMLElement).innerHTML = `<div class="alert alert-success">Signed in as ${roles.join(', ') || 'user'}. <a class="btn btn-sm btn-primary ms-2" href="${PORTALS[primary]}">Open ${primary} portal →</a></div>
-        <div class="small text-muted">Your session cookie was set; the portal will pick it up automatically on the same domain.</div>`;
+      (document.getElementById('roles') as HTMLElement).innerHTML = `<div class="alert alert-success">${t.signedInAs} ${roles.join(', ') || 'user'}. <a class="btn btn-sm btn-primary ms-2" href="${PORTALS[primary]}">${t.openPortal} ${primary} ${t.portal}</a></div>
+        <div class="small text-muted">${t.sessionNote}</div>`;
     } catch (err) {
       (document.getElementById('lerr') as HTMLElement).innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Login failed'}</div>`;
     }
@@ -296,12 +383,15 @@ async function router(): Promise<void> {
       const res = await fetch('/api/v1/auth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: (document.getElementById('re') as HTMLInputElement).value, password: (document.getElementById('rp') as HTMLInputElement).value, name: (document.getElementById('rn') as HTMLInputElement).value }) });
       const j = (await res.json()) as { success: boolean; error?: { message: string } };
       if (!j.success) throw new Error(j.error?.message ?? 'Registration failed');
-      (document.getElementById('rok') as HTMLElement).innerHTML = `<div class="alert alert-success">Account created. <a href="${PORTALS.student}">Open the student portal →</a></div>`;
+      (document.getElementById('rok') as HTMLElement).innerHTML = `<div class="alert alert-success">${t.accountCreated} <a href="${PORTALS.student}">${t.openStudent}</a></div>`;
     } catch (err) {
       (document.getElementById('rerr') as HTMLElement).innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Failed'}</div>`;
     }
   });
 }
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => undefined); });
+}
 window.addEventListener('hashchange', () => void router());
 void router();

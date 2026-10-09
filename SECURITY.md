@@ -3,7 +3,7 @@
 ## Model
 
 - Authentication: PBKDF2-SHA256 (100k iterations, per-user salt) via WebCrypto; never plaintext.
-- Sessions: short JWT access (15 min, HS256, `JWT_SECRET` from env) + rotating opaque refresh tokens (48 random bytes, sha256-hashed at rest, 30 d expiry, single-use rotation).
+- Sessions: short JWT access (15 min, HS256, `JWT_SECRET` from env) + rotating opaque refresh tokens (48 random bytes, sha256-hashed at rest, 30 d expiry, single-use rotation) with **reuse detection**: presenting a rotated token revokes the entire session family (`REUSE_DETECTED`, audited).
 - Secrets only from environment/bindings. `.env.example` lists vars; `.env` gitignored. Static `audit` scans for hardcoded secrets.
 
 ## Authorization (centralized)
