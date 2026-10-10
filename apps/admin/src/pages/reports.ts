@@ -1,6 +1,7 @@
-import { call, loadingHtml, errorHtml, currentOrgId, esc } from '../lib.js';
+import { call, loadingHtml, errorHtml, currentOrgId, modalForm, t, esc } from '../lib.js';
 
 export async function renderReports(el: HTMLElement): Promise<void> {
+  const d = t();
   const orgId = currentOrgId();
   if (!orgId) {
     el.innerHTML = '<div class="alert alert-warning">Select an organization first.</div>';
@@ -11,10 +12,12 @@ export async function renderReports(el: HTMLElement): Promise<void> {
     <button class="btn btn-outline-primary" id="exp-att">Export attendance CSV</button>
     <span class="text-muted small">Exports are injection-safe (formula cells neutralized).</span></div></div>
     <div id="rep-body">${loadingHtml()}</div>`;
-  (el.querySelector('#exp-grades') as HTMLButtonElement).addEventListener('click', () => {
-    const courseId = prompt('Course ID for enrollment export:');
-    if (courseId)
-      window.location.href = `/api/v1/reports/export?kind=enrollments&course_id=${encodeURIComponent(courseId)}&organization_id=${orgId}`;
+  (el.querySelector('#exp-grades') as HTMLButtonElement).addEventListener('click', async () => {
+    const data = await modalForm(d.exportEnrollments, [
+      { name: 'course_id', label: d.courseId, required: true },
+    ]);
+    if (!data?.course_id) return;
+    window.location.href = `/api/v1/reports/export?kind=enrollments&course_id=${encodeURIComponent(String(data.course_id))}&organization_id=${orgId}`;
   });
   (el.querySelector('#exp-att') as HTMLButtonElement).addEventListener('click', () => {
     window.location.href = `/api/v1/reports/export?kind=attendance&organization_id=${orgId}`;

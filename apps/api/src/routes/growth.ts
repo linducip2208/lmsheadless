@@ -870,6 +870,32 @@ growth.post('/ai/retention/purge', requireAuth(), async (c) => {
   return ok(c, { messages: msgs.changes, conversations: convs.changes, days });
 });
 
+// Monthly quota reset for the external scheduler (cron/Workers Cron Trigger
+// calling this endpoint): privileged, audited, idempotent per call. There is
+// no in-app scheduler; run monthly, e.g. on the 1st. Safe to re-run.
+growth.post('/ai/usage/reset', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const body = (await c.req.json().catch(() => null)) as { organization_id?: string } | null;
+  const orgId = body?.organization_id;
+  if (!orgId || !isPrivileged(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const db = c.get('db');
+  const before =
+    (
+      await queryFirst<{ used_count: number }>(
+        db,
+        'SELECT used_count FROM ai_configs WHERE organization_id = ?',
+        orgId
+      )
+    )?.used_count ?? 0;
+  await execute(db, 'UPDATE ai_configs SET used_count = 0 WHERE organization_id = ?', orgId);
+  await audit(c, 'ai.usage_reset', {
+    organizationId: orgId,
+    metadata: { before },
+  });
+  return ok(c, { reset: true, before });
+});
+
 // ================= AI Course Studio: apply approved drafts =================
 function parseGeneratedQuestions(output: string): { prompt: string; correct_answer: string }[] {
   const out: { prompt: string; correct_answer: string }[] = [];

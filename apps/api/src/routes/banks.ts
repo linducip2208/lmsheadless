@@ -279,52 +279,10 @@ banks.post('/quizzes/:id/pools', requireAuth(), async (c) => {
   return created(c, { added: true });
 });
 
-// Autosave in-progress answers (recovery; not a submission).
-banks.put('/quiz-attempts/:attemptId/autosave', requireAuth(), async (c) => {
-  const user = c.get('user') as AuthUser;
-  const db = c.get('db');
-  const attempt = await queryFirst<{ student_id: string; status: string }>(
-    db,
-    'SELECT student_id, status FROM quiz_attempts WHERE id = ?',
-    c.req.param('attemptId')
-  );
-  if (!attempt) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
-  if (attempt.student_id !== user.id || attempt.status !== 'in_progress')
-    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-  const body = (await c.req.json().catch(() => null)) as {
-    question_id?: string;
-    payload?: unknown;
-  } | null;
-  if (!body?.question_id || body.payload === undefined)
-    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
-  await execute(
-    db,
-    'INSERT INTO attempt_autosaves (attempt_id, question_id, payload, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(attempt_id, question_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at',
-    c.req.param('attemptId'),
-    body.question_id,
-    JSON.stringify(body.payload).slice(0, 20000),
-    nowIso()
-  );
-  return ok(c, { saved: true });
-});
-
-banks.get('/quiz-attempts/:attemptId/autosave', requireAuth(), async (c) => {
-  const user = c.get('user') as AuthUser;
-  const db = c.get('db');
-  const attempt = await queryFirst<{ student_id: string }>(
-    db,
-    'SELECT student_id FROM quiz_attempts WHERE id = ?',
-    c.req.param('attemptId')
-  );
-  if (!attempt) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
-  if (attempt.student_id !== user.id)
-    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-  const rows = await queryAll(
-    db,
-    'SELECT question_id, payload, updated_at FROM attempt_autosaves WHERE attempt_id = ?',
-    c.req.param('attemptId')
-  );
-  return ok(c, rows);
-});
+// NOTE: quiz-attempt autosave lives canonically in assessment.ts
+// (PUT/GET /quiz-attempts/:attemptId/autosave, with expiry + question-scope
+// guards). The older single-item duplicates that lived here were removed in
+// 1.10.0; the assessment handler accepts both the batch {answers:[...]} and
+// the legacy single {question_id, payload} shapes.
 
 export default banks;

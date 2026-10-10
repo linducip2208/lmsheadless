@@ -1,5 +1,10 @@
 # Known limitations (explicitly NOT claimed)
 
+Closed in 1.10.0 (removed from this list): quiz autosave, public
+forgot/reset UI, admin status editing, payout decide buttons, AI quota-reset
+mechanism + procedure, blocking native dialogs (all replaced), teacher i18n
+worst-offenders.
+
 1. Per-portal browser CRUD (admin/teacher/student/parent SPAs) is covered at
    API-contract level, not by per-route browser tests.
 2. Live provider verification pending: Midtrans merchant, SMTP/HTTP email

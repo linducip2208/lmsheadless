@@ -1,6 +1,25 @@
 # Security findings (all reproduced from code; no external testing)
 
-## Fixed this session (regression-tested)
+Methodology note: parallel review agents in this session also re-reported
+several issues that `git show HEAD:` proves were already fixed in v1.9.0
+(webhook write-order, preference gates, rate-bucket paths, esc rollout,
+tiebreakers). Those reports are not counted as new findings or fixes here.
+Every item below is grounded in this session's `git diff` plus a green
+regression test — no credit is taken for pre-existing work.
+
+## Fixed in 1.10.0 (regression-tested)
+
+| ID  | Severity | Finding                                                                                                  | Fix                                                                                                                                    | Test                                                                 |
+| --- | -------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| H2  | High     | Webhook accepted signed-but-underpaid events (`gross_amount` never compared)                             | Amount match vs order total, 402 `AMOUNT_MISMATCH`, rejected events logged not fulfilled                                               | `commerce-edges.test.ts` (rejected + forensics row, order untouched) |
+| H3  | High     | Shadowed duplicate autosave handlers (`banks.ts` weaker guards)                                          | Removed; canonical `assessment.ts` handler accepts batch + legacy shapes                                                               | enterprise + quiz-autosave suites green                              |
+| M8  | Medium   | Confirm/refund/payout-decide check-then-act races                                                        | Conditional `AND status=` transitions (409 on loss); commissions unique index (023) + `ON CONFLICT DO NOTHING`; invoice race tolerated | double-transition tests                                              |
+| M9  | Medium   | Negative subscription price, unvalidated affiliate rates, NaN-poisoning via garbage org rates            | Write validation + read-time sanitization                                                                                              | `commerce-edges.test.ts` guards suite                                |
+| M10 | Medium   | Cohort gift codes burned without granting anything                                                       | Cohort entitlement + membership + course grants mirroring fulfillment                                                                  | `commerce-edges.test.ts` redeem test                                 |
+| M11 | Medium   | Residual `esc()` gaps (admin shell/quizzes, teacher live panel, progress attrs, `errorHtml`/`tableHtml`) | Closed + centralized; `SECURITY.md` already corrected in 1.9.0                                                                         | `xss-escape.test.ts` extended                                        |
+| L3  | Low      | PATCH silently dropped `status` for non-super-admins                                                     | Server reports `ignored` fields in response                                                                                            | existing mass-assignment test still green                            |
+
+## Fixed in 1.9.0 (verified present, not re-broken)
 
 | ID  | Severity | Finding                                                                                                                 | Fix                                                                                                                                                                                                          | Test                                                                       |
 | --- | -------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |

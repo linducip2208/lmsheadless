@@ -1030,7 +1030,11 @@ courses.patch('/lessons/:lessonId', requireAuth(), async (c) => {
     sets.push('video_url = ?');
     params.push(body.video_url || null);
   }
-  if (typeof body.resource_url === 'string' && body.resource_url.length <= 2000) {
+  if (
+    typeof body.resource_url === 'string' &&
+    body.resource_url.length <= 2000 &&
+    (body.resource_url === '' || /^https?:\/\//i.test(body.resource_url))
+  ) {
     sets.push('resource_url = ?');
     params.push(body.resource_url || null);
   }

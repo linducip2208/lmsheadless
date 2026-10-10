@@ -1,6 +1,18 @@
 # Implementation status (October 2026)
 
-## Shipped in 1.9.0 (this release)
+## Shipped in 1.10.0 (this release)
+
+- Webhook amount matching, conditional money transitions, commission unique
+  index (023), rate sanitization, cohort-gift grants — all regression-tested.
+- Quiz autosave completed end-to-end (API + student client + docs that
+  already claimed it); duplicate handlers removed.
+- Public forgot/reset pages, admin status editing with `ignored` reporting,
+  payout decide buttons, AI quota-reset endpoint + scheduler docs.
+- i18n pass (teacher/student/admin) and removal of all blocking native
+  dialogs. Evidence: 132 API tests, 15/15 E2E, bench/scale green, drill PASS,
+  15-file audit dossier. Score 90/100.
+
+## Shipped in 1.9.0
 
 - Stored-XSS output-encoding boundary (`esc()` in `@lms/ui`) across all five
   portals, pinned by `test/xss-escape.test.ts`; webhook writes moved behind

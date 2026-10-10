@@ -200,9 +200,13 @@ live.patch('/live-sessions/:id', requireAuth(), async (c) => {
     sets.push('ends_at = ?');
     params.push(body.ends_at);
   }
-  if (typeof body.meeting_url === 'string' && body.meeting_url.length <= 2000) {
+  if (
+    typeof body.meeting_url === 'string' &&
+    body.meeting_url.length <= 2000 &&
+    (body.meeting_url === '' || /^https?:\/\//i.test(body.meeting_url))
+  ) {
     sets.push('meeting_url = ?');
-    params.push(body.meeting_url);
+    params.push(body.meeting_url || null);
   }
   if (typeof body.capacity === 'number' && Number.isInteger(body.capacity) && body.capacity >= 1) {
     sets.push('capacity = ?');

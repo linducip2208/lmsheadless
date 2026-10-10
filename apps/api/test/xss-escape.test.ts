@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { esc } from '@lms/ui';
 import { setup, mkOrg, mkUser, mkCourse, login, authHeader } from './helpers.js';
 
+function H(tok: string) {
+  return { 'content-type': 'application/json', ...authHeader(tok) };
+}
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const src = (p: string) => readFileSync(join(root, p), 'utf8');
 
@@ -41,6 +45,54 @@ describe('esc() output-encoding boundary', () => {
     ).json()) as { data: { title: string }[] };
     // Server stores verbatim by design; the esc() boundary lives in the portals.
     expect(list.data[0].title).toBe(payload);
+  });
+
+  it('stored URLs reject javascript:/data: schemes', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'url');
+    const t = await mkUser(db, 't@url.test', 'teacher', org);
+    const tokT = (await login(app, 't@url.test')).access_token;
+    const c = await mkCourse(db, org, t, 'URL1');
+    const sec = (await (
+      await app.request(`/api/v1/courses/${c}/sections`, {
+        method: 'POST',
+        headers: H(tokT),
+        body: JSON.stringify({ title: 'S' }),
+      })
+    ).json()) as { data: { id: string } };
+    const bad = await app.request(`/api/v1/courses/sections/${sec.data.id}/lessons`, {
+      method: 'POST',
+      headers: H(tokT),
+      body: JSON.stringify({
+        title: 'Evil',
+        content_type: 'video',
+        video_url: 'javascript:alert(document.domain)',
+      }),
+    });
+    expect(bad.status).toBe(400);
+    const good = await app.request(`/api/v1/courses/sections/${sec.data.id}/lessons`, {
+      method: 'POST',
+      headers: H(tokT),
+      body: JSON.stringify({
+        title: 'Ok',
+        content_type: 'video',
+        video_url: 'https://cdn.example.com/v.mp4',
+      }),
+    });
+    expect(good.status).toBe(201);
+    const live = await app.request('/api/v1/live-sessions', {
+      method: 'POST',
+      headers: H(tokT),
+      body: JSON.stringify({
+        organization_id: org,
+        title: 'Evil live',
+        provider: 'custom',
+        meeting_url: 'JaVaScRiPt:alert(1)',
+        starts_at: '2026-11-01T10:00:00Z',
+        ends_at: '2026-11-01T11:00:00Z',
+      }),
+    });
+    expect(live.status).toBe(400);
   });
 
   it('portal discussion/announcement/quiz renders pass through esc()', () => {

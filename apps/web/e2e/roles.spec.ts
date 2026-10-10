@@ -320,7 +320,9 @@ test('4. commerce: paid order → manual claim → confirm → duplicate webhook
       await req.get(`${API}/api/v1/orders/${order.id}`, { headers: H(admin.access_token) })
     ).json()) as { data: { order: { total_minor: number; total: number } } }
   ).data.order;
-  const gross = String(full.total_minor ?? full.total);
+  // gross_amount is major units per the Midtrans-style contract (server
+  // matches it against the order total and rejects mismatches with 402).
+  const gross = String(full.total);
   const txn = `txn-${uniq()}`;
   const sig = createHash('sha512').update(`${order.id}200${gross}${srvKey}`).digest('hex');
   const payload = {
@@ -489,4 +491,73 @@ test('6. certificate: complete lesson → auto-issue → verify → revoke → r
   const vbody = ((await v2.json()) as { data: { valid: boolean; reason: string } }).data;
   expect(vbody.valid).toBe(false);
   expect(vbody.reason).toBe('revoked');
+});
+
+test('7. password recovery: forgot always succeeds, bad token rejected', async ({ page }) => {
+  const req = page.request;
+  // Enumeration-safe: unknown address also returns success.
+  const f1 = await req.post(`${API}/api/v1/auth/password/forgot`, {
+    data: { email: `nobody-${Date.now()}@example.com` },
+  });
+  expect(f1.status()).toBe(200);
+  // Consuming an invalid token fails without leaking validity info.
+  const bad = await req.post(`${API}/api/v1/auth/password/reset`, {
+    data: { token: '0'.repeat(64), password: 'BrandNew123!' },
+  });
+  expect(bad.status()).toBe(400);
+});
+
+test('8. quiz autosave: draft persists across fetches, clears on submit', async ({ page }) => {
+  const req = page.request;
+  const admin = await login(req, ADMIN, PASS);
+  const org = await orgId(req, admin.access_token);
+  const teacher = await login(req, TEACHER, PASS);
+  const student = await registerStudent(req, org, 'auto');
+  const course = await makeCourse(req, teacher.access_token, org, 'AUTO');
+  const quiz = await (
+    await req.post(`${API}/api/v1/quizzes`, {
+      headers: H(teacher.access_token),
+      data: { course_id: course, title: 'Autosave quiz', passing_score: 50 },
+    })
+  ).json();
+  const q = await (
+    await req.post(`${API}/api/v1/quizzes/${quiz.data.id}/questions`, {
+      headers: H(teacher.access_token),
+      data: { type: 'short_answer', prompt: 'Capital?', points: 10, correct_answer: 'X' },
+    })
+  ).json();
+  await req.post(`${API}/api/v1/enrollments`, {
+    headers: H(student.token),
+    data: { course_id: course },
+  });
+  const att = await (
+    await req.post(`${API}/api/v1/quizzes/${quiz.data.id}/attempts`, {
+      headers: H(student.token),
+    })
+  ).json();
+  const aid = att.data.id as string;
+  const qid = q.data.id as string;
+  const save = await req.put(`${API}/api/v1/quiz-attempts/${aid}/autosave`, {
+    headers: H(student.token),
+    data: { answers: [{ question_id: qid, payload: 'draft-text' }] },
+  });
+  expect(save.status()).toBe(200);
+  // Simulated reload: draft is still there.
+  const draft = await req.get(`${API}/api/v1/quiz-attempts/${aid}/autosave`, {
+    headers: H(student.token),
+  });
+  expect(draft.status()).toBe(200);
+  expect(((await draft.json()) as { data: { payload: string }[] }).data[0].payload).toBe(
+    'draft-text'
+  );
+  // Submit succeeds and closes the attempt; drafts are gone.
+  const submit = await req.post(`${API}/api/v1/quiz-attempts/${aid}/submit`, {
+    headers: H(student.token),
+    data: { answers: [{ question_id: qid, answer_text: 'X' }] },
+  });
+  expect(submit.status()).toBe(200);
+  const after = await req.get(`${API}/api/v1/quiz-attempts/${aid}/autosave`, {
+    headers: H(student.token),
+  });
+  expect(after.status()).toBe(400);
 });

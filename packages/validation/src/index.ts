@@ -92,13 +92,22 @@ export const sectionSchema = z.object({
   position: z.number().int().min(0).max(10000).optional(),
 });
 
+// Stored URLs are rendered into href/src attributes: only http(s) schemes
+// are accepted (blocks javascript:/data: payloads at the trust boundary).
+export const httpUrl = z
+  .string()
+  .max(2000)
+  .refine((u) => u === '' || /^https?:\/\/\S+$/i.test(u), {
+    message: 'URL must start with http(s)://',
+  });
+
 export const lessonSchema = z.object({
   section_id: z.string().min(1).max(64),
   title: z.string().min(1).max(200),
   content_type: z.enum(['text', 'video', 'document', 'image', 'external', 'quiz_ref']),
   body: z.string().max(50000).optional(),
-  video_url: z.string().max(2000).optional(),
-  resource_url: z.string().max(2000).optional(),
+  video_url: httpUrl.optional(),
+  resource_url: httpUrl.optional(),
   position: z.number().int().min(0).max(10000).optional(),
   duration_minutes: z.number().int().min(0).max(100000).optional(),
   is_free_preview: z.boolean().optional(),
@@ -284,7 +293,7 @@ export const liveSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(5000).optional(),
   provider: z.enum(['jitsi', 'meet', 'zoom', 'custom']).optional(),
-  meeting_url: z.string().max(2000).optional(),
+  meeting_url: httpUrl.optional(),
   starts_at: z.string().min(1).max(64),
   ends_at: z.string().min(1).max(64),
   timezone: z.string().max(64).optional(),

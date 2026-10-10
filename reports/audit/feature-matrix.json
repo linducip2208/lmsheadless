@@ -1,2587 +1,4466 @@
 {
   "summary": {
-    "generated_at": "2026-10-10T07:34:39.241Z",
-    "commit": "fe6a8ec",
+    "generated_at": "2026-10-10T09:25:18.398Z",
+    "commit": "ac79226",
+    "method": "route registrations parsed from source; auth read from handler; coverage = invocation-confirmed request call-sites (app.request/page.request/fetch) per file, static-prefix matched; assertion depth spot-audited per module (see feature-inventory.md)",
     "counts": {
-      "endpoints": 257,
+      "endpoints": 258,
       "public_endpoints": 16,
-      "with_backend_test": 255,
-      "with_e2e": 101,
-      "frontend_hashes": 56,
+      "invoked_by_tests": 256,
+      "invoked_by_e2e": 101,
+      "total_callsites": 4889,
+      "frontend_hashes": 57,
       "tables": 108,
-      "migrations": 22
+      "migrations": 23
     }
   },
   "endpoints": [
     {
       "id": "BE-001",
       "method": "GET",
-      "path": "/grading/queue",
+      "path": "/api/v1/grading/queue",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-002",
       "method": "POST",
-      "path": "/quizzes",
+      "path": "/api/v1/quizzes",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-003",
       "method": "GET",
-      "path": "/quizzes",
+      "path": "/api/v1/quizzes",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-004",
       "method": "POST",
-      "path": "/quizzes/:id/questions",
+      "path": "/api/v1/quizzes/:id/questions",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-005",
       "method": "GET",
-      "path": "/quizzes/:id/questions",
+      "path": "/api/v1/quizzes/:id/questions",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-006",
       "method": "GET",
-      "path": "/quizzes/:id/attempts",
+      "path": "/api/v1/quizzes/:id/attempts",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-007",
       "method": "POST",
-      "path": "/quizzes/:id/attempts",
+      "path": "/api/v1/quizzes/:id/attempts",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-008",
       "method": "POST",
-      "path": "/quiz-attempts/:attemptId/submit",
+      "path": "/api/v1/quiz-attempts/:attemptId/submit",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 22,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-009",
-      "method": "GET",
-      "path": "/quiz-attempts/:attemptId/answers",
+      "method": "PUT",
+      "path": "/api/v1/quiz-attempts/:attemptId/autosave",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 22,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-010",
-      "method": "POST",
-      "path": "/assignments/:id/rubric",
+      "method": "GET",
+      "path": "/api/v1/quiz-attempts/:attemptId/autosave",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 22,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-011",
       "method": "GET",
-      "path": "/assignments/:id/rubric",
+      "path": "/api/v1/quiz-attempts/:attemptId/answers",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 22,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-012",
       "method": "POST",
-      "path": "/assignments",
+      "path": "/api/v1/assignments/:id/rubric",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "release17.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-013",
       "method": "GET",
-      "path": "/assignments",
+      "path": "/api/v1/assignments/:id/rubric",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "release17.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-014",
-      "method": "GET",
-      "path": "/assignments/:id/submissions",
+      "method": "POST",
+      "path": "/api/v1/assignments",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "release17.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-015",
-      "method": "POST",
-      "path": "/assignments/:id/submissions",
+      "method": "GET",
+      "path": "/api/v1/assignments",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "release17.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-016",
-      "method": "POST",
-      "path": "/submissions/:id/grade",
+      "method": "GET",
+      "path": "/api/v1/assignments/:id/submissions",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "release17.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-017",
       "method": "POST",
-      "path": "/grades",
+      "path": "/api/v1/assignments/:id/submissions",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "release17.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-018",
-      "method": "GET",
-      "path": "/grades",
+      "method": "POST",
+      "path": "/api/v1/submissions/:id/grade",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise2.test.ts",
+        "journey.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-019",
-      "method": "PATCH",
-      "path": "/questions/:questionId",
+      "method": "POST",
+      "path": "/api/v1/grades",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-020",
-      "method": "DELETE",
-      "path": "/questions/:questionId",
+      "method": "GET",
+      "path": "/api/v1/grades",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-021",
-      "method": "POST",
-      "path": "/quizzes/:id/questions/reorder",
+      "method": "PATCH",
+      "path": "/api/v1/questions/:questionId",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-022",
-      "method": "POST",
-      "path": "/quiz-attempts/:attemptId/grade",
+      "method": "DELETE",
+      "path": "/api/v1/questions/:questionId",
       "module": "assessment",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-023",
       "method": "POST",
-      "path": "/register",
-      "module": "auth",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "path": "/api/v1/quizzes/:id/questions/reorder",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-024",
       "method": "POST",
-      "path": "/login",
-      "module": "auth",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "path": "/api/v1/quiz-attempts/:attemptId/grade",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 22,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-025",
       "method": "POST",
-      "path": "/refresh",
+      "path": "/api/v1/auth/register",
       "module": "auth",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "governance.test.ts",
+        "journey.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-026",
       "method": "POST",
-      "path": "/logout",
+      "path": "/api/v1/auth/login",
       "module": "auth",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "helpers.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-027",
-      "method": "GET",
-      "path": "/me",
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
       "module": "auth",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "coverage-gaps.test.ts",
+        "growth.test.ts",
+        "platform.test.ts",
+        "release17.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-028",
-      "method": "GET",
-      "path": "/sessions",
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
       "module": "auth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-029",
-      "method": "DELETE",
-      "path": "/sessions/:id",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
       "module": "auth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-030",
-      "method": "POST",
-      "path": "/sessions/revoke-all",
+      "method": "GET",
+      "path": "/api/v1/auth/sessions",
       "module": "auth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-031",
-      "method": "POST",
-      "path": "/password/change",
+      "method": "DELETE",
+      "path": "/api/v1/auth/sessions/:id",
       "module": "auth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-032",
       "method": "POST",
-      "path": "/password/forgot",
+      "path": "/api/v1/auth/sessions/revoke-all",
       "module": "auth",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-033",
       "method": "POST",
-      "path": "/password/reset",
+      "path": "/api/v1/auth/password/change",
       "module": "auth",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-034",
-      "method": "GET",
-      "path": "/verify-status",
+      "method": "POST",
+      "path": "/api/v1/auth/password/forgot",
       "module": "auth",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "governance.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 5,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-035",
       "method": "POST",
-      "path": "/verify-email/request",
+      "path": "/api/v1/auth/password/reset",
       "module": "auth",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-036",
-      "method": "POST",
-      "path": "/verify-email",
+      "method": "GET",
+      "path": "/api/v1/auth/verify-status",
       "module": "auth",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "governance.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-037",
-      "method": "GET",
-      "path": "/course-tags",
-      "module": "authoring",
+      "method": "POST",
+      "path": "/api/v1/auth/verify-email/request",
+      "module": "auth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "governance.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-038",
       "method": "POST",
-      "path": "/course-tags",
-      "module": "authoring",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "path": "/api/v1/auth/verify-email",
+      "module": "auth",
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "governance.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 5,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-039",
-      "method": "PUT",
-      "path": "/courses/:id/tags",
+      "method": "GET",
+      "path": "/api/v1/course-tags",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-040",
       "method": "POST",
-      "path": "/courses/:id/prerequisites",
+      "path": "/api/v1/course-tags",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-041",
-      "method": "GET",
-      "path": "/courses/:id/prerequisites",
+      "method": "PUT",
+      "path": "/api/v1/courses/:id/tags",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-042",
-      "method": "DELETE",
-      "path": "/courses/:id/prerequisites/:reqId",
+      "method": "POST",
+      "path": "/api/v1/courses/:id/prerequisites",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-043",
-      "method": "POST",
-      "path": "/lessons/:lessonId/prerequisites",
+      "method": "GET",
+      "path": "/api/v1/courses/:id/prerequisites",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-044",
-      "method": "GET",
-      "path": "/courses/:id/drip",
+      "method": "DELETE",
+      "path": "/api/v1/courses/:id/prerequisites/:reqId",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-045",
       "method": "POST",
-      "path": "/courses/:id/drip",
+      "path": "/api/v1/lessons/:lessonId/prerequisites",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-046",
-      "method": "DELETE",
-      "path": "/courses/:id/drip/:lessonId",
+      "method": "GET",
+      "path": "/api/v1/courses/:id/drip",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-047",
-      "method": "GET",
-      "path": "/lessons/:lessonId/notes",
+      "method": "POST",
+      "path": "/api/v1/courses/:id/drip",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-048",
-      "method": "POST",
-      "path": "/lessons/:lessonId/notes",
+      "method": "DELETE",
+      "path": "/api/v1/courses/:id/drip/:lessonId",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-049",
-      "method": "POST",
-      "path": "/courses/:id/waitlist",
+      "method": "GET",
+      "path": "/api/v1/lessons/:lessonId/notes",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-050",
-      "method": "GET",
-      "path": "/courses/:id/waitlist",
+      "method": "POST",
+      "path": "/api/v1/lessons/:lessonId/notes",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-051",
       "method": "POST",
-      "path": "/courses/:id/waitlist/:entryId/promote",
+      "path": "/api/v1/courses/:id/waitlist",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-052",
-      "method": "POST",
-      "path": "/courses/:id/duplicate",
+      "method": "GET",
+      "path": "/api/v1/courses/:id/waitlist",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-053",
-      "method": "GET",
-      "path": "/courses/:id/versions",
+      "method": "POST",
+      "path": "/api/v1/courses/:id/waitlist/:entryId/promote",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-054",
       "method": "POST",
-      "path": "/courses/:id/versions",
+      "path": "/api/v1/courses/:id/duplicate",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-055",
       "method": "GET",
-      "path": "/courses/export",
+      "path": "/api/v1/courses/:id/versions",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-056",
       "method": "POST",
-      "path": "/courses/:id/request-approval",
+      "path": "/api/v1/courses/:id/versions",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-057",
       "method": "GET",
-      "path": "/publish-approvals",
+      "path": "/api/v1/courses/export",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-058",
       "method": "POST",
-      "path": "/publish-approvals/:id/approve",
+      "path": "/api/v1/courses/:id/request-approval",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-059",
-      "method": "POST",
-      "path": "/publish-approvals/:id/reject",
+      "method": "GET",
+      "path": "/api/v1/publish-approvals",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-060",
       "method": "POST",
-      "path": "/courses/publish-due",
+      "path": "/api/v1/publish-approvals/:id/approve",
       "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-061",
       "method": "POST",
-      "path": "/question-banks",
-      "module": "banks",
+      "path": "/api/v1/publish-approvals/:id/reject",
+      "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-062",
-      "method": "GET",
-      "path": "/question-banks",
-      "module": "banks",
+      "method": "POST",
+      "path": "/api/v1/courses/publish-due",
+      "module": "authoring",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-063",
       "method": "POST",
-      "path": "/question-banks/:id/questions",
+      "path": "/api/v1/question-banks",
       "module": "banks",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-064",
       "method": "GET",
-      "path": "/question-banks/:id/questions",
+      "path": "/api/v1/question-banks",
       "module": "banks",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-065",
       "method": "POST",
-      "path": "/question-banks/:bankId/questions/:qId/copy-to/:quizId",
+      "path": "/api/v1/question-banks/:id/questions",
       "module": "banks",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-066",
-      "method": "POST",
-      "path": "/quizzes/:id/pools",
+      "method": "GET",
+      "path": "/api/v1/question-banks/:id/questions",
       "module": "banks",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-067",
-      "method": "PUT",
-      "path": "/quiz-attempts/:attemptId/autosave",
+      "method": "POST",
+      "path": "/api/v1/question-banks/:bankId/questions/:qId/copy-to/:quizId",
       "module": "banks",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-068",
-      "method": "GET",
-      "path": "/quiz-attempts/:attemptId/autosave",
+      "method": "POST",
+      "path": "/api/v1/quizzes/:id/pools",
       "module": "banks",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 41,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-069",
       "method": "POST",
-      "path": "/cohorts",
+      "path": "/api/v1/cohorts",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-070",
       "method": "GET",
-      "path": "/cohorts",
+      "path": "/api/v1/cohorts",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-071",
       "method": "POST",
-      "path": "/cohorts/:id/members",
+      "path": "/api/v1/cohorts/:id/members",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-072",
       "method": "GET",
-      "path": "/cohorts/:id/members",
+      "path": "/api/v1/cohorts/:id/members",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-073",
       "method": "POST",
-      "path": "/cohorts/:id/courses",
+      "path": "/api/v1/cohorts/:id/courses",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-074",
       "method": "GET",
-      "path": "/cohorts/:id/progress",
+      "path": "/api/v1/cohorts/:id/progress",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 11,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-075",
       "method": "POST",
-      "path": "/programs",
+      "path": "/api/v1/programs",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-076",
       "method": "GET",
-      "path": "/programs",
+      "path": "/api/v1/programs",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-077",
       "method": "POST",
-      "path": "/programs/:id/courses",
+      "path": "/api/v1/programs/:id/courses",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-078",
       "method": "GET",
-      "path": "/programs/:id",
+      "path": "/api/v1/programs/:id",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-079",
       "method": "POST",
-      "path": "/competencies",
+      "path": "/api/v1/competencies",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-080",
       "method": "POST",
-      "path": "/competencies/:id/assess",
+      "path": "/api/v1/competencies/:id/assess",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-081",
       "method": "GET",
-      "path": "/competencies/student",
+      "path": "/api/v1/competencies/student",
       "module": "cohorts",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-082",
       "method": "POST",
-      "path": "/bundles",
+      "path": "/api/v1/bundles",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-083",
       "method": "GET",
-      "path": "/bundles",
+      "path": "/api/v1/bundles",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-084",
       "method": "GET",
-      "path": "/bundles/:id",
+      "path": "/api/v1/bundles/:id",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-085",
       "method": "PATCH",
-      "path": "/bundles/:id",
+      "path": "/api/v1/bundles/:id",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-086",
       "method": "POST",
-      "path": "/coupons",
+      "path": "/api/v1/coupons",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-fixes.test.ts",
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-087",
       "method": "GET",
-      "path": "/coupons",
+      "path": "/api/v1/coupons",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-fixes.test.ts",
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-088",
       "method": "POST",
-      "path": "/orders",
+      "path": "/api/v1/orders",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 43,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-089",
       "method": "GET",
-      "path": "/orders",
+      "path": "/api/v1/orders",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 43,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-090",
       "method": "GET",
-      "path": "/orders/:id",
+      "path": "/api/v1/orders/:id",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 43,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-091",
       "method": "POST",
-      "path": "/orders/:id/payments/manual",
+      "path": "/api/v1/orders/:id/payments/manual",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 43,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-092",
       "method": "POST",
-      "path": "/payments/:id/confirm",
+      "path": "/api/v1/payments/:id/confirm",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-093",
       "method": "POST",
-      "path": "/payments/webhooks/:provider",
+      "path": "/api/v1/payments/webhooks/:provider",
       "module": "commerce",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 8,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-094",
       "method": "POST",
-      "path": "/orders/:id/refund",
+      "path": "/api/v1/orders/:id/refund",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 43,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-095",
       "method": "GET",
-      "path": "/subscription-plans",
+      "path": "/api/v1/subscription-plans",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-096",
       "method": "POST",
-      "path": "/subscription-plans",
+      "path": "/api/v1/subscription-plans",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-097",
       "method": "POST",
-      "path": "/subscriptions",
+      "path": "/api/v1/subscriptions",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-098",
       "method": "GET",
-      "path": "/commissions",
+      "path": "/api/v1/commissions",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-099",
       "method": "POST",
-      "path": "/payouts",
+      "path": "/api/v1/payouts",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-100",
       "method": "POST",
-      "path": "/payouts/:id/decide",
+      "path": "/api/v1/payouts/:id/decide",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-101",
       "method": "GET",
-      "path": "/affiliates",
+      "path": "/api/v1/affiliates",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 5,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-102",
       "method": "GET",
-      "path": "/payouts",
+      "path": "/api/v1/payouts",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-103",
       "method": "POST",
-      "path": "/affiliates",
+      "path": "/api/v1/affiliates",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 5,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-104",
       "method": "POST",
-      "path": "/referrals",
+      "path": "/api/v1/referrals",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-105",
       "method": "POST",
-      "path": "/orders/:id/gift",
+      "path": "/api/v1/orders/:id/gift",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 43,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-106",
       "method": "POST",
-      "path": "/gifts/redeem",
+      "path": "/api/v1/gifts/redeem",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-107",
       "method": "GET",
-      "path": "/catalog/courses",
+      "path": "/api/v1/catalog/courses",
       "module": "commerce",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-108",
       "method": "GET",
-      "path": "/catalog/bundles",
+      "path": "/api/v1/catalog/bundles",
       "module": "commerce",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-109",
       "method": "GET",
-      "path": "/catalog/bundles/:id",
+      "path": "/api/v1/catalog/bundles/:id",
       "module": "commerce",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-110",
       "method": "GET",
-      "path": "/catalog/instructors/:id",
+      "path": "/api/v1/catalog/instructors/:id",
       "module": "commerce",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-111",
       "method": "GET",
-      "path": "/commerce/revenue",
+      "path": "/api/v1/commerce/revenue",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-112",
       "method": "GET",
-      "path": "/invoices/order/:orderId",
+      "path": "/api/v1/invoices/order/:orderId",
       "module": "commerce",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-113",
       "method": "GET",
-      "path": "/instructor/courses",
+      "path": "/api/v1/instructor/courses",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-114",
       "method": "GET",
-      "path": "/courses",
+      "path": "/api/v1/courses",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-115",
       "method": "POST",
-      "path": "/courses",
+      "path": "/api/v1/courses",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-116",
       "method": "GET",
-      "path": "/courses/:id",
+      "path": "/api/v1/courses/:id",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-117",
       "method": "PATCH",
-      "path": "/courses/:id",
+      "path": "/api/v1/courses/:id",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-118",
       "method": "DELETE",
-      "path": "/courses/:id",
+      "path": "/api/v1/courses/:id",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-119",
       "method": "GET",
-      "path": "/courses/:id/sections",
+      "path": "/api/v1/courses/:id/sections",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-120",
       "method": "POST",
-      "path": "/courses/:id/sections",
+      "path": "/api/v1/courses/:id/sections",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-121",
       "method": "GET",
-      "path": "/courses/sections/:sectionId/lessons",
+      "path": "/api/v1/courses/sections/:sectionId/lessons",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "growth.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-122",
       "method": "POST",
-      "path": "/courses/sections/:sectionId/lessons",
+      "path": "/api/v1/courses/sections/:sectionId/lessons",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "growth.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-123",
       "method": "POST",
-      "path": "/enrollments",
+      "path": "/api/v1/enrollments",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-fixes.test.ts",
+        "enterprise.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-124",
       "method": "GET",
-      "path": "/courses/:id/enrollments",
+      "path": "/api/v1/courses/:id/enrollments",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-125",
       "method": "GET",
-      "path": "/courses/:id/enrollment-requests",
+      "path": "/api/v1/courses/:id/enrollment-requests",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-126",
       "method": "POST",
-      "path": "/enrollment-requests/:requestId/approve",
+      "path": "/api/v1/enrollment-requests/:requestId/approve",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-127",
       "method": "POST",
-      "path": "/enrollment-requests/:requestId/reject",
+      "path": "/api/v1/enrollment-requests/:requestId/reject",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-128",
       "method": "POST",
-      "path": "/lessons/:lessonId/complete",
+      "path": "/api/v1/lessons/:lessonId/complete",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-129",
       "method": "GET",
-      "path": "/courses/:id/progress",
+      "path": "/api/v1/courses/:id/progress",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-130",
       "method": "PATCH",
-      "path": "/courses/sections/:sectionId",
+      "path": "/api/v1/courses/sections/:sectionId",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "growth.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-131",
       "method": "DELETE",
-      "path": "/courses/sections/:sectionId",
+      "path": "/api/v1/courses/sections/:sectionId",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "growth.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-132",
       "method": "POST",
-      "path": "/courses/:id/sections/reorder",
+      "path": "/api/v1/courses/:id/sections/reorder",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 98,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-133",
       "method": "PATCH",
-      "path": "/lessons/:lessonId",
+      "path": "/api/v1/lessons/:lessonId",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-134",
       "method": "DELETE",
-      "path": "/lessons/:lessonId",
+      "path": "/api/v1/lessons/:lessonId",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 10,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-135",
       "method": "POST",
-      "path": "/courses/sections/:sectionId/lessons/reorder",
+      "path": "/api/v1/courses/sections/:sectionId/lessons/reorder",
       "module": "courses",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "growth.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-136",
       "method": "GET",
-      "path": "/ai/config",
+      "path": "/api/v1/ai/config",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "coverage-gaps.test.ts",
+        "growth.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-137",
       "method": "PUT",
-      "path": "/ai/config",
+      "path": "/api/v1/ai/config",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "coverage-gaps.test.ts",
+        "growth.test.ts",
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-138",
       "method": "POST",
-      "path": "/ai/jobs",
+      "path": "/api/v1/ai/jobs",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 13,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-139",
       "method": "POST",
-      "path": "/ai/jobs/:id/review",
+      "path": "/api/v1/ai/jobs/:id/review",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 13,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-140",
       "method": "GET",
-      "path": "/ai/jobs",
+      "path": "/api/v1/ai/jobs",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 13,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-141",
       "method": "POST",
-      "path": "/exercises",
+      "path": "/api/v1/exercises",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-142",
       "method": "GET",
-      "path": "/exercises",
+      "path": "/api/v1/exercises",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-143",
       "method": "POST",
-      "path": "/exercises/:id/submissions",
+      "path": "/api/v1/exercises/:id/submissions",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-144",
       "method": "GET",
-      "path": "/exercises/:id/submissions",
+      "path": "/api/v1/exercises/:id/submissions",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-145",
       "method": "POST",
-      "path": "/exercise-submissions/:id/feedback",
+      "path": "/api/v1/exercise-submissions/:id/feedback",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-146",
       "method": "POST",
-      "path": "/ai/index/rebuild",
+      "path": "/api/v1/ai/index/rebuild",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-147",
       "method": "POST",
-      "path": "/ai/ask",
+      "path": "/api/v1/ai/ask",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-148",
       "method": "GET",
-      "path": "/ai/conversations",
+      "path": "/api/v1/ai/conversations",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-149",
       "method": "GET",
-      "path": "/ai/conversations/:id/messages",
+      "path": "/api/v1/ai/conversations/:id/messages",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-150",
       "method": "POST",
-      "path": "/ai/retention/purge",
+      "path": "/api/v1/ai/retention/purge",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "lifecycle-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-151",
       "method": "POST",
-      "path": "/ai/jobs/:id/apply",
+      "path": "/api/v1/ai/usage/reset",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-152",
       "method": "POST",
-      "path": "/email/queue",
+      "path": "/api/v1/ai/jobs/:id/apply",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 13,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-153",
-      "method": "GET",
-      "path": "/email/queue",
+      "method": "POST",
+      "path": "/api/v1/email/queue",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-154",
-      "method": "POST",
-      "path": "/email/queue/:id/send",
+      "method": "GET",
+      "path": "/api/v1/email/queue",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-155",
       "method": "POST",
-      "path": "/invitations",
+      "path": "/api/v1/email/queue/:id/send",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-156",
       "method": "POST",
-      "path": "/invitations/accept",
+      "path": "/api/v1/invitations",
       "module": "growth",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "growth.test.ts",
+        "journey.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 6,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-157",
       "method": "POST",
-      "path": "/org-units",
+      "path": "/api/v1/invitations/accept",
       "module": "growth",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "growth.test.ts",
+        "journey.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-158",
-      "method": "GET",
-      "path": "/org-units",
+      "method": "POST",
+      "path": "/api/v1/org-units",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-159",
-      "method": "POST",
-      "path": "/org-units/:id/members",
+      "method": "GET",
+      "path": "/api/v1/org-units",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-160",
-      "method": "GET",
-      "path": "/alerts/rules",
+      "method": "POST",
+      "path": "/api/v1/org-units/:id/members",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-161",
       "method": "GET",
-      "path": "/alerts",
+      "path": "/api/v1/alerts/rules",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-162",
-      "method": "POST",
-      "path": "/alerts/:id/dismiss",
+      "method": "GET",
+      "path": "/api/v1/alerts",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-163",
-      "method": "GET",
-      "path": "/reports/compliance",
+      "method": "POST",
+      "path": "/api/v1/alerts/:id/dismiss",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-164",
-      "method": "POST",
-      "path": "/reports/compliance/remind",
+      "method": "GET",
+      "path": "/api/v1/reports/compliance",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-165",
-      "method": "GET",
-      "path": "/exports/organization",
+      "method": "POST",
+      "path": "/api/v1/reports/compliance/remind",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-166",
-      "method": "POST",
-      "path": "/imports",
+      "method": "GET",
+      "path": "/api/v1/exports/organization",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-167",
-      "method": "GET",
-      "path": "/imports",
+      "method": "POST",
+      "path": "/api/v1/imports",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts",
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-168",
       "method": "GET",
-      "path": "/imports/:id",
+      "path": "/api/v1/imports",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts",
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-169",
       "method": "GET",
-      "path": "/reports/engagement",
+      "path": "/api/v1/imports/:id",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts",
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 9,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-170",
       "method": "GET",
-      "path": "/reports/export",
+      "path": "/api/v1/reports/engagement",
       "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-171",
-      "method": "POST",
-      "path": "/live-sessions",
-      "module": "live",
+      "method": "GET",
+      "path": "/api/v1/reports/export",
+      "module": "growth",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-172",
-      "method": "GET",
-      "path": "/live-sessions",
+      "method": "POST",
+      "path": "/api/v1/live-sessions",
       "module": "live",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-173",
-      "method": "POST",
-      "path": "/live-sessions/:id/register",
+      "method": "GET",
+      "path": "/api/v1/live-sessions",
       "module": "live",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-174",
-      "method": "PATCH",
-      "path": "/live-sessions/:id",
+      "method": "POST",
+      "path": "/api/v1/live-sessions/:id/register",
       "module": "live",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-175",
-      "method": "POST",
-      "path": "/live-sessions/:id/cancel",
+      "method": "PATCH",
+      "path": "/api/v1/live-sessions/:id",
       "module": "live",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-176",
       "method": "POST",
-      "path": "/live-sessions/:id/attendance",
+      "path": "/api/v1/live-sessions/:id/cancel",
       "module": "live",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-177",
-      "method": "GET",
-      "path": "/live-sessions.ics",
+      "method": "POST",
+      "path": "/api/v1/live-sessions/:id/attendance",
       "module": "live",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-178",
-      "method": "POST",
-      "path": "/api/v1/attendance/sessions",
-      "module": "ops",
+      "method": "GET",
+      "path": "/api/v1/live-sessions.ics",
+      "module": "live",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-179",
       "method": "POST",
-      "path": "/api/v1/attendance/records",
-      "module": "ops",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
-    },
-    {
-      "id": "BE-180",
-      "method": "GET",
       "path": "/api/v1/attendance/sessions",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-180",
+      "method": "POST",
+      "path": "/api/v1/attendance/records",
+      "module": "ops",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-181",
       "method": "GET",
-      "path": "/api/v1/certificates/verify/:number",
+      "path": "/api/v1/attendance/sessions",
       "module": "ops",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-182",
       "method": "GET",
-      "path": "/api/v1/certificates",
+      "path": "/api/v1/certificates/verify/:number",
       "module": "ops",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "journey.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-183",
-      "method": "POST",
-      "path": "/api/v1/certificates/issue",
+      "method": "GET",
+      "path": "/api/v1/certificates",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "coverage-gaps.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-184",
       "method": "POST",
-      "path": "/api/v1/certificates/bulk-issue",
+      "path": "/api/v1/certificates/issue",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-185",
       "method": "POST",
-      "path": "/api/v1/certificates/:id/revoke",
+      "path": "/api/v1/certificates/bulk-issue",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-186",
-      "method": "GET",
-      "path": "/api/v1/certificates/:id/pdf",
+      "method": "POST",
+      "path": "/api/v1/certificates/:id/revoke",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "coverage-gaps.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-187",
       "method": "GET",
-      "path": "/api/v1/announcements",
+      "path": "/api/v1/certificates/:id/pdf",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "coverage-gaps.test.ts",
+        "extended.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "security-fixes.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 26,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-188",
+      "method": "GET",
+      "path": "/api/v1/announcements",
+      "module": "ops",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts",
+        "extended.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-189",
       "method": "POST",
       "path": "/api/v1/announcements",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts",
+        "extended.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-189",
+      "id": "BE-190",
       "method": "GET",
       "path": "/api/v1/notifications",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-190",
+      "id": "BE-191",
       "method": "POST",
       "path": "/api/v1/notifications/:id/read",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
-    },
-    {
-      "id": "BE-191",
-      "method": "GET",
-      "path": "/api/v1/discussions",
-      "module": "ops",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-192",
+      "method": "GET",
+      "path": "/api/v1/discussions",
+      "module": "ops",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-193",
       "method": "POST",
       "path": "/api/v1/discussions",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-193",
+      "id": "BE-194",
       "method": "GET",
       "path": "/api/v1/discussions/:threadId/replies",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-194",
+      "id": "BE-195",
       "method": "POST",
       "path": "/api/v1/discussions/:threadId/replies",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
-    },
-    {
-      "id": "BE-195",
-      "method": "GET",
-      "path": "/api/v1/reports/organization-summary",
-      "module": "ops",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-196",
       "method": "GET",
-      "path": "/api/v1/reports/student-progress",
+      "path": "/api/v1/reports/organization-summary",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-197",
+      "method": "GET",
+      "path": "/api/v1/reports/student-progress",
+      "module": "ops",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "journey.test.ts",
+        "release17.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-198",
       "method": "POST",
       "path": "/api/v1/uploads",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
-    },
-    {
-      "id": "BE-198",
-      "method": "GET",
-      "path": "/api/v1/reports/completion",
-      "module": "ops",
-      "auth": "requireAuth",
-      "backend_test": false,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_NOT_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "hardening.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 5,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-199",
       "method": "GET",
-      "path": "/api/v1/reports/quiz-performance",
+      "path": "/api/v1/reports/completion",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [],
+      "invoked_by_e2e": [],
+      "callsites": 0,
+      "status": "IMPLEMENTED_TEST_GAP"
     },
     {
       "id": "BE-200",
       "method": "GET",
-      "path": "/api/v1/reports/attendance",
+      "path": "/api/v1/reports/quiz-performance",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": false,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_NOT_VERIFIED"
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-201",
       "method": "GET",
-      "path": "/api/v1/reports/teacher-activity",
+      "path": "/api/v1/reports/attendance",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [],
+      "invoked_by_e2e": [],
+      "callsites": 0,
+      "status": "IMPLEMENTED_TEST_GAP"
     },
     {
       "id": "BE-202",
       "method": "GET",
-      "path": "/api/v1/attendance/student",
+      "path": "/api/v1/reports/teacher-activity",
       "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-203",
       "method": "GET",
-      "path": "/",
-      "module": "orgs",
+      "path": "/api/v1/attendance/student",
+      "module": "ops",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-204",
-      "method": "POST",
-      "path": "/",
+      "method": "GET",
+      "path": "/api/v1/organizations/",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-205",
-      "method": "GET",
-      "path": "/:id",
+      "method": "POST",
+      "path": "/api/v1/organizations/",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-206",
       "method": "GET",
-      "path": "/:id/members",
+      "path": "/api/v1/organizations/:id",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-207",
-      "method": "POST",
-      "path": "/:id/members",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/members",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-208",
-      "method": "GET",
-      "path": "/:id/academic-years",
+      "method": "POST",
+      "path": "/api/v1/organizations/:id/members",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-209",
-      "method": "POST",
-      "path": "/:id/academic-years",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/academic-years",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-210",
-      "method": "GET",
-      "path": "/:id/terms",
+      "method": "POST",
+      "path": "/api/v1/organizations/:id/academic-years",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-211",
-      "method": "POST",
-      "path": "/:id/terms",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/terms",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-212",
-      "method": "GET",
-      "path": "/:id/classes",
+      "method": "POST",
+      "path": "/api/v1/organizations/:id/terms",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-213",
-      "method": "POST",
-      "path": "/:id/classes",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/classes",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-214",
       "method": "POST",
-      "path": "/classes/:classId/members",
+      "path": "/api/v1/organizations/:id/classes",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-215",
-      "method": "GET",
-      "path": "/:id/subjects",
+      "method": "POST",
+      "path": "/api/v1/organizations/classes/:classId/members",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-216",
-      "method": "POST",
-      "path": "/:id/subjects",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/subjects",
       "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-217",
-      "method": "GET",
-      "path": "/api/v1/system/health",
-      "module": "platform",
+      "method": "POST",
+      "path": "/api/v1/organizations/:id/subjects",
+      "module": "orgs",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-218",
       "method": "GET",
-      "path": "/api/v1/system/status",
+      "path": "/api/v1/system/health",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-219",
       "method": "GET",
-      "path": "/api/v1/setup/status",
+      "path": "/api/v1/system/status",
       "module": "platform",
-      "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "enterprise2.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-220",
+      "method": "GET",
+      "path": "/api/v1/setup/status",
+      "module": "platform",
+      "auth": "PUBLIC",
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-221",
       "method": "POST",
       "path": "/api/v1/setup",
       "module": "platform",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "journey.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-221",
+      "id": "BE-222",
       "method": "GET",
       "path": "/api/v1/settings",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "governance.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 6,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-222",
+      "id": "BE-223",
       "method": "PUT",
       "path": "/api/v1/settings",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "governance.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 6,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-223",
+      "id": "BE-224",
       "method": "GET",
       "path": "/api/v1/organizations/:id/branding",
       "module": "platform",
       "auth": "PUBLIC",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-224",
+      "id": "BE-225",
       "method": "PUT",
       "path": "/api/v1/organizations/:id",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-225",
+      "id": "BE-226",
       "method": "POST",
       "path": "/api/v1/organizations/:id/domain",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 24,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-226",
+      "id": "BE-227",
       "method": "GET",
       "path": "/api/v1/permissions",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-227",
+      "id": "BE-228",
       "method": "PUT",
       "path": "/api/v1/roles/:role/permissions",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
-    },
-    {
-      "id": "BE-228",
-      "method": "GET",
-      "path": "/api/v1/roles",
-      "module": "platform",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "governance.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-229",
       "method": "GET",
-      "path": "/api/v1/users/me/permissions",
+      "path": "/api/v1/roles",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "governance.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-230",
       "method": "GET",
-      "path": "/api/v1/audit-logs",
+      "path": "/api/v1/users/me/permissions",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "governance.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 2,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-231",
       "method": "GET",
-      "path": "/api/v1/files",
+      "path": "/api/v1/audit-logs",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "governance.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-232",
       "method": "GET",
-      "path": "/api/v1/files/:id/download",
+      "path": "/api/v1/files",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-233",
       "method": "GET",
-      "path": "/api/v1/search",
+      "path": "/api/v1/files/:id/download",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-234",
       "method": "GET",
-      "path": "/api/v1/notifications/unread-count",
+      "path": "/api/v1/search",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-235",
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count",
+      "module": "platform",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-236",
       "method": "POST",
       "path": "/api/v1/notifications/read-all",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-236",
+      "id": "BE-237",
       "method": "GET",
       "path": "/api/v1/notification-preferences",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-237",
+      "id": "BE-238",
       "method": "PUT",
       "path": "/api/v1/notification-preferences",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts",
+        "platform.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-238",
+      "id": "BE-239",
       "method": "GET",
       "path": "/api/v1/push/config",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
-    },
-    {
-      "id": "BE-239",
-      "method": "POST",
-      "path": "/api/v1/push/subscriptions",
-      "module": "platform",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "coverage-gaps.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-240",
+      "method": "POST",
+      "path": "/api/v1/push/subscriptions",
+      "module": "platform",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-241",
       "method": "GET",
       "path": "/api/v1/push/subscriptions",
       "module": "platform",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
-    },
-    {
-      "id": "BE-241",
-      "method": "POST",
-      "path": "/scorm/upload",
-      "module": "scorm",
-      "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "extended.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-242",
-      "method": "GET",
-      "path": "/scorm/packages",
+      "method": "POST",
+      "path": "/api/v1/scorm/upload",
       "module": "scorm",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-243",
       "method": "GET",
-      "path": "/scorm/content/:pkgId/*",
+      "path": "/api/v1/scorm/packages",
       "module": "scorm",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-244",
-      "method": "POST",
-      "path": "/scorm/attempts",
+      "method": "GET",
+      "path": "/api/v1/scorm/content/:pkgId/*",
       "module": "scorm",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 3,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-245",
       "method": "POST",
-      "path": "/scorm/attempts/:id/commit",
+      "path": "/api/v1/scorm/attempts",
       "module": "scorm",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-246",
-      "method": "GET",
-      "path": "/scorm/packages/:id/attempts",
+      "method": "POST",
+      "path": "/api/v1/scorm/attempts/:id/commit",
       "module": "scorm",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-247",
       "method": "GET",
-      "path": "/",
-      "module": "users",
+      "path": "/api/v1/scorm/packages/:id/attempts",
+      "module": "scorm",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 1,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-248",
-      "method": "POST",
-      "path": "/",
+      "method": "GET",
+      "path": "/api/v1/users/",
       "module": "users",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 20,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-249",
-      "method": "GET",
-      "path": "/:id",
+      "method": "POST",
+      "path": "/api/v1/users/",
       "module": "users",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 20,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-250",
-      "method": "PATCH",
-      "path": "/:id",
+      "method": "GET",
+      "path": "/api/v1/users/:id",
       "module": "users",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 20,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-251",
-      "method": "DELETE",
-      "path": "/:id",
+      "method": "PATCH",
+      "path": "/api/v1/users/:id",
       "module": "users",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 20,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-252",
-      "method": "POST",
-      "path": "/:id/parent-links",
+      "method": "DELETE",
+      "path": "/api/v1/users/:id",
       "module": "users",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 20,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-253",
-      "method": "GET",
-      "path": "/:id/linked-students",
+      "method": "POST",
+      "path": "/api/v1/users/:id/parent-links",
       "module": "users",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": true,
-      "status": "IMPLEMENTED_AND_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 20,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-254",
-      "method": "POST",
-      "path": "/xapi/statements",
-      "module": "xapi",
+      "method": "GET",
+      "path": "/api/v1/users/:id/linked-students",
+      "module": "users",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "roles.spec.ts"
+      ],
+      "callsites": 20,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-255",
-      "method": "GET",
-      "path": "/xapi/statements",
+      "method": "POST",
+      "path": "/api/v1/xapi/statements",
       "module": "xapi",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "lifecycle-fixes.test.ts",
+        "xapi.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 12,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-256",
-      "method": "DELETE",
-      "path": "/xapi/statements",
+      "method": "GET",
+      "path": "/api/v1/xapi/statements",
       "module": "xapi",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "lifecycle-fixes.test.ts",
+        "xapi.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 12,
+      "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-257",
-      "method": "GET",
-      "path": "/xapi/export",
+      "method": "DELETE",
+      "path": "/api/v1/xapi/statements",
       "module": "xapi",
       "auth": "requireAuth",
-      "backend_test": true,
-      "e2e_test": false,
-      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+      "invoked_by_tests": [
+        "lifecycle-fixes.test.ts",
+        "xapi.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 12,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-258",
+      "method": "GET",
+      "path": "/api/v1/xapi/export",
+      "module": "xapi",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "lifecycle-fixes.test.ts",
+        "xapi.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
     }
   ],
   "feRoutes": [
@@ -2862,6 +4741,11 @@
     },
     {
       "id": "FE-WE-12",
+      "portal": "web",
+      "hash": "#/forgot"
+    },
+    {
+      "id": "FE-WE-13",
       "portal": "web",
       "hash": "#/bundles"
     }

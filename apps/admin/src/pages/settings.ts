@@ -58,7 +58,7 @@ async function renderAccount(el: HTMLElement): Promise<void> {
         )
         .join('')}
       <button class="btn btn-primary mt-2" id="prefs-save">${d.save}</button></div></div>
-      <div class="card mt-3"><div class="card-header"><h3 class="card-title">Push</h3></div>
+      <div class="card mt-3"><div class="card-header"><h3 class="card-title">${d.push}</h3></div>
       <div class="card-body">
       <button class="btn btn-outline-primary" id="push-sub">${d.enablePush}</button> <span id="push-status" class="text-muted small ms-2"></span></div></div></div>
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">${d.sessions} (${sessions.length})</h3>

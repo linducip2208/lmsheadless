@@ -12,6 +12,9 @@
   invoice number, gift code, entitlements triple.
 - New 022: `idx_xapi_org`, `idx_xapi_org_stored`, `idx_threads_course`,
   `idx_replies_thread`, `idx_grades_course_student` + free-order minor repair.
+- New 023: `idx_comm_order_payee` UNIQUE `(order_id, instructor_id)` makes
+  commission double-mint structurally impossible; inserts use
+  `ON CONFLICT DO NOTHING`.
 - Money canonical: minor-unit source of truth, dual-write, legacy fallback
   (`pickMinor`); 017 backfill + 022 free-order repair; no REAL-only writes in
   prod routes; subscription-plan ordering moved to `price_minor`.

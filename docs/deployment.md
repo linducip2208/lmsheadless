@@ -14,8 +14,9 @@ npm run dev:admin    # :5173 · dev:teacher :5175 · dev:student :5174 · dev:pa
 
 1. `wrangler login`
 2. `wrangler d1 create lms-headless` → set `database_id` in `apps/api/wrangler.toml`, uncomment `[[d1_databases]]`
-3. Apply migrations in order (`migrations/001_*.sql` → `007_*.sql`), or
-   `wrangler d1 migrations apply lms-headless --remote`
+3. Apply migrations in order (`migrations/001_*.sql` → `023_*.sql`; currently
+   001→023), or `wrangler d1 migrations apply lms-headless --remote`.
+   Re-running is safe (tolerant re-run + PRAGMA-guarded patches).
 4. `wrangler r2 bucket create lms-storage` → uncomment `[[r2_buckets]]`
 5. `wrangler kv namespace create RATE_LIMIT` → uncomment `[[kv_namespaces]]`
 6. `wrangler secret put JWT_SECRET` (≥32 random chars). Optional vars:

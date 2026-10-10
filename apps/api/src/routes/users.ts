@@ -176,7 +176,9 @@ users.patch('/:id', requireAuth(), async (c) => {
   }
   const sets: string[] = [];
   const params: (string | number)[] = [];
-  // Mass-assignment guard: explicit allowlist only.
+  const ignored: string[] = [];
+  // Mass-assignment guard: explicit allowlist only. Privileged fields are
+  // reported back instead of silently dropped.
   if (typeof body.name === 'string' && body.name.length >= 1 && body.name.length <= 120) {
     sets.push('name = ?');
     params.push(body.name);
@@ -191,18 +193,21 @@ users.patch('/:id', requireAuth(), async (c) => {
   }
   if (
     typeof body.status === 'string' &&
-    ['active', 'inactive', 'suspended'].includes(body.status) &&
-    user.isSuperAdmin
+    ['active', 'inactive', 'suspended'].includes(body.status)
   ) {
-    sets.push('status = ?');
-    params.push(body.status);
+    if (user.isSuperAdmin) {
+      sets.push('status = ?');
+      params.push(body.status);
+    } else {
+      ignored.push('status');
+    }
   }
   if (sets.length === 0)
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   sets.push('updated_at = ?');
   params.push(nowIso(), target);
   await execute(db, `UPDATE users SET ${sets.join(', ')} WHERE id = ?`, ...params);
-  return ok(c, { updated: true });
+  return ok(c, { updated: true, ...(ignored.length ? { ignored } : {}) });
 });
 
 users.delete('/:id', requireAuth(), async (c) => {

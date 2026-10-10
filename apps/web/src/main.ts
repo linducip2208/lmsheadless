@@ -448,7 +448,23 @@ function loginPage(): string {
   <label class="form-label" for="lp">${t.password}</label><input id="lp" type="password" class="form-control mb-3" required>
   <div id="lerr"></div><button class="btn btn-primary w-100">${t.signIn}</button></form>
   <div id="roles" class="mt-3"></div>
-  <p class="mt-3">${t.noAccount} <a href="#/register">${t.register}</a> · ${t.loginDemo}</p></div></div></div></div></div>`;
+  <p class="mt-3">${t.noAccount} <a href="#/register">${t.register}</a> · <a href="#/forgot">${t.forgotPassword}</a> · ${t.loginDemo}</p></div></div></div></div></div>`;
+}
+
+function forgotPage(): string {
+  return `<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-md-5"><div class="card"><div class="card-body">
+  <h1>${t.resetPassword}</h1>
+  <form id="fform"><label class="form-label" for="fe">${t.email}</label><input id="fe" type="email" class="form-control mb-3" required>
+  <div id="ferr"></div><button class="btn btn-primary w-100">${t.sendResetLink}</button></form>
+  <div id="fok" class="mt-3"></div></div></div></div></div></div>`;
+}
+
+function resetPage(): string {
+  return `<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-md-5"><div class="card"><div class="card-body">
+  <h1>${t.resetPassword}</h1>
+  <form id="rsform"><label class="form-label" for="rpw">${t.newPassword}</label><input id="rpw" type="password" class="form-control mb-3" required minlength="8">
+  <div id="rserr"></div><button class="btn btn-primary w-100">${t.setNewPassword}</button></form>
+  <div id="rsok" class="mt-3"></div></div></div></div></div></div>`;
 }
 
 async function verifyPage(num: string): Promise<string> {
@@ -583,6 +599,12 @@ async function router(): Promise<void> {
   } else if (path === '/register') {
     body = registerPage();
     setMeta('/');
+  } else if (path === '/forgot') {
+    body = forgotPage();
+    setMeta('/');
+  } else if (path.startsWith('/reset/')) {
+    body = resetPage();
+    setMeta('/');
   } else if (path.startsWith('/verify/')) {
     body = await verifyPage(path.split('/')[2] ?? '');
     setMeta('/verify');
@@ -701,7 +723,47 @@ async function router(): Promise<void> {
         <div class="small text-muted">${t.sessionNote}</div>`;
     } catch (err) {
       (document.getElementById('lerr') as HTMLElement).innerHTML =
-        `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Login failed'}</div>`;
+        `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : 'Login failed')}</div>`;
+    }
+  });
+  const fform = document.getElementById('fform') as HTMLFormElement | null;
+  fform?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      // Always 200 by design (enumeration-safe); the message says nothing
+      // about whether the account exists.
+      await fetch('/api/v1/auth/password/forgot', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: (document.getElementById('fe') as HTMLInputElement).value }),
+      });
+      (document.getElementById('fok') as HTMLElement).innerHTML =
+        `<div class="alert alert-success">${esc(t.resetLinkSent)}</div>`;
+    } catch {
+      (document.getElementById('ferr') as HTMLElement).innerHTML =
+        `<div class="alert alert-danger">${esc(t.verifyServiceDown)}</div>`;
+    }
+  });
+  const rsform = document.getElementById('rsform') as HTMLFormElement | null;
+  rsform?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const token = location.hash.split('/')[2] ?? '';
+      const res = await fetch('/api/v1/auth/password/reset', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          password: (document.getElementById('rpw') as HTMLInputElement).value,
+        }),
+      });
+      const j = (await res.json()) as { success: boolean; error?: { message: string } };
+      if (!j.success) throw new Error(j.error?.message ?? 'Reset failed');
+      (document.getElementById('rsok') as HTMLElement).innerHTML =
+        `<div class="alert alert-success">${esc(t.passwordResetDone)} <a href="#/login">${esc(t.signIn)}</a></div>`;
+    } catch (err) {
+      (document.getElementById('rserr') as HTMLElement).innerHTML =
+        `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : 'Failed')}</div>`;
     }
   });
   const rform = document.getElementById('rform') as HTMLFormElement | null;
@@ -723,7 +785,7 @@ async function router(): Promise<void> {
         `<div class="alert alert-success">${t.accountCreated} <a href="${PORTALS.student}">${t.openStudent}</a></div>`;
     } catch (err) {
       (document.getElementById('rerr') as HTMLElement).innerHTML =
-        `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Failed'}</div>`;
+        `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : 'Failed')}</div>`;
     }
   });
 }

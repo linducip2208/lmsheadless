@@ -21,7 +21,10 @@ matching | ordering`. Auto-graded except `essay` (manual queue, attempt stays
 - Correctness never leaks: student question reads omit `is_correct`/
   `match_value`/`correct_answer`; ordering options shuffle per fetch.
 - `answer_release: never` hides scores from submit responses.
-- Autosave (`PUT …/autosave`) recovers drafts; submit clears them.
+- Autosave (`PUT /quiz-attempts/:id/autosave`, drafts read back via
+  `GET …/autosave`) recovers drafts across reloads/crashes/devices; the
+  student player restores drafts into the form and saves debounced; submit
+  clears them. Owner-only, in-progress, unexpired attempts.
 - Idempotent submits via `Idempotency-Key`; manual re-grade recomputes
   deterministically from stored points.
 

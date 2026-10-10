@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, t, esc } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, t, esc } from '../lib.js';
 
 export async function renderRoles(el: HTMLElement): Promise<void> {
   const d = t();
@@ -22,13 +22,20 @@ export async function renderRoles(el: HTMLElement): Promise<void> {
           return;
         }
         const current = roles.find((r) => r.role === role)?.permissions ?? [];
-        const input = prompt(`Permissions for ${role} (comma separated):`, current.join(','));
-        if (input === null) return;
+        const data = await modalForm(`${d.edit} ${role}`, [
+          {
+            name: 'permissions',
+            label: 'Permissions (comma separated)',
+            type: 'textarea',
+            value: current.join(', '),
+          },
+        ]);
+        if (!data) return;
         try {
           await call(`/api/v1/roles/${role}/permissions`, {
             method: 'PUT',
             body: JSON.stringify({
-              permissions: input
+              permissions: String(data.permissions ?? '')
                 .split(',')
                 .map((s) => s.trim())
                 .filter(Boolean),

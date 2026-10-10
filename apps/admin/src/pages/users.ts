@@ -32,6 +32,14 @@ export async function renderUsers(el: HTMLElement): Promise<void> {
       { name: 'name', label: d.name, value: String(row.name ?? '') },
       { name: 'locale', label: d.locale, value: String(row.locale ?? 'en') },
       { name: 'timezone', label: 'Timezone', value: String(row.timezone ?? 'Asia/Jakarta') },
+      // Server applies status for super_admin only and reports it in
+      // `ignored` otherwise — the control stays visible for all editors.
+      {
+        name: 'status',
+        label: d.status,
+        options: ['active', 'inactive', 'suspended'].map((s) => ({ value: s, label: s })),
+        value: String(row.status ?? 'active'),
+      },
     ],
     deletable: () => me?.isSuperAdmin ?? false,
   });

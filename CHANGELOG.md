@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.10.0 — Verified hardening release
+
+Security:
+
+- Remaining `esc()` sinks closed (admin shell/quizzes, teacher live panel,
+  student progress attrs, centralized `errorHtml`/`tableHtml` in admin lib);
+  `xss-escape.test.ts` extended
+- Webhook `gross_amount` matched against the order total (402
+  `AMOUNT_MISMATCH` on underpayment; caught a wrong-amount E2E vector)
+- Conditional transitions on payment-confirm/refund/payout-decide (409 on
+  lost races); commissions structurally idempotent via unique
+  `(order_id, instructor_id)` index (023); invoice fulfill races tolerated
+- Subscription prices reject negatives; affiliate rates validated 0–100;
+  garbage `tax_rate`/`commission_rate` settings sanitized at read (NaN-proof)
+- Cohort gift redemption now grants cohort + membership + courses (was burned)
+
+Features completed (were documented gaps):
+
+- Quiz autosave end-to-end: `PUT`/`GET /quiz-attempts/:id/autosave`
+  (owner-only, expiry + question-scope guards, both batch and legacy
+  single-item shapes), student debounced save + draft restore; shadowed
+  duplicates in `banks.ts` removed
+- Public password recovery UI (`#/forgot`, `#/reset/:token`, enumeration-safe)
+- Admin user status editing (server reports `ignored` fields instead of
+  silent drops); payout approve/reject buttons wired to `decide`
+- AI quota reset endpoint (`POST /ai/usage/reset`) + external-scheduler
+  procedure in `docs/ai.md`
+- Teacher/student/admin i18n pass (60+ strings to en/id dicts); all native
+  `prompt()`/`confirm()`/`alert()` replaced with modal/confirm/toast patterns
+
+Evidence:
+
+- 132 API tests green, Playwright 15/15 (auth, recovery, autosave journeys
+  added), bench + scale green, backup/restore drilled PASS
+- Source-derived inventory: 258 endpoints (256 invoked + 2 verified via
+  interpolation), 101 e2e-invoked, 4,798 call-sites, 108 tables, 23 migrations
+- Full `reports/audit/` dossier refreshed; score 90/100
+
 ## 1.9.0 — Security & integration repair release
 
 Security:

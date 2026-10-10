@@ -264,6 +264,53 @@ describe('notification preferences are enforced', () => {
   });
 });
 
+describe('AI quota reset for the external scheduler', () => {
+  it('privileged reset zeroes usage and audits; students denied', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'qreset');
+    await mkUser(db, 'a@qreset.test', 'organization_admin', org);
+    await mkUser(db, 's@qreset.test', 'student', org);
+    const tokA = (await login(app, 'a@qreset.test')).access_token;
+    const tokS = (await login(app, 's@qreset.test')).access_token;
+    await app.request('/api/v1/ai/config', {
+      method: 'PUT',
+      headers: H(tokA),
+      body: JSON.stringify({ organization_id: org, provider: 'mock', monthly_limit: 5 }),
+    });
+    await execute(db, 'UPDATE ai_configs SET used_count = 5 WHERE organization_id = ?', org);
+    const deny = await app.request('/api/v1/ai/usage/reset', {
+      method: 'POST',
+      headers: H(tokS),
+      body: JSON.stringify({ organization_id: org }),
+    });
+    expect(deny.status).toBe(403);
+    const res = (await (
+      await app.request('/api/v1/ai/usage/reset', {
+        method: 'POST',
+        headers: H(tokA),
+        body: JSON.stringify({ organization_id: org }),
+      })
+    ).json()) as { data: { reset: boolean; before: number } };
+    expect(res.data.reset).toBe(true);
+    expect(res.data.before).toBe(5);
+    const cfg = await queryFirst<{ used_count: number }>(
+      db,
+      'SELECT used_count FROM ai_configs WHERE organization_id = ?',
+      org
+    );
+    expect(cfg?.used_count).toBe(0);
+    // Repeatable: second run reports before=0.
+    const again = (await (
+      await app.request('/api/v1/ai/usage/reset', {
+        method: 'POST',
+        headers: H(tokA),
+        body: JSON.stringify({ organization_id: org }),
+      })
+    ).json()) as { data: { before: number } };
+    expect(again.data.before).toBe(0);
+  });
+});
+
 describe('push config honesty', () => {
   it('reports disabled without keys and never leaks key material', async () => {
     const { app, db } = await setup();

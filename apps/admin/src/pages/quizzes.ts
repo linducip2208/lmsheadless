@@ -68,7 +68,7 @@ async function renderQuizManager(el: HTMLElement): Promise<void> {
     orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
   ).catch(() => [])) as { id: string; title: string }[];
   courseSel.innerHTML =
-    courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('') ||
+    courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('') ||
     `<option value="">${d.empty}</option>`;
   const load = async () => {
     const cid = courseSel.value;

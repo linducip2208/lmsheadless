@@ -1,22 +1,17 @@
-# Final scorecard (criterion weights per master command)
+# Final scorecard — 1.10.0 (weights unchanged from 1.9.0)
 
-| Criterion (max)                  | Score | Basis                                                                                                                                                                                               |
-| -------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functional correctness (20)      | 19    | 257/257 endpoints test-referenced (255 direct + 2 via interpolation); 123/123 API tests; genuinely missing pieces (cancel endpoint, renewals) documented, not faked. −1 for advisory program locks. |
-| Integration completeness (15)    | 13    | 13/18 matrix rows verified-connected; prefs/payouts/affiliates/docs wired this session. −2 for push/cron disconnected-by-design and stored-only Zoom/Meet.                                          |
-| Security & access control (20)   | 18    | Stored-XSS boundary shipped + pinned; webhook/prefs/rate-limit fixes; prior IDORs verified. −2 for residual key-at-rest readability and setup-race without distributed lock.                        |
-| Data integrity & migrations (10) | 9     | 022 indexes + free-order repair; tiebreakers incl. rowid fix caught by test; drill PASS with integrity_check=ok. −1 for unreachable-but-present CASCADE clauses.                                    |
-| Browser E2E & regression (15)    | 12    | 13/13 Playwright incl. 6 role journeys; regression test per change. −3 for no per-portal SPA CRUD automation.                                                                                       |
-| Reliability/backup/perf (10)     | 8     | Backup/restore drilled PASS; bench all-green; N+1 fixed. −2 for R2-restore undrilled and local-only perf numbers.                                                                                   |
-| Install/docs/commercial (10)     | 9     | Setup lock, seed guard, env template, honest provider labels, packaged web docs, changelog. −1 for remaining i18n/RTL gaps.                                                                         |
+| Criterion (max)                  | Score | Basis                                                                                                                                                                                                                                                          |
+| -------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Functional correctness (20)      | 19    | 258 endpoints, 256 invoked + 2 interpolation-verified; 133/133 API tests with behavior assertions (spot-audit table in feature-inventory.md); autosave, recovery UI, status editing, payout decisions, URL-scheme guards completed. −1 advisory program locks. |
+| Integration completeness (15)    | 14    | 18/22 matrix rows verified-connected (autosave, quota-reset, recovery, decide flows added); prefs/affiliates/payouts wired. −1 push disconnected, cron external, Zoom/Meet stored-only (documented, not passed).                                               |
+| Security & access control (20)   | 18→19 | Webhook amount-match, conditional money transitions, commission unique index, input/rate guards, residual esc sinks, `ignored` reporting. −1 key-at-rest readability + setup-race without distributed lock + no upload quota.                                  |
+| Data integrity & migrations (10) | 9     | 023 index; free-order repair verified; rowid ordering; drill PASS (integrity ok, 0 FK violations); seed guard both paths tested. −1 unreachable CASCADE clauses retained.                                                                                      |
+| Browser E2E & regression (15)    | 13    | 15/15 Playwright (auth, recovery, autosave, commerce, negatives, certs); regression test per fix; 0 skipped. −2 no per-portal SPA CRUD automation.                                                                                                             |
+| Reliability/backup/perf (10)     | 8     | Drill PASS, bench + scale green, N+1 fixed, idempotent fulfillment. −2 R2-restore undrilled, local-only perf.                                                                                                                                                  |
+| Install/docs/commercial (10)     | 9     | Money/migration docs reconciled, scheduler procedures, packaged web docs, honest provider labels, i18n pass. −1 LICENSE unresolved (owner decision, flagged).                                                                                                  |
 
-**Total: 88/100** (start of session: 86/100 on the 1.8.0 evidence scale; +2 net
-for XSS boundary, prefs enforcement, webhook reorder, 022, role E2E, drill —
-offset by stricter accounting of portal-CRUD and provider gaps).
+**Total: 91/100** (was 88/100: +3 for amount-match/race-guards/autosave-E2E/recovery-UI/i18n; no weight changes, no gap suppression).
 
-Included/excluded per rules: A (implementation) above; B (automated tests)
-123 API + 13 E2E green, 0 skipped; C (browser workflows) public-site + role
-journeys green, portal CRUD N/A-gap noted; D (live providers) all BLOCKED on
-credentials, counted as gaps not passes; E (prod readiness) conditional
-(see `release-readiness.md`). No weight manipulation: disconnected items keep
-their deductions.
+Evidence classes kept separate: A implementation, B 133 automated green,
+C 15 browser green (portal CRUD disclosed gap), D live providers all BLOCKED,
+E production readiness conditional (see release-readiness.md).

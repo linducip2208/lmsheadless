@@ -652,6 +652,106 @@ assess.post('/quiz-attempts/:attemptId/submit', requireAuth(), async (c) => {
   return ok(c, { score: pct, passed: passed === 1, earned, total, needs_review: needsReview });
 });
 
+// Autosave drafts: persist in-progress answers so an interrupted attempt
+// (reload, crash, device switch) can resume. Owner-only; same guards as
+// submit (ownership, in-progress, expiry). Submit clears drafts (see submit).
+async function loadOpenAttempt(
+  db: Parameters<typeof queryFirst>[0],
+  attemptId: string,
+  userId: string
+) {
+  const attempt = await queryFirst<{
+    id: string;
+    quiz_id: string;
+    student_id: string;
+    status: string;
+    expires_at: string | null;
+  }>(
+    db,
+    'SELECT id, quiz_id, student_id, status, expires_at FROM quiz_attempts WHERE id = ?',
+    attemptId
+  );
+  if (!attempt) return { error: 'NOT_FOUND' as const };
+  if (attempt.student_id !== userId) return { error: 'FORBIDDEN' as const };
+  if (attempt.status !== 'in_progress') return { error: 'CLOSED' as const };
+  if (attempt.expires_at && new Date(attempt.expires_at).getTime() < Date.now()) {
+    await execute(
+      db,
+      "UPDATE quiz_attempts SET status = 'expired', updated_at = ? WHERE id = ?",
+      nowIso(),
+      attempt.id
+    );
+    return { error: 'EXPIRED' as const };
+  }
+  return { attempt };
+}
+
+assess.put('/quiz-attempts/:attemptId/autosave', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const { attempt, error } = await loadOpenAttempt(db, c.req.param('attemptId'), user.id);
+  if (error === 'NOT_FOUND') return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  if (error === 'FORBIDDEN') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (error === 'CLOSED') return fail(c, 400, 'VALIDATION_ERROR', 'Attempt already submitted');
+  if (error === 'EXPIRED')
+    return fail(
+      c,
+      400,
+      'ATTEMPT_EXPIRED',
+      'Time limit exceeded; start a new attempt if attempts remain'
+    );
+  const body = (await c.req.json().catch(() => null)) as {
+    answers?: { question_id?: string; payload?: string }[];
+    question_id?: string;
+    payload?: unknown;
+  } | null;
+  // Batch shape {answers:[...]} (student client) and legacy single-item
+  // shape {question_id, payload} (kept: enterprise suite exercises it).
+  const answers = Array.isArray(body?.answers)
+    ? body.answers.slice(0, 200)
+    : body?.question_id
+      ? [{ question_id: body.question_id, payload: body.payload }]
+      : [];
+  const now = nowIso();
+  let saved = 0;
+  for (const a of answers) {
+    if (!a?.question_id) continue;
+    const q = await queryFirst<{ id: string }>(
+      db,
+      'SELECT id FROM questions WHERE id = ? AND quiz_id = ?',
+      a.question_id,
+      attempt.quiz_id
+    );
+    if (!q) continue;
+    const raw = typeof a.payload === 'string' ? a.payload : JSON.stringify(a.payload ?? '');
+    await execute(
+      db,
+      'INSERT INTO attempt_autosaves (attempt_id, question_id, payload, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(attempt_id, question_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at',
+      attempt.id,
+      a.question_id,
+      raw.slice(0, 5000),
+      now
+    );
+    saved++;
+  }
+  return ok(c, { saved });
+});
+
+assess.get('/quiz-attempts/:attemptId/autosave', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const { attempt, error } = await loadOpenAttempt(db, c.req.param('attemptId'), user.id);
+  if (error === 'NOT_FOUND') return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  if (error === 'FORBIDDEN') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (error) return fail(c, 400, 'VALIDATION_ERROR', 'Attempt is no longer open');
+  const rows = await queryAll<{ question_id: string; payload: string }>(
+    db,
+    'SELECT question_id, payload FROM attempt_autosaves WHERE attempt_id = ?',
+    attempt.id
+  );
+  return ok(c, rows);
+});
+
 // Attempt answers review (teacher grading; students see own without correctness).
 assess.get('/quiz-attempts/:attemptId/answers', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;

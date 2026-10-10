@@ -42,8 +42,10 @@ export function emptyHtml(msg?: string): string {
 }
 
 export function errorHtml(e: unknown): string {
+  // Server messages can echo request input (e.g. validation detail), so the
+  // message is escaped at this single choke point.
   const msg = e instanceof Error ? e.message : t().error;
-  return `<div class="alert alert-danger" role="alert">${msg}</div>`;
+  return `<div class="alert alert-danger" role="alert">${esc(msg)}</div>`;
 }
 
 export function tableHtml(
@@ -57,8 +59,9 @@ export function tableHtml(
   if (!rows.length) return emptyHtml();
   const td = (r: Record<string, unknown>, c: (typeof cols)[number]) => {
     const v = r[c.key];
+    // Custom renderers produce intentional HTML; default cells are escaped.
     if (c.render) return c.render(v, r);
-    return String(v ?? '—').slice(0, 140);
+    return esc(String(v ?? '—').slice(0, 140));
   };
   return `<div class="table-responsive"><table class="table table-vcenter card-table table-hover"><thead><tr>${cols.map((c) => `<th scope="col">${c.label}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${cols.map((c) => `<td>${td(r, c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }

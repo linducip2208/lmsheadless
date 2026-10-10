@@ -163,7 +163,15 @@ async function showOrgDetail(el: HTMLElement, orgId: string): Promise<void> {
           note: string;
         };
         toast(d.saved, 'success');
-        alert(`DNS TXT:\n${r.verification.host}\n${r.verification.value}\n\n${r.note}`);
+        const dnsBox = document.createElement('div');
+        dnsBox.className = 'alert alert-info mt-2';
+        const pre = document.createElement('pre');
+        pre.className = 'mb-1';
+        pre.textContent = `DNS TXT:\n${r.verification.host}\n${r.verification.value}`;
+        const note = document.createElement('div');
+        note.textContent = r.note;
+        dnsBox.append(pre, note);
+        el.querySelector('.col-md-5 .card-body')?.appendChild(dnsBox);
       } catch (e) {
         toast(e instanceof Error ? e.message : d.failed, 'danger');
       }

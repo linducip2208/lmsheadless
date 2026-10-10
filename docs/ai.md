@@ -20,6 +20,11 @@ Core LMS works with AI fully `disabled` (default). Enable per organization:
   label accordingly in product demos.
 - Conversation retention: `retention_days` (default 30) is enforced by
   `POST /ai/retention/purge` (privileged, audited) — run it on a schedule.
+- Monthly quota has no in-app scheduler. The owner runs, e.g. on the 1st via
+  cron / Workers Cron Trigger calling the privileged, audited, idempotent
+  `POST /ai/usage/reset {"organization_id": "<id>"}` with an org-admin token
+  (repeat runs report `before: 0` and change nothing). Same pattern applies
+  to the retention purge; see `docs/deployment.md`.
   API keys are stored in the org database row in recoverable form: anyone with
   database/backup access can read them, so protect backups accordingly.
 - The AI tutor answers only from the student's enrolled-course materials

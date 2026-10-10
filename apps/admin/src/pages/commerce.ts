@@ -305,23 +305,54 @@ async function renderAffiliates(el: HTMLElement, orgId: string): Promise<void> {
 async function renderPayouts(el: HTMLElement, orgId: string): Promise<void> {
   const d = t();
   el.innerHTML = `<div id="p-list">${loadingHtml()}</div>`;
-  const box = el.querySelector('#p-list') as HTMLElement;
-  try {
-    const items = (await call<
-      { instructor_name: string; amount: number; method: string; status: string }[]
-    >('/api/v1/payouts', {}, { organization_id: orgId })) as {
-      instructor_name: string;
-      amount: number;
-      method: string;
-      status: string;
-    }[];
-    box.innerHTML = items.length
-      ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.teachers}</th><th scope="col">${d.total}</th><th scope="col">${d.status}</th></tr></thead><tbody>
-        ${items.map((p) => `<tr><td>${esc(p.instructor_name)}</td><td>${Number(p.amount)}</td><td><span class="badge">${esc(p.status)}</span></td></tr>`).join('')}</tbody></table></div>`
-      : `<p class="text-muted">${d.empty}</p>`;
-  } catch (e) {
-    box.innerHTML = errorHtml(e);
-  }
+  const load = async () => {
+    const box = el.querySelector('#p-list') as HTMLElement;
+    try {
+      const items = (await call<
+        { id: string; instructor_name: string; amount: number; method: string; status: string }[]
+      >('/api/v1/payouts', {}, { organization_id: orgId })) as {
+        id: string;
+        instructor_name: string;
+        amount: number;
+        method: string;
+        status: string;
+      }[];
+      box.innerHTML = items.length
+        ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.teachers}</th><th scope="col">${d.total}</th><th scope="col">${d.status}</th><th scope="col"></th></tr></thead><tbody>
+          ${items
+            .map(
+              (p) =>
+                `<tr><td>${esc(p.instructor_name)}</td><td>${Number(p.amount)}</td><td><span class="badge">${esc(p.status)}</span></td><td>${
+                  p.status === 'pending'
+                    ? `<span class="d-flex gap-1"><button class="btn btn-sm btn-primary" data-approve="${p.id}">${d.approve}</button><button class="btn btn-sm btn-outline-danger" data-reject="${p.id}">${d.reject}</button></span>`
+                    : ''
+                }</td></tr>`
+            )
+            .join('')}</tbody></table></div>`
+        : `<p class="text-muted">${d.empty}</p>`;
+      box.querySelectorAll('[data-approve],[data-reject]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          try {
+            const id =
+              (b as HTMLElement).dataset.approve ?? (b as HTMLElement).dataset.reject ?? '';
+            const approve = (b as HTMLElement).dataset.approve !== undefined;
+            if (!(await confirmDialog(approve ? d.approve : d.reject, d.status, d.save))) return;
+            await call(`/api/v1/payouts/${id}/decide`, {
+              method: 'POST',
+              body: JSON.stringify({ approve }),
+            });
+            toast(d.saved, 'success');
+            await load();
+          } catch (e) {
+            toast(e instanceof Error ? e.message : d.failed, 'danger');
+          }
+        })
+      );
+    } catch (e) {
+      box.innerHTML = errorHtml(e);
+    }
+  };
+  await load();
 }
 
 async function renderPlans(el: HTMLElement, orgId: string): Promise<void> {

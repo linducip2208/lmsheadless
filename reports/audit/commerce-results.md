@@ -1,5 +1,11 @@
 # Commerce results (all executed, none simulated)
 
+Update 1.10.0: webhook amount-match enforced (402 on mismatch; an E2E vector
+with minor-unit gross was correctly rejected mid-session and the spec fixed
+to major units); conditional confirm/refund/decide transitions; commissions
+unique index; rate sanitization; cohort-gift grants; sequential double
+transitions verified rejected with state unchanged.
+
 - Server-side totals only: `priceReference` + `applyCoupon` + org `tax_rate`,
   integer minor units, half-up rounding (`commerce.test.ts` 999→849 case).
 - Coupons: percent/fixed/minimum/windows/`max_uses` validated; atomic claim

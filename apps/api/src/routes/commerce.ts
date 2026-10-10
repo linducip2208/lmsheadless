@@ -384,7 +384,10 @@ commerce.post('/orders', requireAuth(), async (c) => {
   } catch (e) {
     return fail(c, 400, 'INVALID_COUPON', e instanceof Error ? e.message : 'Invalid coupon');
   }
-  const taxRate = Number((await orgSetting(db, parsed.data.organization_id, 'tax_rate')) || 0);
+  // Org settings are free-form strings: garbage or negative rates must never
+  // poison order math (NaN totals). Clamp to a sane non-negative rate.
+  const rawTax = Number((await orgSetting(db, parsed.data.organization_id, 'tax_rate')) || 0);
+  const taxRate = Number.isFinite(rawTax) && rawTax >= 0 ? rawTax : 0;
   const taxableMinor = item.amount_minor - discountMinor;
   const taxMinor = Math.round((taxableMinor * taxRate) / 100);
   const totalMinor = taxableMinor + taxMinor;
@@ -669,26 +672,33 @@ export async function fulfillOrder(db: D1Like, orderId: string): Promise<void> {
       amount_minor: item.amount_minor ?? minor(item.amount),
     }));
     const orderTotalMinor = pickMinor(order.total_minor, order.total);
-    await execute(
-      db,
-      'INSERT INTO invoices (id, order_id, number, buyer_name, buyer_email, lines, total, total_minor, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      newId(),
-      orderId,
-      `INV-${new Date().getUTCFullYear()}-${orderId.slice(0, 8).toUpperCase()}`,
-      buyer?.name ?? '',
-      buyer?.email ?? '',
-      JSON.stringify(lines),
-      major(orderTotalMinor),
-      orderTotalMinor,
-      now,
-      now
-    );
+    try {
+      await execute(
+        db,
+        'INSERT INTO invoices (id, order_id, number, buyer_name, buyer_email, lines, total, total_minor, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        newId(),
+        orderId,
+        `INV-${new Date().getUTCFullYear()}-${orderId.slice(0, 8).toUpperCase()}`,
+        buyer?.name ?? '',
+        buyer?.email ?? '',
+        JSON.stringify(lines),
+        major(orderTotalMinor),
+        orderTotalMinor,
+        now,
+        now
+      );
+    } catch {
+      // Lost a same-order fulfill race (or an 8-char order-prefix collision
+      // in the invoice number): the winner's invoice stands, re-read it.
+    }
   }
   // Instructor commissions in minor units (refund-aware; organization rate setting).
   // Idempotent per order: a re-run (webhook retry, double confirm) must not
   // mint a second set of commission rows.
   const rateSetting = await orgSetting(db, order.organization_id, 'commission_rate');
-  const rate = rateSetting ? Number(rateSetting) : 70;
+  const rawRate = rateSetting ? Number(rateSetting) : 70;
+  // Same NaN guard: fall back to the default 70% split on garbage config.
+  const rate = Number.isFinite(rawRate) && rawRate >= 0 && rawRate <= 100 ? rawRate : 70;
   const orderTotalMinor = pickMinor(order.total_minor, order.total);
   const commissionsExist = await queryFirst(
     db,
@@ -705,9 +715,11 @@ export async function fulfillOrder(db: D1Like, orderId: string): Promise<void> {
       const share = instructors.length ? rate / instructors.length : 0;
       for (const ins of instructors) {
         const amountMinor = Math.round((orderTotalMinor * share) / 100);
+        // ON CONFLICT DO NOTHING pairs with idx_comm_order_payee (023): a
+        // concurrent fulfill can never mint the same (order, payee) twice.
         await execute(
           db,
-          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, amount_minor, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, amount_minor, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(order_id, instructor_id) DO NOTHING',
           newId(),
           order.organization_id,
           ins.user_id,
@@ -733,16 +745,22 @@ export async function fulfillOrder(db: D1Like, orderId: string): Promise<void> {
         affOrder.affiliate_id
       );
       if (aff) {
+        const affRate =
+          Number.isFinite(aff.commission_rate) &&
+          aff.commission_rate >= 0 &&
+          aff.commission_rate <= 100
+            ? aff.commission_rate
+            : 0;
         await execute(
           db,
-          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, amount_minor, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, amount_minor, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(order_id, instructor_id) DO NOTHING',
           newId(),
           order.organization_id,
           aff.user_id,
           orderId,
-          major(Math.round((orderTotalMinor * aff.commission_rate) / 100)),
-          Math.round((orderTotalMinor * aff.commission_rate) / 100),
-          aff.commission_rate,
+          major(Math.round((orderTotalMinor * affRate) / 100)),
+          Math.round((orderTotalMinor * affRate) / 100),
+          affRate,
           now,
           now
         );
@@ -817,12 +835,14 @@ commerce.post('/payments/:id/confirm', requireAuth(), async (c) => {
   if (payment.status !== 'pending')
     return fail(c, 400, 'VALIDATION_ERROR', `Payment is ${payment.status}`);
   const now = nowIso();
-  await execute(
+  // Conditional transition: concurrent confirms cannot both win.
+  const moved = await execute(
     db,
-    "UPDATE payments SET status = 'paid', updated_at = ? WHERE id = ?",
+    "UPDATE payments SET status = 'paid', updated_at = ? WHERE id = ? AND status = 'pending'",
     now,
     c.req.param('id')
   );
+  if (!moved.changes) return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
   await fulfillOrder(db, payment.order_id);
   await audit(c, 'payment.confirmed', {
     entity: 'payment',
@@ -903,6 +923,18 @@ commerce.post('/payments/webhooks/:provider', async (c) => {
   const paid = ['capture', 'settlement'].includes(status);
   const failed = ['deny', 'cancel', 'expire', 'failure'].includes(status);
   const webhookTotalMinor = pickMinor(order.total_minor, order.total);
+  // Amount match: a signed-but-underpaid event must never fulfill the order.
+  // gross_amount arrives as a major-unit decimal string ("100000.00").
+  const claimedMinor = Math.round(Number(body.gross_amount) * 100);
+  if (!Number.isFinite(claimedMinor) || claimedMinor !== webhookTotalMinor) {
+    await execute(
+      db,
+      "UPDATE payment_webhooks SET status = 'rejected' WHERE provider = ? AND event_id = ?",
+      provider,
+      eventId
+    );
+    return fail(c, 402, 'AMOUNT_MISMATCH', 'Webhook amount does not match order total');
+  }
   await execute(
     db,
     'INSERT INTO payments (id, order_id, provider, provider_ref, amount, amount_minor, currency, status, raw_payload, idempotency_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(idempotency_key) DO NOTHING',
@@ -962,12 +994,15 @@ commerce.post('/orders/:id/refund', requireAuth(), async (c) => {
       `Only paid orders can be refunded (status: ${order.status})`
     );
   const now = nowIso();
-  await execute(
+  // Conditional transition: concurrent refunds cannot both win; the loser
+  // gets 409 and the revocation below runs exactly once per winner.
+  const moved = await execute(
     db,
-    "UPDATE orders SET status = 'refunded', updated_at = ? WHERE id = ?",
+    "UPDATE orders SET status = 'refunded', updated_at = ? WHERE id = ? AND status = 'paid'",
     now,
     c.req.param('id')
   );
+  if (!moved.changes) return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
   await execute(
     db,
     "UPDATE commissions SET status = 'reversed', updated_at = ? WHERE order_id = ?",
@@ -1089,6 +1124,8 @@ commerce.post('/subscription-plans', requireAuth(), async (c) => {
     trial_days?: number;
   } | null;
   if (!body?.organization_id || !body?.name || typeof body.price !== 'number')
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  if (body.price < 0)
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   if (
     body.price_minor !== undefined &&
@@ -1245,15 +1282,17 @@ commerce.post('/payouts/:id/decide', requireAuth(), async (c) => {
     note?: string;
   } | null;
   const status = body?.approve ? 'paid' : 'rejected';
-  await execute(
+  // Conditional transition: concurrent approve+reject cannot both win.
+  const moved = await execute(
     db,
-    'UPDATE payouts SET status = ?, note = ?, decided_by = ?, updated_at = ? WHERE id = ?',
+    "UPDATE payouts SET status = ?, note = ?, decided_by = ?, updated_at = ? WHERE id = ? AND status = 'pending'",
     status,
     body?.note?.slice(0, 1000) ?? null,
     user.id,
     nowIso(),
     c.req.param('id')
   );
+  if (!moved.changes) return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
   await audit(c, 'payout.decided', {
     entity: 'payout',
     entityId: c.req.param('id'),
@@ -1336,6 +1375,13 @@ commerce.post('/affiliates', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   if (!/^[A-Za-z0-9_-]{2,40}$/.test(body.code))
     return fail(c, 400, 'VALIDATION_ERROR', 'Invalid code');
+  if (
+    body.commission_rate !== undefined &&
+    (!Number.isFinite(body.commission_rate) ||
+      body.commission_rate < 0 ||
+      body.commission_rate > 100)
+  )
+    return fail(c, 400, 'VALIDATION_ERROR', 'commission_rate must be 0-100');
   const nid = newId();
   try {
     await execute(
@@ -1463,6 +1509,56 @@ commerce.post('/gifts/redeem', requireAuth(), async (c) => {
     const courses = await queryAll<{ course_id: string }>(
       db,
       'SELECT course_id FROM bundle_courses WHERE bundle_id = ?',
+      order.reference_id
+    );
+    for (const course of courses) {
+      await execute(
+        db,
+        'INSERT OR IGNORE INTO entitlements (id, user_id, kind, reference_id, source, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        newId(),
+        user.id,
+        'course',
+        course.course_id,
+        'gift',
+        now
+      );
+      await execute(
+        db,
+        'INSERT OR IGNORE INTO enrollments (id, course_id, student_id, status, enrolled_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        newId(),
+        course.course_id,
+        user.id,
+        'active',
+        now,
+        now,
+        now
+      );
+    }
+  } else if (order.kind === 'cohort') {
+    // Cohort gifts grant the cohort entitlement + membership + member-course
+    // access (previously the code was burned with nothing granted).
+    await execute(
+      db,
+      'INSERT OR IGNORE INTO entitlements (id, user_id, kind, reference_id, source, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      newId(),
+      user.id,
+      'cohort',
+      order.reference_id,
+      'gift',
+      now
+    );
+    await execute(
+      db,
+      'INSERT INTO cohort_members (id, cohort_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(cohort_id, user_id) DO NOTHING',
+      newId(),
+      order.reference_id,
+      user.id,
+      'student',
+      now
+    );
+    const courses = await queryAll<{ course_id: string }>(
+      db,
+      'SELECT course_id FROM cohort_courses WHERE cohort_id = ?',
       order.reference_id
     );
     for (const course of courses) {

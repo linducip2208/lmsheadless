@@ -143,9 +143,9 @@ export async function liveView(
           .map(
             (
               s
-            ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${s.title}</h3>
-      <p class="text-muted">${s.starts_at?.slice(0, 16).replace('T', ' ') ?? ''} · ${s.status}</p>
-      ${s.meeting_url ? `<a href="${s.meeting_url}" target="_blank" rel="noopener">${d.join}</a>` : ''}</div></div>`
+            ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${esc(s.title)}</h3>
+      <p class="text-muted">${esc(s.starts_at?.slice(0, 16).replace('T', ' ') ?? '')} · ${esc(s.status)}</p>
+      ${s.meeting_url ? `<a href="${esc(s.meeting_url)}" target="_blank" rel="noopener">${d.join}</a>` : ''}</div></div>`
           )
           .join('')
       : `<p class="text-muted">${d.empty}</p>`;

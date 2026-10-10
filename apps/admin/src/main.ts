@@ -21,6 +21,7 @@ import {
   toast,
   t,
   lang,
+  esc,
 } from './lib.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderUsers } from './pages/users.js';
@@ -150,14 +151,14 @@ async function shell(): Promise<void> {
             <form id="g-search" class="d-none d-md-flex" role="search"><input id="g-q" type="search" class="form-control form-control-sm" placeholder="${t().search}" aria-label="${t().search}"></form>
             <a href="#/notifications" class="btn btn-sm btn-outline-primary position-relative" aria-label="Notifications">🔔<span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span></a>
             <select id="org-sel" class="form-select form-select-sm w-auto" aria-label="Organization">
-              ${orgs.map((o) => `<option value="${o.id}"${o.id === currentOrgId() ? ' selected' : ''}>${o.name}</option>`).join('')}
+              ${orgs.map((o) => `<option value="${o.id}"${o.id === currentOrgId() ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}
             </select>
             <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language">
               <option value="en"${lang() === 'en' ? ' selected' : ''}>EN</option>
               <option value="id"${lang() === 'id' ? ' selected' : ''}>ID</option>
             </select>
             ${themeToggleHtml(THEME_KEY)}
-            <span class="text-muted small d-none d-md-inline">${me?.name ?? ''}</span>
+            <span class="text-muted small d-none d-md-inline">${esc(me?.name ?? '')}</span>
             <button id="logout" class="btn btn-sm btn-outline-danger">${t().logout}</button>
           </div></div></header>
       <div class="page-body"><div class="container-xl py-3" id="view"></div></div>

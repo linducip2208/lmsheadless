@@ -11,6 +11,8 @@ import {
   enqueueOffline,
   toast,
   subscribePush,
+  modalForm,
+  confirmDialog,
   esc,
   type ApiClient,
 } from '@lms/ui';
@@ -115,7 +117,7 @@ async function home(el: HTMLElement): Promise<void> {
             (
               x
             ) => `<a href="#/courses/${x.course_id}" class="card card-link mb-2"><div class="card-body"><strong>${esc(x.course_title)}</strong>
-      <div class="progress mt-2" role="progressbar" aria-valuenow="${x.progress_percent}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${x.progress_percent}%"></div></div></div></a>`
+      <div class="progress mt-2" role="progressbar" aria-valuenow="${Number(x.progress_percent)}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${Number(x.progress_percent)}%"></div></div></div></a>`
           )
           .join('') || `<p class="text-muted">${d.empty}</p>`
       }
@@ -303,6 +305,104 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
               )
               .join('')}
             <button class="btn btn-primary">${d.submit}</button></form><div data-res class="mt-2"></div>`;
+            const form = box.querySelector('#quiz-form') as HTMLFormElement;
+            // Autosave: restore any draft saved before an interruption, then
+            // persist edits debounced. Drafts live server-side per attempt.
+            const collectDraft = (): { question_id: string; payload: string }[] => {
+              const fdata = new FormData(form);
+              const out: { question_id: string; payload: string }[] = [];
+              for (const q of qs) {
+                if (q.type === 'multiple_choice' || q.type === 'single_choice') {
+                  const v = fdata.get(`q_${q.id}`);
+                  if (v)
+                    out.push({
+                      question_id: q.id,
+                      payload: JSON.stringify({ option_id: String(v) }),
+                    });
+                } else if (q.type === 'matching') {
+                  const pairs: Record<string, string> = {};
+                  for (const o of q.options) {
+                    const v = fdata.get(`qm_${q.id}_${o.id}`);
+                    if (typeof v === 'string' && v !== '') pairs[o.id] = v;
+                  }
+                  if (Object.keys(pairs).length)
+                    out.push({ question_id: q.id, payload: JSON.stringify({ pairs }) });
+                } else if (q.type === 'ordering') {
+                  const ranks: Record<string, number> = {};
+                  for (const o of q.options) {
+                    const v = Number(fdata.get(`qo_${q.id}_${o.id}`));
+                    if (Number.isFinite(v) && v >= 1) ranks[o.id] = v;
+                  }
+                  if (Object.keys(ranks).length)
+                    out.push({ question_id: q.id, payload: JSON.stringify({ ranks }) });
+                } else {
+                  const v = fdata.get(`q_${q.id}`);
+                  if (v !== null && v !== '')
+                    out.push({ question_id: q.id, payload: JSON.stringify({ text: String(v) }) });
+                }
+              }
+              return out;
+            };
+            const applyDraft = (drafts: { question_id: string; payload: string }[]) => {
+              for (const dr of drafts) {
+                let p: Record<string, unknown> = {};
+                try {
+                  p = JSON.parse(dr.payload) as Record<string, unknown>;
+                } catch {
+                  continue;
+                }
+                const q = qs.find((x) => x.id === dr.question_id);
+                if (!q) continue;
+                if (typeof p.option_id === 'string') {
+                  const input = form.querySelector(
+                    `input[name="q_${q.id}"][value="${p.option_id}"]`
+                  ) as HTMLInputElement | null;
+                  if (input) input.checked = true;
+                }
+                if (p.pairs && typeof p.pairs === 'object') {
+                  for (const [oid, val] of Object.entries(p.pairs as Record<string, string>)) {
+                    const input = form.querySelector(
+                      `input[name="qm_${q.id}_${oid}"]`
+                    ) as HTMLInputElement | null;
+                    if (input) input.value = val;
+                  }
+                }
+                if (p.ranks && typeof p.ranks === 'object') {
+                  for (const [oid, val] of Object.entries(p.ranks as Record<string, number>)) {
+                    const input = form.querySelector(
+                      `input[name="qo_${q.id}_${oid}"]`
+                    ) as HTMLInputElement | null;
+                    if (input) input.value = String(val);
+                  }
+                }
+                if (typeof p.text === 'string') {
+                  const field = form.querySelector(`[name="q_${q.id}"]`) as
+                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+                  if (field) field.value = p.text;
+                }
+              }
+            };
+            try {
+              const saved = (await call<{ question_id: string; payload: string }[]>(
+                `/api/v1/quiz-attempts/${att.id}/autosave`
+              ).catch(() => [])) as { question_id: string; payload: string }[];
+              if (saved.length) {
+                applyDraft(saved);
+                toast(d.draftRestored, 'info');
+              }
+            } catch {
+              /* drafts are best-effort; the attempt itself still works */
+            }
+            let saveTimer: ReturnType<typeof setTimeout> | null = null;
+            form.addEventListener('input', () => {
+              if (saveTimer) clearTimeout(saveTimer);
+              saveTimer = setTimeout(() => {
+                void call(`/api/v1/quiz-attempts/${att.id}/autosave`, {
+                  method: 'PUT',
+                  body: JSON.stringify({ answers: collectDraft() }),
+                }).catch(() => undefined);
+              }, 1500);
+            });
             (box.querySelector('#quiz-form') as HTMLFormElement).addEventListener(
               'submit',
               async (e) => {
@@ -442,13 +542,14 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
       }
       (body.querySelector('#th-new') as HTMLButtonElement)?.addEventListener('click', async () => {
         try {
-          const title = prompt(`${d.newThread}:`);
-          if (!title) return;
-          const text = prompt(`${d.answer}:`);
-          if (!text) return;
+          const data = await modalForm(d.newThread, [
+            { name: 'title', label: d.threadTitle, required: true },
+            { name: 'body', label: d.answer, type: 'textarea', required: true },
+          ]);
+          if (!data) return;
           await call('/api/v1/discussions', {
             method: 'POST',
-            body: JSON.stringify({ course_id: courseId, title, body: text }),
+            body: JSON.stringify({ course_id: courseId, title: data.title, body: data.body }),
           });
           toast(d.quizSubmitted, 'success');
           await renderTalk();
@@ -620,8 +721,10 @@ async function shopView(el: HTMLElement): Promise<void> {
     el.querySelectorAll('[data-buy]').forEach((b) =>
       b.addEventListener('click', async () => {
         const [kind, ref] = ((b as HTMLElement).dataset.buy ?? '').split(':');
-        const code = prompt(d.couponCode) || undefined;
         try {
+          const coupon = await modalForm(d.buy, [{ name: 'coupon_code', label: d.couponCode }]);
+          if (!coupon) return;
+          const code = String(coupon.coupon_code || '').trim() || undefined;
           const r = (await call<{ id: string; total: number; status: string }>('/api/v1/orders', {
             method: 'POST',
             body: JSON.stringify({
@@ -636,7 +739,7 @@ async function shopView(el: HTMLElement): Promise<void> {
             await shopView(el);
             return;
           }
-          const claim = confirm(`${d.pendingPayment}\n${d.total}: ${r.total}`);
+          const claim = await confirmDialog(d.pendingPayment, `${d.total}: ${r.total}`, d.confirm);
           if (claim) {
             await call(`/api/v1/orders/${r.id}/payments/manual`, {
               method: 'POST',
@@ -816,10 +919,11 @@ async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
     );
     (el.querySelector('#sc-bm') as HTMLButtonElement).addEventListener('click', async () => {
       try {
-        const loc = prompt('Bookmark (e.g. page 3):') ?? '';
+        const data = await modalForm(d.bookmark, [{ name: 'location', label: d.bookmarkHint }]);
+        if (!data) return;
         await call(`/api/v1/scorm/attempts/${att.id}/commit`, {
           method: 'POST',
-          body: JSON.stringify({ location: loc }),
+          body: JSON.stringify({ location: String(data.location ?? '') }),
         });
         toast(d.bookmark, 'success');
       } catch (err) {
@@ -852,10 +956,10 @@ async function tutorView(el: HTMLElement): Promise<void> {
       {},
       orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
     ).catch(() => [])) as { id: string; title: string }[];
-    el.innerHTML = `<h2>🤖 AI Tutor</h2><p class="text-muted">Answers come from your enrolled courses and are labeled when they don't.</p>
+    el.innerHTML = `<h2>🤖 AI Tutor</h2><p class="text-muted">${d.tutorNote}</p>
       <div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
-      <div><label class="form-label">Course (optional)</label><select id="tu-course" class="form-select"><option value="">All my courses</option>${courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select></div>
-      <form id="tu-ask" class="d-flex gap-2 flex-fill"><input id="tu-q" class="form-control" placeholder="Ask about your lessons…" required maxlength="2000"><button class="btn btn-primary">Ask</button></form></div></div>
+      <div><label class="form-label">${d.courseOptional}</label><select id="tu-course" class="form-select"><option value="">${d.allMyCourses}</option>${courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select></div>
+      <form id="tu-ask" class="d-flex gap-2 flex-fill"><input id="tu-q" class="form-control" placeholder="${d.askPlaceholder}" required maxlength="2000"><button class="btn btn-primary">${d.ask}</button></form></div></div>
       <div id="tu-out"></div>`;
     (el.querySelector('#tu-ask') as HTMLFormElement).addEventListener('submit', async (e) => {
       e.preventDefault();

@@ -25,7 +25,12 @@ table, payment `idempotency_key`, `INSERT OR IGNORE` fulfillment).
 | 16  | R2/KV bindings → storage/ratelimit                          | commented bindings + local fallback                   | local paths tested                                   | EXTERNAL_CREDENTIAL_REQUIRED (inactive by default)             |
 | 17  | Admin affiliates/payouts tabs → new GET listings            | privileged paginated lists                            | coverage-gaps test                                   | CONNECTED_AND_VERIFIED (new)                                   |
 | 18  | Web docs cards → packaged guides                            | `sync-web-docs.mjs` copies repo docs to `public/docs` | manual (static files)                                | CONNECTED_AND_VERIFIED                                         |
+| 19  | Quiz attempt → autosave → recover → submit clears           | owner/expiry/question-scope guards, both PUT shapes   | quiz-autosave suite + roles E2E §8                   | CONNECTED_AND_VERIFIED                                         |
+| 20  | External cron → AI quota reset / retention purge            | privileged audited idempotent endpoints               | coverage-gaps quota test                             | CONNECTED_AND_VERIFIED (scheduler external, documented)        |
+| 21  | Web forgot/reset → auth recovery                            | enumeration-safe responses, single-use tokens         | roles E2E §7 + API recovery suites                   | CONNECTED_AND_VERIFIED                                         |
+| 22  | Admin status edit / payout decide → guarded transitions     | `ignored` reporting, conditional updates              | commerce-edges double-transition tests               | CONNECTED_AND_VERIFIED                                         |
 
-Summary: 13 verified-connected, 1 connected-unverified (email delivery),
-2 partial/disconnected-by-design (push, cron), 1 external-gated (R2/KV),
-1 stored-only (Zoom/Meet URLs). Zero silent mocks.
+Summary: 18 verified-connected, 1 connected-unverified (email delivery),
+1 partial (live URLs), 1 disconnected-by-design (push), 1 external-gated
+(R2/KV), 1 scheduler-external-by-design (cron endpoints verified, no in-app
+scheduler). Zero silent mocks.

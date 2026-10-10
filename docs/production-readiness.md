@@ -8,10 +8,12 @@
   revocation, password reset throttling, audit logging.
 - Tenant isolation tested across orgs/users/roles/files/certs/payments.
 - Uploads validated; SCORM zips sandboxed (opaque-origin iframe).
-- Webhooks signature-verified + idempotent; money math in integer cents
-  internally? No — amounts stored REAL with 2-decimal rounding rules
-  documented in `docs/commerce.md` (SQLite/D1 REAL is exact for 2dp values;
-  totals recomputed server-side on every transition).
+- Webhooks signature-verified + idempotent; money stored and computed in
+  integer minor units (`*_minor` columns are the source of truth, half-up
+  rounding; legacy REAL columns stay synced for compatibility and pre-017
+  rows fall back through rounding). Webhook `gross_amount` is matched
+  against the order total (402 on mismatch); totals recomputed server-side
+  on every transition. See `docs/commerce.md`.
 - CORS allowlist, KV/memory rate limits, no stack-trace leaks.
 - PWA: no private caching, no tokens in Cache API, per-user queue isolation
   (queue keyed by user id; flushed only with a valid session).
@@ -22,7 +24,8 @@
 ## Before first production deploy (owner checklist)
 
 1. `JWT_SECRET` (≥32 chars), `COOKIE_SECURE=1`, `ALLOWED_ORIGINS` exact.
-2. D1 migrations applied in order 001→014; verify `PRAGMA foreign_keys`.
+2. D1 migrations applied in order 001→023; verify `PRAGMA foreign_keys`
+   (the API also asserts it per request; D1 enforces by default).
 3. R2 bucket + KV namespace bound; uncomment wrangler blocks.
 4. Run `POST /setup` once, then confirm `setup/status.locked`.
 5. Configure email HTTP webhook (`email_api_url` + `email_api_key` — there is

@@ -5,7 +5,7 @@ export async function renderSocial(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
   el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item" role="presentation"><button class="nav-link active" data-tab="ann" role="tab">${d.announcements}</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link" data-tab="dis" role="tab">Discussion</button></li></ul>
+    <li class="nav-item" role="presentation"><button class="nav-link" data-tab="dis" role="tab">${d.discussion}</button></li></ul>
     <div id="social-body"></div>`;
   const body = el.querySelector('#social-body') as HTMLElement;
   el.querySelectorAll('[data-tab]').forEach((b) =>

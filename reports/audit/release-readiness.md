@@ -1,4 +1,4 @@
-# Release readiness verdict: CONDITIONALLY READY (1.9.0)
+# Release readiness verdict: CONDITIONALLY READY (1.10.0)
 
 The standalone LMS is releasable to self-hosting owners under these
 conditions (all recorded, none waived silently):

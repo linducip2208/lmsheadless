@@ -30,3 +30,9 @@ Record the drill date and result in the ops log.
   deleted live DB, rebuilt via `db:migrate` + `db:seed` (001→015 applied),
   then restored the backup copy as live, booted the API, verified student
   login and 404-safe certificate verification. Result: **PASS**.
+- **2026-10-10 (local drill, SQLite, disposable copies)**: fresh DB → all 22
+  migrations → seed rows → file-copy backup → simulated DELETE loss →
+  restore → counts verified (users 1/1, courses 1/1),
+  `foreign_key_check` 0 violations, `integrity_check ok`, migration re-run
+  clean. Result: **PASS**. R2 restore not drilled (no live binding; local
+  uploads covered by host backups only).
