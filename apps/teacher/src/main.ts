@@ -29,19 +29,44 @@ function errHtml(e: unknown): string {
   return `<div class="alert alert-danger" role="alert">${esc(e instanceof Error ? e.message : 'Error')}</div>`;
 }
 
-const NAV = [
-  { hash: '#/', label: d.dashboard },
-  { hash: '#/courses', label: d.myCourses },
-  { hash: '#/banks', label: d.banks },
-  { hash: '#/grading', label: d.grading },
-  { hash: '#/attendance', label: d.attendance },
-  { hash: '#/live', label: d.live },
-  { hash: '#/cohorts', label: d.cohorts },
-  { hash: '#/ai', label: d.ai },
-  { hash: '#/exercises', label: d.exercises },
-  { hash: '#/students', label: d.students },
-  { hash: '#/profile', label: d.profile },
+interface NavEntry {
+  hash: string;
+  label: string;
+}
+interface NavGroup {
+  section: string | null;
+  items: NavEntry[];
+}
+
+// Sidebar follows the teaching flow: overview → my classes → assessment →
+// AI drafts → account. Every hash is preserved; only grouping changed.
+const NAV: NavGroup[] = [
+  { section: null, items: [{ hash: '#/', label: d.dashboard }] },
+  {
+    section: d.navTeaching,
+    items: [
+      { hash: '#/courses', label: d.myCourses },
+      { hash: '#/live', label: d.live },
+      { hash: '#/cohorts', label: d.cohorts },
+      { hash: '#/students', label: d.students },
+    ],
+  },
+  {
+    section: d.navAssessment,
+    items: [
+      { hash: '#/banks', label: d.banks },
+      { hash: '#/grading', label: d.grading },
+      { hash: '#/attendance', label: d.attendance },
+      { hash: '#/exercises', label: d.exercises },
+    ],
+  },
+  { section: d.navAI, items: [{ hash: '#/ai', label: d.ai }] },
+  { section: d.navAccount, items: [{ hash: '#/profile', label: d.profile }] },
 ];
+
+function navFlat(): NavEntry[] {
+  return NAV.flatMap((g) => g.items);
+}
 
 async function loginPage(root: HTMLElement): Promise<void> {
   root.innerHTML = `<div class="row justify-content-center"><div class="col-md-4"><div class="card"><div class="card-body">
@@ -69,7 +94,19 @@ function shell(): void {
     <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#m" aria-label="Menu"><span class="navbar-toggler-icon"></span></button>
     <h1 class="navbar-brand">LMS Teacher</h1>
     <div class="collapse navbar-collapse" id="m"><ul class="navbar-nav pt-lg-3">
-    ${NAV.map((n) => `<li class="nav-item"><a class="nav-link" href="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`).join('')}
+    ${NAV.map((g) =>
+      [
+        ...(g.section
+          ? [
+              `<li class="nav-item"><span class="nav-link disabled"><span class="nav-link-title text-uppercase text-muted small">${g.section}</span></span></li>`,
+            ]
+          : []),
+        ...g.items.map(
+          (n) =>
+            `<li class="nav-item"><a class="nav-link" href="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`
+        ),
+      ].join('')
+    ).join('')}
     </ul></div></div></aside>
     <div class="page-wrapper"><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
     <h2 class="mb-0" id="title"></h2><div class="ms-auto d-flex gap-2 align-items-center">${onlineIndicatorHtml()}${themeToggleHtml(THEME_KEY)}
@@ -678,7 +715,7 @@ async function router(): Promise<void> {
   const view = document.getElementById('view') as HTMLElement;
   const route = hash.replace('#', '');
   (document.getElementById('title') as HTMLElement).textContent =
-    NAV.find((n) => n.hash === `#${route}`)?.label ?? d.dashboard;
+    navFlat().find((n) => n.hash === `#${route}`)?.label ?? d.dashboard;
   try {
     if (route === '/' || route === '') await dashboard(view);
     else if (route === '/courses') {

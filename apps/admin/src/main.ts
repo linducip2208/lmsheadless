@@ -47,31 +47,66 @@ import { renderSystem, renderAlerts } from './pages/system.js';
 const THEME_KEY = 'admin-theme';
 applyTheme(THEME_KEY);
 
-function navItems(): { hash: string; label: string; title: string }[] {
+interface NavItem {
+  hash: string;
+  label: string;
+  title: string;
+}
+interface NavGroup {
+  section: string | null;
+  items: NavItem[];
+}
+
+// Sidebar follows the operator business flow: overview → setup & people →
+// learning content → delivery & results → commerce → monitoring →
+// configuration. Every hash from the flat menu is preserved; only the
+// visual grouping changed.
+function navGroups(): NavGroup[] {
   const d = t();
+  const it = (hash: string, label: string): NavItem => ({ hash, label, title: label });
   return [
-    { hash: '#/', label: d.dashboard, title: d.dashboard },
-    { hash: '#/users', label: d.users, title: d.users },
-    { hash: '#/organizations', label: d.organizations, title: d.organizations },
-    { hash: '#/roles', label: d.roles, title: d.roles },
-    { hash: '#/courses', label: d.courses, title: d.courses },
-    { hash: '#/cohorts', label: d.cohorts, title: d.cohorts },
-    { hash: '#/quizzes', label: d.quizzes, title: d.quizzes },
-    { hash: '#/assignments', label: d.assignments, title: d.assignments },
-    { hash: '#/attendance', label: d.attendance, title: d.attendance },
-    { hash: '#/live', label: d.live, title: d.live },
-    { hash: '#/scorm', label: d.scorm, title: d.scorm },
-    { hash: '#/commerce', label: d.commerce, title: d.commerce },
-    { hash: '#/data', label: d.dataAi, title: d.dataAi },
-    { hash: '#/grades', label: d.grades, title: d.grades },
-    { hash: '#/community', label: d.community, title: d.community },
-    { hash: '#/certificates', label: d.certificates, title: d.certificates },
-    { hash: '#/alerts', label: d.alerts, title: d.alerts },
-    { hash: '#/system', label: d.system, title: d.system },
-    { hash: '#/notifications', label: d.notifications, title: d.notifications },
-    { hash: '#/files', label: d.files, title: d.files },
-    { hash: '#/reports', label: d.reports, title: d.reports },
-    { hash: '#/settings', label: d.settings, title: d.settings },
+    { section: null, items: [it('#/', d.dashboard)] },
+    {
+      section: d.navSetup,
+      items: [
+        it('#/organizations', d.organizations),
+        it('#/users', d.users),
+        it('#/roles', d.roles),
+      ],
+    },
+    {
+      section: d.navLearning,
+      items: [
+        it('#/courses', d.courses),
+        it('#/cohorts', d.cohorts),
+        it('#/quizzes', d.quizzes),
+        it('#/assignments', d.assignments),
+        it('#/scorm', d.scorm),
+        it('#/files', d.files),
+      ],
+    },
+    {
+      section: d.navDelivery,
+      items: [
+        it('#/attendance', d.attendance),
+        it('#/live', d.live),
+        it('#/community', d.community),
+        it('#/grades', d.grades),
+        it('#/certificates', d.certificates),
+      ],
+    },
+    { section: d.navCommerce, items: [it('#/commerce', d.commerce)] },
+    {
+      section: d.navInsight,
+      items: [
+        it('#/reports', d.reports),
+        it('#/alerts', d.alerts),
+        it('#/notifications', d.notifications),
+        it('#/system', d.system),
+        it('#/data', d.dataAi),
+      ],
+    },
+    { section: d.navConfig, items: [it('#/settings', d.settings)] },
   ];
 }
 
@@ -135,10 +170,19 @@ async function shell(): Promise<void> {
       <h1 class="navbar-brand" id="brand-name">LMS Admin</h1>
       <div class="collapse navbar-collapse" id="sidebar-menu">
       <ul class="navbar-nav pt-lg-3" id="nav-list">
-        ${navItems()
-          .map(
-            (n) =>
-              `<li class="nav-item"><a class="nav-link" href="${n.hash}" data-nav="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`
+        ${navGroups()
+          .map((g) =>
+            [
+              ...(g.section
+                ? [
+                    `<li class="nav-item" aria-hidden="false"><span class="nav-link disabled"><span class="nav-link-title text-uppercase text-muted small">${g.section}</span></span></li>`,
+                  ]
+                : []),
+              ...g.items.map(
+                (n) =>
+                  `<li class="nav-item"><a class="nav-link" href="${n.hash}" data-nav="${n.hash}"><span class="nav-link-title">${n.label}</span></a></li>`
+              ),
+            ].join('')
           )
           .join('')}
       </ul></div></div></aside>
@@ -220,10 +264,13 @@ async function router(): Promise<void> {
   }
   if (!document.getElementById('sidebar')) await shell();
   const route = hash.replace('#', '');
-  const items = navItems();
+  const groups = navGroups();
+  const items = groups.flatMap((g) => g.items);
   const item = items.find((n) => n.hash === `#${route}`) ?? items[0];
-  (document.getElementById('crumbs') as HTMLElement).innerHTML =
-    `<li class="breadcrumb-item">Home</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`;
+  const section = groups.find((g) => g.items.some((n) => n.hash === item.hash))?.section;
+  (document.getElementById('crumbs') as HTMLElement).innerHTML = section
+    ? `<li class="breadcrumb-item">${section}</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`
+    : `<li class="breadcrumb-item">Home</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`;
   document
     .querySelectorAll('[data-nav]')
     .forEach((a) => a.classList.toggle('active', (a as HTMLElement).dataset.nav === item.hash));
