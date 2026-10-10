@@ -54,7 +54,7 @@ users.get('/', requireAuth(), async (c) => {
     )?.n ?? 0;
   const rows = await queryAll(
     db,
-    `SELECT id, email, name, status, locale, timezone, last_login_at, created_at FROM users WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    `SELECT id, email, name, status, locale, timezone, last_login_at, created_at FROM users WHERE ${where} ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
     ...params,
     perPage,
     (page - 1) * perPage

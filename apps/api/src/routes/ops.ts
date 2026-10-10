@@ -10,7 +10,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { orgSetting } from '../access.js';
+import { orgSetting, wantsNotification } from '../access.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { objectKey, putObject, validateUpload } from '../storage.js';
 import { t } from '../i18n.js';
@@ -120,7 +120,7 @@ ops.get('/api/v1/attendance/sessions', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const sessions = await queryAll(
     c.get('db'),
-    'SELECT * FROM attendance_sessions WHERE organization_id = ? ORDER BY session_date DESC LIMIT 200',
+    'SELECT * FROM attendance_sessions WHERE organization_id = ? ORDER BY session_date DESC, id DESC LIMIT 200',
     orgId
   );
   // Single batched records query (previously one SELECT per session).
@@ -197,7 +197,7 @@ ops.get('/api/v1/certificates', requireAuth(), async (c) => {
   }
   const rows = await queryAll(
     db,
-    'SELECT * FROM certificates WHERE student_id = ? ORDER BY issued_at DESC LIMIT 200',
+    'SELECT * FROM certificates WHERE student_id = ? ORDER BY issued_at DESC, id DESC LIMIT 200',
     studentId
   );
   // Tenant check: requester must share org or be owner/super.
@@ -491,7 +491,7 @@ ops.get('/api/v1/announcements', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM announcements WHERE organization_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT * FROM announcements WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     orgId
   );
   return ok(c, rows);
@@ -540,6 +540,7 @@ ops.post('/api/v1/announcements', requireAuth(), async (c) => {
     parsed.data.organization_id
   );
   for (const m of members) {
+    if (!(await wantsNotification(db, m.user_id, 'announcement'))) continue;
     await execute(
       db,
       'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
@@ -562,7 +563,7 @@ ops.get('/api/v1/notifications', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     user.id
   );
   return ok(c, rows);
@@ -600,7 +601,7 @@ ops.get('/api/v1/discussions', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const threads = await queryAll(
     db,
-    'SELECT * FROM discussion_threads WHERE course_id = ? ORDER BY created_at DESC LIMIT 200',
+    'SELECT * FROM discussion_threads WHERE course_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
     courseId
   );
   return ok(c, threads);
@@ -662,7 +663,7 @@ ops.get('/api/v1/discussions/:threadId/replies', requireAuth(), async (c) => {
   const showHidden = role !== 'student' && role !== 'parent';
   const rows = await queryAll(
     db,
-    `SELECT * FROM discussion_replies WHERE thread_id = ? ${showHidden ? '' : 'AND is_hidden = 0'} ORDER BY created_at ASC LIMIT 500`,
+    `SELECT * FROM discussion_replies WHERE thread_id = ? ${showHidden ? '' : 'AND is_hidden = 0'} ORDER BY created_at ASC, rowid ASC LIMIT 500`,
     c.req.param('threadId')
   );
   return ok(c, rows);
@@ -808,12 +809,12 @@ ops.get('/api/v1/reports/student-progress', requireAuth(), async (c) => {
   );
   const grades = await queryAll(
     db,
-    'SELECT * FROM grades WHERE student_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT * FROM grades WHERE student_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     studentId
   );
   const attempts = await queryAll(
     db,
-    'SELECT qa.*, q.title as quiz_title FROM quiz_attempts qa JOIN quizzes q ON q.id = qa.quiz_id WHERE qa.student_id = ? ORDER BY qa.created_at DESC LIMIT 100',
+    'SELECT qa.*, q.title as quiz_title FROM quiz_attempts qa JOIN quizzes q ON q.id = qa.quiz_id WHERE qa.student_id = ? ORDER BY qa.created_at DESC, qa.id DESC LIMIT 100',
     studentId
   );
   // Upcoming work: open assignments + quizzes in enrolled, unfinished courses.
@@ -1119,7 +1120,7 @@ ops.get('/api/v1/attendance/student', requireAuth(), async (c) => {
   const db = c.get('db');
   const records = await queryAll(
     db,
-    'SELECT r.status, r.note, s.title, s.session_date FROM attendance_records r JOIN attendance_sessions s ON s.id = r.session_id WHERE s.organization_id = ? AND r.student_id = ? ORDER BY s.session_date DESC LIMIT 200',
+    'SELECT r.status, r.note, s.title, s.session_date FROM attendance_records r JOIN attendance_sessions s ON s.id = r.session_id WHERE s.organization_id = ? AND r.student_id = ? ORDER BY s.session_date DESC, r.id DESC LIMIT 200',
     orgId,
     studentId
   );

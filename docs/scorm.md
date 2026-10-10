@@ -27,8 +27,10 @@
   applies. Full 2004 RTE/sequencing is roadmap, not claimed.
 - **Full RTE adapter** (`window.API` bridge): roadmap — current player uses
   manual sync; runtime data model fields beyond the commit subset are not mapped.
-- **H5P**: no native runtime; safe-embed extension point is
-  `content_type: 'external'` + URL allowlist validation. Native support deferred.
+- **H5P**: no native runtime and no URL-allowlist enforcement — external
+  URLs are stored, never fetched or embedded by the server. Treat `external`
+  lessons as plain links; do not paste untrusted URLs expecting sandboxing.
+  Native support deferred.
 
 ## Testing
 

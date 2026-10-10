@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.9.0 — Security & integration repair release
+
+Security:
+
+- Stored-XSS boundary: shared `esc()` encoder in `@lms/ui` applied to all
+  portal sinks (discussions, announcements, lessons, quizzes, feedback,
+  notifications, AI output, catalog); `javascript:` back-link removed;
+  `test/xss-escape.test.ts` pins the sinks; `SECURITY.md` corrected
+- Webhook replay rows now written only after order + HMAC verification
+  (closes unauthenticated storage-DoS)
+- Notification preferences enforced on all fan-out writes
+  (`wantsNotification()`); strict rate bucket extended to
+  forgot/reset/verify/invite/setup paths
+- Per-request `PRAGMA foreign_keys` assertion for non-D1 adapters
+
+Integration repair (no more dead UI):
+
+- New privileged `GET /affiliates` and `GET /payouts` listings wired to the
+  admin commerce tab (create-only before)
+- Web documentation cards open packaged guides (`sync-web-docs.mjs`) instead
+  of self-looping links
+- Unhandled-rejection fixes on all critical mutating handlers
+  (teacher/admin/student); quiz reorder buttons labeled for screen readers
+
+Data & correctness:
+
+- Migration 022: xAPI/discussion/grade indexes + free-order minor repair
+- Deterministic pagination everywhere (`id` tiebreakers; `rowid` where
+  insertion order matters — caught by `ai-tutor.test.ts`)
+- Subscription-plan ordering by `price_minor`; seed refuses custom
+  `DATABASE_PATH` without `SEED_ALLOW_CUSTOM_PATH=1`
+
+Evidence:
+
+- 123 API tests green (was 112), Playwright 13/13 (was 7/7) with new
+  per-role journeys (`e2e/roles.spec.ts`), backup/restore drilled PASS,
+  bench all budgets met, full `reports/audit/` dossier (15 files)
+
 ## 1.8.0 — Correctness & hardening release
 
 Carried (previously uncommitted) work, now released and tested:

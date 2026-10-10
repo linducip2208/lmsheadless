@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderLive(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -34,9 +34,9 @@ export async function renderLive(el: HTMLElement): Promise<void> {
         ? items
             .map(
               (s) => `<div class="card mb-2"><div class="card-body">
-        <h3 class="card-title">${s.title}</h3>
-        <p class="text-muted">${s.starts_at?.slice(0, 16).replace('T', ' ') ?? ''} · ${s.provider} · <span class="badge ${s.status === 'scheduled' ? 'bg-green' : 'bg-red'}">${s.status}</span></p>
-        ${s.meeting_url ? `<a href="${s.meeting_url}" target="_blank" rel="noopener">${d.view}</a>` : ''}
+        <h3 class="card-title">${esc(s.title)}</h3>
+        <p class="text-muted">${esc(s.starts_at?.slice(0, 16).replace('T', ' ') ?? '')} · ${esc(s.provider)} · <span class="badge ${s.status === 'scheduled' ? 'bg-green' : 'bg-red'}">${esc(s.status)}</span></p>
+        ${s.meeting_url ? `<a href="${esc(s.meeting_url)}" target="_blank" rel="noopener">${d.view}</a>` : ''}
         <div class="mt-2 d-flex gap-1"><button class="btn btn-sm btn-outline-primary" data-att="${s.id}">${d.record}</button>
         ${s.status === 'scheduled' ? `<button class="btn btn-sm btn-outline-secondary" data-resched="${s.id}">${d.edit}</button><button class="btn btn-sm btn-outline-danger" data-cancel="${s.id}">${d.cancel}</button>` : ''}</div></div></div>`
             )

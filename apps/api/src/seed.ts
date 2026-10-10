@@ -8,6 +8,16 @@ const PASS = process.env.SEED_DEMO_PASSWORD ?? 'Password123!';
 
 async function main() {
   const dbPath = process.env.DATABASE_PATH ?? './.data/lms.db';
+  // Guard: seeding writes demo credentials. A custom path outside the local
+  // ./.data dir requires explicit opt-in so a production file can never be
+  // seeded by an exported DATABASE_PATH accident.
+  const normalized = dbPath.replace(/\\/g, '/');
+  const localDefault = normalized === './.data/lms.db' || normalized.endsWith('/.data/lms.db');
+  if (!localDefault && process.env.SEED_ALLOW_CUSTOM_PATH !== '1') {
+    throw new Error(
+      `Refusing to seed custom path ${dbPath}: set SEED_ALLOW_CUSTOM_PATH=1 to confirm.`
+    );
+  }
   const { mkdirSync } = await import('node:fs');
   mkdirSync('./.data', { recursive: true });
   const db = await createNodeSqliteDb(dbPath);

@@ -265,7 +265,7 @@ authoring.get('/lessons/:lessonId/notes', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT n.*, u.name as author_name FROM instructor_notes n JOIN users u ON u.id = n.author_id WHERE n.lesson_id = ? ORDER BY n.created_at DESC',
+    'SELECT n.*, u.name as author_name FROM instructor_notes n JOIN users u ON u.id = n.author_id WHERE n.lesson_id = ? ORDER BY n.created_at DESC, n.id DESC',
     c.req.param('lessonId')
   );
   return ok(c, rows);
@@ -327,7 +327,7 @@ authoring.get('/courses/:id/waitlist', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT w.*, u.name as student_name FROM waitlists w JOIN users u ON u.id = w.student_id WHERE w.course_id = ? ORDER BY w.created_at ASC',
+    'SELECT w.*, u.name as student_name FROM waitlists w JOIN users u ON u.id = w.student_id WHERE w.course_id = ? ORDER BY w.created_at ASC, w.id ASC',
     c.req.param('id')
   );
   return ok(c, rows);
@@ -590,7 +590,7 @@ authoring.get('/publish-approvals', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    "SELECT pa.*, co.title as course_title, u.name as requested_by_name FROM publish_approvals pa JOIN courses co ON co.id = pa.course_id JOIN users u ON u.id = pa.requested_by WHERE pa.organization_id = ? AND pa.status = 'pending' ORDER BY pa.created_at ASC",
+    "SELECT pa.*, co.title as course_title, u.name as requested_by_name FROM publish_approvals pa JOIN courses co ON co.id = pa.course_id JOIN users u ON u.id = pa.requested_by WHERE pa.organization_id = ? AND pa.status = 'pending' ORDER BY pa.created_at ASC, pa.id ASC",
     orgId
   );
   return ok(c, rows);

@@ -58,14 +58,14 @@ assess.get('/grading/queue', requireAuth(), async (c) => {
     db,
     `SELECT s.*, u.name as student_name, a.title as assignment_title FROM submissions s
      JOIN assignments a ON a.id = s.assignment_id JOIN users u ON u.id = s.student_id
-     WHERE a.organization_id = ? AND s.status != 'graded' ORDER BY s.submitted_at ASC LIMIT 100`,
+     WHERE a.organization_id = ? AND s.status != 'graded' ORDER BY s.submitted_at ASC, s.id ASC LIMIT 100`,
     orgId
   );
   const attempts = await queryAll(
     db,
     `SELECT qa.*, u.name as student_name, q.title as quiz_title FROM quiz_attempts qa
      JOIN quizzes q ON q.id = qa.quiz_id JOIN users u ON u.id = qa.student_id
-     WHERE q.organization_id = ? AND qa.status IN ('submitted','graded') ORDER BY qa.submitted_at DESC LIMIT 100`,
+     WHERE q.organization_id = ? AND qa.status IN ('submitted','graded') ORDER BY qa.submitted_at DESC, qa.id DESC LIMIT 100`,
     orgId
   );
   return ok(c, { submissions, attempts });
@@ -127,7 +127,7 @@ assess.get('/quizzes', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT * FROM quizzes WHERE course_id = ? ORDER BY created_at DESC LIMIT 200',
+    'SELECT * FROM quizzes WHERE course_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
     courseId
   );
   return ok(c, rows);
@@ -303,7 +303,7 @@ assess.get('/quizzes/:id/attempts', requireAuth(), async (c) => {
   if (role === 'parent') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT qa.*, u.name as student_name FROM quiz_attempts qa JOIN users u ON u.id = qa.student_id WHERE qa.quiz_id = ? ORDER BY qa.started_at DESC LIMIT 200',
+    'SELECT qa.*, u.name as student_name FROM quiz_attempts qa JOIN users u ON u.id = qa.student_id WHERE qa.quiz_id = ? ORDER BY qa.started_at DESC, qa.id DESC LIMIT 200',
     c.req.param('id')
   );
   return ok(c, rows);
@@ -845,7 +845,7 @@ assess.get('/assignments', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT * FROM assignments WHERE course_id = ? ORDER BY created_at DESC LIMIT 200',
+    'SELECT * FROM assignments WHERE course_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
     courseId
   );
   return ok(c, rows);
@@ -875,7 +875,7 @@ assess.get('/assignments/:id/submissions', requireAuth(), async (c) => {
   if (role === 'parent') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT s.*, u.name as student_name FROM submissions s JOIN users u ON u.id = s.student_id WHERE s.assignment_id = ? ORDER BY s.submitted_at DESC LIMIT 500',
+    'SELECT s.*, u.name as student_name FROM submissions s JOIN users u ON u.id = s.student_id WHERE s.assignment_id = ? ORDER BY s.submitted_at DESC, s.id DESC LIMIT 500',
     c.req.param('id')
   );
   return ok(c, rows);
@@ -1104,7 +1104,7 @@ assess.get('/grades', requireAuth(), async (c) => {
     }
     const rows = await queryAll(
       db,
-      'SELECT * FROM grades WHERE course_id = ? AND student_id = ? ORDER BY created_at DESC LIMIT 500',
+      'SELECT * FROM grades WHERE course_id = ? AND student_id = ? ORDER BY created_at DESC, id DESC LIMIT 500',
       courseId,
       studentId
     );
@@ -1135,7 +1135,7 @@ assess.get('/grades', requireAuth(), async (c) => {
   }
   const rows = await queryAll(
     db,
-    'SELECT * FROM grades WHERE student_id = ? ORDER BY created_at DESC LIMIT 200',
+    'SELECT * FROM grades WHERE student_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
     studentId
   );
   return ok(c, rows);

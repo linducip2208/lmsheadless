@@ -1,6 +1,7 @@
 import '@tabler/core/dist/css/tabler.min.css';
 import './style.css';
 import { getDict, type WebDict } from './i18n.js';
+import { esc } from '@lms/ui';
 
 const PORTALS: Record<string, string> = {
   admin: 'http://localhost:5173',
@@ -398,11 +399,11 @@ function docsPage(): string {
   <div class="row row-cards">
   ${[
     ['API', '/api/v1/docs'],
-    ['Flutter', '#/documentation'],
-    ['White-label', '#/documentation'],
-    ['PWA', '#/documentation'],
-    ['Cloudflare', '#/documentation'],
-    ['Security', '#/documentation'],
+    ['Flutter', '/docs/flutter.md'],
+    ['White-label', '/docs/white-label.md'],
+    ['PWA', '/docs/pwa.md'],
+    ['Cloudflare', '/docs/cloudflare.md'],
+    ['Security', '/docs/security.md'],
   ]
     .map(
       ([x, href]) =>
@@ -533,8 +534,8 @@ async function instructorPage(id: string): Promise<string> {
     };
     if (!j.success || !j.data)
       return `<div class="container-xl py-5"><div class="alert alert-warning">${t.instructorNotFound}</div></div>`;
-    return `<div class="container-xl py-4"><h1>${j.data.instructor.name}</h1><p class="text-muted">${t.teacher}</p>
-      <h2>${t.courses ?? 'Courses'}</h2><div class="row">${j.data.courses.map((c) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${c.title}</h3><p>${c.price > 0 ? c.price : ''}</p><a class="btn btn-sm btn-primary" href="${PORTALS.student}">${t.learn}</a></div></div></div>`).join('') || `<p>${t.noPublicCourses}</p>`}</div></div>`;
+    return `<div class="container-xl py-4"><h1>${esc(j.data.instructor.name)}</h1><p class="text-muted">${t.teacher}</p>
+      <h2>${t.courses ?? 'Courses'}</h2><div class="row">${j.data.courses.map((c) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${esc(c.title)}</h3><p>${c.price > 0 ? Number(c.price) : ''}</p><a class="btn btn-sm btn-primary" href="${PORTALS.student}">${t.learn}</a></div></div></div>`).join('') || `<p>${t.noPublicCourses}</p>`}</div></div>`;
   } catch {
     return `<div class="container-xl py-5"><div class="alert alert-danger">${t.catalogUnavailable}</div></div>`;
   }
@@ -617,10 +618,10 @@ async function router(): Promise<void> {
         (cr as { data?: { id: string; title: string; code: string; price: number }[] }).data ?? [];
       const bundles = (br as { data?: { id: string; name: string; price: number }[] }).data ?? [];
       list.innerHTML = courses.length
-        ? `<div class="row">${courses.map((c) => `<div class="col-md-4"><div class="card mb-3"><div class="card-body"><h3 class="card-title">${c.title}</h3><p class="text-muted">${c.code} · ${c.price > 0 ? c.price : ''}</p><a class="btn btn-sm btn-primary" href="${PORTALS.student}">${t.learn}</a></div></div></div>`).join('')}</div>`
+        ? `<div class="row">${courses.map((c) => `<div class="col-md-4"><div class="card mb-3"><div class="card-body"><h3 class="card-title">${esc(c.title)}</h3><p class="text-muted">${esc(c.code)} · ${c.price > 0 ? Number(c.price) : ''}</p><a class="btn btn-sm btn-primary" href="${PORTALS.student}">${t.learn}</a></div></div></div>`).join('')}</div>`
         : `<p class="text-muted">${t.noCourses}</p>`;
       bun.innerHTML = bundles.length
-        ? `<div class="row">${bundles.map((b) => `<div class="col-md-4"><div class="card mb-3"><div class="card-body"><h3 class="card-title">${b.name}</h3><p>${b.price}</p><a class="btn btn-sm btn-outline-primary" href="#/bundles/${b.id}">${t.view ?? 'View'}</a></div></div></div>`).join('')}</div>`
+        ? `<div class="row">${bundles.map((b) => `<div class="col-md-4"><div class="card mb-3"><div class="card-body"><h3 class="card-title">${esc(b.name)}</h3><p>${Number(b.price)}</p><a class="btn btn-sm btn-outline-primary" href="#/bundles/${b.id}">${t.view ?? 'View'}</a></div></div></div>`).join('')}</div>`
         : `<p class="text-muted">${t.noBundles}</p>`;
     } catch {
       if (list) list.innerHTML = `<div class="alert alert-danger">${t.catalogUnavailable}</div>`;
@@ -652,7 +653,7 @@ async function router(): Promise<void> {
         };
         bundleBox.innerHTML =
           det.success && det.data
-            ? `<h1>${det.data.bundle.name}</h1><p class="text-muted">${det.data.bundle.description ?? ''}</p><p><strong>${det.data.bundle.price}</strong></p><ul>${det.data.courses.map((c) => `<li>${c.title} (${c.price})</li>`).join('')}</ul><a class="btn btn-primary" href="${PORTALS.student}">${t.getStarted}</a>`
+            ? `<h1>${esc(det.data.bundle.name)}</h1><p class="text-muted">${esc(det.data.bundle.description ?? '')}</p><p><strong>${Number(det.data.bundle.price)}</strong></p><ul>${det.data.courses.map((c) => `<li>${esc(c.title)} (${Number(c.price)})</li>`).join('')}</ul><a class="btn btn-primary" href="${PORTALS.student}">${t.getStarted}</a>`
             : `<div class="alert alert-warning">${t.bundleNotFound}</div>`;
       })
       .catch(() => {

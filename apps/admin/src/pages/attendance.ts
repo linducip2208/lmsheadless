@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderAttendance(el: HTMLElement): Promise<void> {
   const d = t();
@@ -32,8 +32,8 @@ export async function renderAttendance(el: HTMLElement): Promise<void> {
         ? `<div class="row row-cards">${sessions
             .map(
               (s) => `<div class="col-md-6"><div class="card">
-        <div class="card-body"><h3 class="card-title">${s.title}</h3>
-        <div class="text-muted">${s.session_date} · ${s.records.length}</div>
+        <div class="card-body"><h3 class="card-title">${esc(s.title)}</h3>
+        <div class="text-muted">${esc(s.session_date)} · ${s.records.length}</div>
         <button class="btn btn-sm btn-primary mt-2" data-sess="${s.id}">${d.record}</button></div></div></div>`
             )
             .join('')}</div>`
@@ -87,8 +87,8 @@ async function renderRecorder(el: HTMLElement, orgId: string, sessionId: string)
       ${
         students
           .map(
-            (s) => `<tr><td>${s.name}<div class="text-muted small">${s.email}</div></td>
-      <td><select class="form-select" data-st="${s.id}" aria-label="${d.status} ${s.name}">
+            (s) => `<tr><td>${esc(s.name)}<div class="text-muted small">${esc(s.email)}</div></td>
+      <td><select class="form-select" data-st="${s.id}" aria-label="${d.status} ${esc(s.name)}">
         ${['present', 'absent', 'late', 'excused'].map((o) => `<option value="${o}">${o}</option>`).join('')}</select></td>
       <td><input class="form-control" data-note="${s.id}"></td></tr>`
           )

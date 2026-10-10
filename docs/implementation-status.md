@@ -1,6 +1,19 @@
 # Implementation status (October 2026)
 
-## Shipped in 1.8.0 (this release)
+## Shipped in 1.9.0 (this release)
+
+- Stored-XSS output-encoding boundary (`esc()` in `@lms/ui`) across all five
+  portals, pinned by `test/xss-escape.test.ts`; webhook writes moved behind
+  signature verification; notification preferences enforced on every fan-out.
+- Dead UI connected: affiliate/payout listings (new privileged endpoints +
+  admin tab wiring); web docs cards serve packaged guides.
+- Migration 022 (indexes + free-order repair); deterministic pagination with
+  insertion-order-safe tiebreakers; seed path guard; plan ordering by minor.
+- Evidence: 123 API tests, 13/13 Playwright (6 role journeys), backup/restore
+  drill PASS, bench green, 15-file `reports/audit/` dossier. Score 88/100,
+  verdict CONDITIONALLY READY (see `reports/audit/release-readiness.md`).
+
+## Shipped in 1.8.0
 
 - Full-repo audit (254 endpoints, 21 migrations, 5 portals) with evidence:
   every public route catalogued; no decorative pages found; thinnest areas

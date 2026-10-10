@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderSocial(el: HTMLElement): Promise<void> {
   const d = t();
@@ -42,9 +42,9 @@ async function renderAnnouncements(el: HTMLElement, orgId: string): Promise<void
           .map(
             (
               a
-            ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${a.title}</h3>
-      <p class="text-muted">${a.body.slice(0, 500)}</p>
-      <span class="text-muted small">${a.created_at?.slice(0, 16).replace('T', ' ') ?? ''}${a.course_id ? ` · course ${a.course_id.slice(0, 8)}` : ''}</span></div></div>`
+            ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${esc(a.title)}</h3>
+      <p class="text-muted">${esc(a.body.slice(0, 500))}</p>
+      <span class="text-muted small">${esc(a.created_at?.slice(0, 16).replace('T', ' ') ?? '')}${a.course_id ? ` · course ${esc(a.course_id.slice(0, 8))}` : ''}</span></div></div>`
           )
           .join('') || `<div class="alert alert-info">${d.empty}</div>`
       }`;
@@ -83,7 +83,7 @@ async function renderDiscussions(el: HTMLElement): Promise<void> {
     {},
     orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
   ).catch(() => [])) as { id: string; title: string }[];
-  el.innerHTML = `<div class="mb-2 d-flex gap-2"><select id="d-course" class="form-select w-auto">${courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('')}</select>
+  el.innerHTML = `<div class="mb-2 d-flex gap-2"><select id="d-course" class="form-select w-auto">${courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select>
     <button class="btn btn-primary" id="d-new">${d.create}</button></div><div id="d-list"></div>`;
   const sel = el.querySelector('#d-course') as HTMLSelectElement;
   const list = el.querySelector('#d-list') as HTMLElement;
@@ -104,8 +104,8 @@ async function renderDiscussions(el: HTMLElement): Promise<void> {
           .map(
             (
               x
-            ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${x.title}</h3>
-        <p>${x.body.slice(0, 400)}</p><div data-replies="${x.id}"></div></div></div>`
+            ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${esc(x.title)}</h3>
+        <p>${esc(x.body.slice(0, 400))}</p><div data-replies="${x.id}"></div></div></div>`
           )
           .join('') || `<div class="alert alert-info">${d.empty}</div>`;
       for (const t of threads) {
@@ -114,7 +114,7 @@ async function renderDiscussions(el: HTMLElement): Promise<void> {
           `/api/v1/discussions/${t.id}/replies`
         ).catch(() => [])) as { body: string }[];
         box.innerHTML = replies
-          .map((r) => `<div class="alert alert-info py-1">${r.body.slice(0, 300)}</div>`)
+          .map((r) => `<div class="alert alert-info py-1">${esc(r.body.slice(0, 300))}</div>`)
           .join('');
       }
     } catch (e) {
@@ -124,17 +124,21 @@ async function renderDiscussions(el: HTMLElement): Promise<void> {
   sel.addEventListener('change', () => void load());
   (el.querySelector('#d-new') as HTMLButtonElement).addEventListener('click', async () => {
     if (!sel.value) return;
-    const data = await modalForm(d.create, [
-      { name: 'title', label: d.title, required: true },
-      { name: 'body', label: d.body, type: 'textarea', required: true },
-    ]);
-    if (!data) return;
-    await call('/api/v1/discussions', {
-      method: 'POST',
-      body: JSON.stringify({ course_id: sel.value, ...data }),
-    });
-    toast(d.created, 'success');
-    await load();
+    try {
+      const data = await modalForm(d.create, [
+        { name: 'title', label: d.title, required: true },
+        { name: 'body', label: d.body, type: 'textarea', required: true },
+      ]);
+      if (!data) return;
+      await call('/api/v1/discussions', {
+        method: 'POST',
+        body: JSON.stringify({ course_id: sel.value, ...data }),
+      });
+      toast(d.created, 'success');
+      await load();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : d.failed, 'danger');
+    }
   });
   await load();
 }

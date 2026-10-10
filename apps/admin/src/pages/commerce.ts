@@ -7,6 +7,7 @@ import {
   confirmDialog,
   currentOrgId,
   t,
+  esc,
 } from '../lib.js';
 
 export async function renderCommerce(el: HTMLElement): Promise<void> {
@@ -36,7 +37,7 @@ export async function renderCommerce(el: HTMLElement): Promise<void> {
     else if (tab === 'orders') void renderOrders(body, orgId);
     else if (tab === 'commissions') void renderCommissions(body, orgId);
     else if (tab === 'affiliates') void renderAffiliates(body, orgId);
-    else if (tab === 'payouts') void renderPayouts(body);
+    else if (tab === 'payouts') void renderPayouts(body, orgId);
     else if (tab === 'plans') void renderPlans(body, orgId);
     else void renderRevenue(body, orgId);
   };
@@ -70,7 +71,7 @@ async function renderBundles(el: HTMLElement, orgId: string): Promise<void> {
         ? `<div class="row row-cards">${items
             .map(
               (b) => `<div class="col-md-6"><div class="card"><div class="card-body">
-        <h3 class="card-title">${b.name}</h3><p class="text-muted">${b.price} · <span class="badge ${b.status === 'published' ? 'bg-green' : 'bg-yellow'}">${b.status}</span></p>
+        <h3 class="card-title">${esc(b.name)}</h3><p class="text-muted">${Number(b.price)} · <span class="badge ${b.status === 'published' ? 'bg-green' : 'bg-yellow'}">${esc(b.status)}</span></p>
         <div class="d-flex gap-1"><button class="btn btn-sm btn-outline-primary" data-pub="${b.id}">${d.publish}</button>
         <button class="btn btn-sm btn-outline-secondary" data-view="${b.id}">${d.view}</button></div><div data-c="${b.id}"></div></div></div></div>`
             )
@@ -123,7 +124,7 @@ async function renderBundles(el: HTMLElement, orgId: string): Promise<void> {
         const det = (await call(`/api/v1/bundles/${view.dataset.view}`)) as {
           courses: { title: string; price: number }[];
         };
-        box.innerHTML = `<ul class="mt-2">${det.courses.map((c) => `<li>${c.title} (${c.price})</li>`).join('')}</ul>`;
+        box.innerHTML = `<ul class="mt-2">${det.courses.map((c) => `<li>${esc(c.title)} (${Number(c.price)})</li>`).join('')}</ul>`;
       }
     } catch (err) {
       toast(err instanceof Error ? err.message : d.failed, 'danger');
@@ -149,7 +150,7 @@ async function renderCoupons(el: HTMLElement, orgId: string): Promise<void> {
       }[];
       box.innerHTML = items.length
         ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.code}</th><th scope="col">${d.status}</th><th scope="col">${d.total}</th><th scope="col">${d.actions}</th></tr></thead><tbody>
-        ${items.map((x) => `<tr><td><code>${x.code}</code></td><td>${x.kind}</td><td>${x.value}</td><td>${x.used_count}${x.max_uses ? `/${x.max_uses}` : ''}</td></tr>`).join('')}</tbody></table></div>`
+        ${items.map((x) => `<tr><td><code>${esc(x.code)}</code></td><td>${esc(x.kind)}</td><td>${Number(x.value)}</td><td>${Number(x.used_count)}${x.max_uses ? `/${Number(x.max_uses)}` : ''}</td></tr>`).join('')}</tbody></table></div>`
         : `<p class="text-muted">${d.empty}</p>`;
     } catch (e) {
       box.innerHTML = errorHtml(e);
@@ -210,8 +211,8 @@ async function renderOrders(el: HTMLElement, orgId: string): Promise<void> {
         .map(
           (
             o
-          ) => `<tr><td class="text-truncate" style="max-width:140px">${o.id.slice(0, 8)}…</td><td>${o.kind}</td><td>${o.total}</td>
-      <td><span class="badge ${o.status === 'paid' ? 'bg-green' : o.status === 'refunded' ? 'bg-red' : 'bg-yellow'}">${o.status}</span></td>
+          ) => `<tr><td class="text-truncate" style="max-width:140px">${esc(o.id.slice(0, 8))}…</td><td>${esc(o.kind)}</td><td>${Number(o.total)}</td>
+      <td><span class="badge ${o.status === 'paid' ? 'bg-green' : o.status === 'refunded' ? 'bg-red' : 'bg-yellow'}">${esc(o.status)}</span></td>
       <td>${o.status === 'paid' ? `<button class="btn btn-sm btn-outline-danger" data-refund="${o.id}">${d.refund}</button>` : ''}</td></tr>`
         )
         .join('')}</tbody></table></div>`
@@ -250,7 +251,7 @@ async function renderCommissions(el: HTMLElement, orgId: string): Promise<void> 
     }[];
     el.innerHTML = rows.length
       ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.teachers}</th><th scope="col">${d.total}</th><th scope="col">%</th><th scope="col">${d.status}</th></tr></thead><tbody>
-      ${rows.map((r) => `<tr><td>${r.instructor_name}</td><td>${r.amount}</td><td>${r.rate}%</td><td><span class="badge ${r.status === 'reversed' ? 'bg-red' : 'bg-yellow'}">${r.status}</span></td></tr>`).join('')}</tbody></table></div>`
+      ${rows.map((r) => `<tr><td>${esc(r.instructor_name)}</td><td>${Number(r.amount)}</td><td>${Number(r.rate)}%</td><td><span class="badge ${r.status === 'reversed' ? 'bg-red' : 'bg-yellow'}">${esc(r.status)}</span></td></tr>`).join('')}</tbody></table></div>`
       : `<p class="text-muted">${d.empty}</p>`;
   } catch (e) {
     el.innerHTML = errorHtml(e);
@@ -259,7 +260,23 @@ async function renderCommissions(el: HTMLElement, orgId: string): Promise<void> 
 
 async function renderAffiliates(el: HTMLElement, orgId: string): Promise<void> {
   const d = t();
-  el.innerHTML = `<button class="btn btn-primary mb-2" id="a-new">${d.new_} ${d.affiliates}</button><div id="a-list"></div>`;
+  el.innerHTML = `<button class="btn btn-primary mb-2" id="a-new">${d.new_} ${d.affiliates}</button><div id="a-list">${loadingHtml()}</div>`;
+  const load = async () => {
+    const box = el.querySelector('#a-list') as HTMLElement;
+    try {
+      const items = (await call<{ code: string; user_name: string; commission_rate: number }[]>(
+        '/api/v1/affiliates',
+        {},
+        { organization_id: orgId }
+      )) as { code: string; user_name: string; commission_rate: number }[];
+      box.innerHTML = items.length
+        ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.code}</th><th scope="col">${d.users}</th><th scope="col">%</th></tr></thead><tbody>
+          ${items.map((a) => `<tr><td>${esc(a.code)}</td><td>${esc(a.user_name)}</td><td>${Number(a.commission_rate)}%</td></tr>`).join('')}</tbody></table></div>`
+        : `<p class="text-muted">${d.empty}</p>`;
+    } catch (e) {
+      box.innerHTML = errorHtml(e);
+    }
+  };
   (el.querySelector('#a-new') as HTMLButtonElement).addEventListener('click', async () => {
     const data = await modalForm(`${d.new_} ${d.affiliates}`, [
       { name: 'user_id', label: `${d.users} ID`, required: true },
@@ -277,16 +294,34 @@ async function renderAffiliates(el: HTMLElement, orgId: string): Promise<void> {
         }),
       });
       toast(d.created, 'success');
+      await load();
     } catch (e) {
       toast(e instanceof Error ? e.message : d.failed, 'danger');
     }
   });
+  await load();
 }
 
-async function renderPayouts(el: HTMLElement): Promise<void> {
+async function renderPayouts(el: HTMLElement, orgId: string): Promise<void> {
   const d = t();
-  el.innerHTML = `<div class="alert alert-info">${d.payouts}: ${d.status}</div>
-    <div class="card"><div class="card-body"><p class="text-muted">${d.empty}</p></div></div>`;
+  el.innerHTML = `<div id="p-list">${loadingHtml()}</div>`;
+  const box = el.querySelector('#p-list') as HTMLElement;
+  try {
+    const items = (await call<
+      { instructor_name: string; amount: number; method: string; status: string }[]
+    >('/api/v1/payouts', {}, { organization_id: orgId })) as {
+      instructor_name: string;
+      amount: number;
+      method: string;
+      status: string;
+    }[];
+    box.innerHTML = items.length
+      ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.teachers}</th><th scope="col">${d.total}</th><th scope="col">${d.status}</th></tr></thead><tbody>
+        ${items.map((p) => `<tr><td>${esc(p.instructor_name)}</td><td>${Number(p.amount)}</td><td><span class="badge">${esc(p.status)}</span></td></tr>`).join('')}</tbody></table></div>`
+      : `<p class="text-muted">${d.empty}</p>`;
+  } catch (e) {
+    box.innerHTML = errorHtml(e);
+  }
 }
 
 async function renderPlans(el: HTMLElement, orgId: string): Promise<void> {
@@ -305,7 +340,7 @@ async function renderPlans(el: HTMLElement, orgId: string): Promise<void> {
         interval: string;
       }[];
       box.innerHTML = items.length
-        ? `<ul>${items.map((p) => `<li>${p.name} — ${p.price}/${p.interval}</li>`).join('')}</ul>`
+        ? `<ul>${items.map((p) => `<li>${esc(p.name)} — ${Number(p.price)}/${esc(p.interval)}</li>`).join('')}</ul>`
         : `<p class="text-muted">${d.empty}</p>`;
     } catch (e) {
       box.innerHTML = errorHtml(e);
@@ -349,9 +384,9 @@ async function renderRevenue(el: HTMLElement, orgId: string): Promise<void> {
       pending_commissions: number;
     };
     el.innerHTML = `<div class="row row-cards">
-      ${r.by_status.map((s) => `<div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">${s.status}</div><div class="h1">${s.n} × ${s.total}</div></div></div></div>`).join('')}
-      <div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">${d.revenue}</div><div class="h1">${r.total_discounts}</div></div></div></div>
-      <div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">${d.commissions}</div><div class="h1">${r.pending_commissions}</div></div></div></div></div>`;
+      ${r.by_status.map((s) => `<div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">${esc(s.status)}</div><div class="h1">${Number(s.n)} × ${Number(s.total)}</div></div></div></div>`).join('')}
+      <div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">${d.revenue}</div><div class="h1">${Number(r.total_discounts)}</div></div></div></div>
+      <div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">${d.commissions}</div><div class="h1">${Number(r.pending_commissions)}</div></div></div></div></div>`;
   } catch (e) {
     el.innerHTML = errorHtml(e);
   }

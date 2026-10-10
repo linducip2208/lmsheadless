@@ -45,6 +45,27 @@ export function isPrivileged(user: AuthUser, orgId: string): boolean {
   return r === 'super_admin' || r === 'organization_admin';
 }
 
+// Notification preference gate: producers must consult this before writing to
+// the notification center (fail-open to the documented defaults on bad rows).
+export async function wantsNotification(
+  db: D1Like,
+  userId: string,
+  category: string
+): Promise<boolean> {
+  try {
+    const row = await queryFirst<{ prefs: string }>(
+      db,
+      'SELECT prefs FROM notification_preferences WHERE user_id = ?',
+      userId
+    );
+    if (!row) return true;
+    const prefs = JSON.parse(row.prefs) as Record<string, boolean>;
+    return prefs[category] !== false;
+  } catch {
+    return true;
+  }
+}
+
 // Entitlement: paid courses require a live entitlement row; free courses are open.
 export async function hasEntitlement(
   db: D1Like,

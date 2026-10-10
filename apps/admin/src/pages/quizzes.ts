@@ -7,6 +7,7 @@ import {
   confirmDialog,
   currentOrgId,
   t,
+  esc,
 } from '../lib.js';
 
 interface Quiz {
@@ -82,8 +83,8 @@ async function renderQuizManager(el: HTMLElement): Promise<void> {
         ? `<div class="row row-cards">${quizzes
             .map(
               (q) => `<div class="col-md-6"><div class="card">
-        <div class="card-body"><h3 class="card-title">${q.title}</h3>
-        <div class="text-muted">${d.passingScore} ${q.passing_score} · ${q.max_attempts} · ${q.time_limit_minutes ? `${q.time_limit_minutes} min` : ''}</div>
+        <div class="card-body"><h3 class="card-title">${esc(q.title)}</h3>
+        <div class="text-muted">${d.passingScore} ${Number(q.passing_score)} · ${Number(q.max_attempts)} · ${q.time_limit_minutes ? `${Number(q.time_limit_minutes)} min` : ''}</div>
         <div class="mt-2 d-flex gap-1"><button class="btn btn-sm btn-primary" data-quiz="${q.id}">${d.questions}</button>
         <button class="btn btn-sm btn-outline-primary" data-perf="${q.id}">${d.performance}</button></div></div></div></div>`
             )
@@ -208,7 +209,7 @@ async function renderBanks(el: HTMLElement): Promise<void> {
           qs
             .map(
               (q) =>
-                `<div class="small mb-1"><span class="badge bg-blue">${q.type}</span> <span class="badge bg-secondary">${q.difficulty}</span> ${q.prompt.slice(0, 120)} <button class="btn btn-sm btn-outline-green" data-copy="${btn.dataset.bq}:${q.id}">${d.create}</button></div>`
+                `<div class="small mb-1"><span class="badge bg-blue">${esc(q.type)}</span> <span class="badge bg-secondary">${esc(q.difficulty)}</span> ${esc(q.prompt.slice(0, 120))} <button class="btn btn-sm btn-outline-green" data-copy="${btn.dataset.bq}:${q.id}">${d.create}</button></div>`
             )
             .join('') || `<p class="text-muted">${d.empty}</p>`;
       } else if (btn.dataset.badd) {
@@ -252,15 +253,19 @@ async function renderBanks(el: HTMLElement): Promise<void> {
     const btn = (e.target as HTMLElement).closest('[data-copy]') as HTMLElement | null;
     if (!btn?.dataset.copy) return;
     const [bankId, qId] = btn.dataset.copy.split(':');
-    const data = await modalForm(d.create, [
-      { name: 'quiz_id', label: `${d.quizzes} ID`, required: true },
-    ]);
-    if (!data?.quiz_id) return;
-    await call(`/api/v1/question-banks/${bankId}/questions/${qId}/copy-to/${data.quiz_id}`, {
-      method: 'POST',
-      body: '{}',
-    });
-    toast(d.saved, 'success');
+    try {
+      const data = await modalForm(d.create, [
+        { name: 'quiz_id', label: `${d.quizzes} ID`, required: true },
+      ]);
+      if (!data?.quiz_id) return;
+      await call(`/api/v1/question-banks/${bankId}/questions/${qId}/copy-to/${data.quiz_id}`, {
+        method: 'POST',
+        body: '{}',
+      });
+      toast(d.saved, 'success');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
   });
   await load();
 }
@@ -320,15 +325,15 @@ async function renderQuestions(el: HTMLElement, quizId: string): Promise<void> {
         questions
           .map(
             (q, i) => `<div class="list-group-item">
-        <div class="d-flex gap-2 align-items-center flex-wrap"><span class="badge bg-blue">${q.type}</span>
-        <strong>${i + 1}. ${q.prompt.slice(0, 160)}</strong><span class="text-muted">${q.points}</span>
+        <div class="d-flex gap-2 align-items-center flex-wrap"><span class="badge bg-blue">${esc(q.type)}</span>
+        <strong>${i + 1}. ${esc(q.prompt.slice(0, 160))}</strong><span class="text-muted">${Number(q.points)}</span>
         <span class="ms-auto d-flex gap-1">
-          <button class="btn btn-sm btn-outline-secondary" data-up="${q.id}" ${i === 0 ? 'disabled' : ''}>↑</button>
-          <button class="btn btn-sm btn-outline-secondary" data-down="${q.id}" ${i === questions.length - 1 ? 'disabled' : ''}>↓</button>
+          <button class="btn btn-sm btn-outline-secondary" data-up="${q.id}" ${i === 0 ? 'disabled' : ''} aria-label="Move question up">↑</button>
+          <button class="btn btn-sm btn-outline-secondary" data-down="${q.id}" ${i === questions.length - 1 ? 'disabled' : ''} aria-label="Move question down">↓</button>
           <button class="btn btn-sm btn-outline-primary" data-edit="${q.id}">${d.edit}</button>
           <button class="btn btn-sm btn-outline-danger" data-del="${q.id}">${d.delete}</button>
         </span></div>
-        ${q.options?.length ? `<div class="mt-1 small">${q.options.map((o) => `<span class="badge ${o.is_correct ? 'bg-green' : 'bg-secondary'} me-1">${o.label}</span>`).join('')}</div>` : ''}
+        ${q.options?.length ? `<div class="mt-1 small">${q.options.map((o) => `<span class="badge ${o.is_correct ? 'bg-green' : 'bg-secondary'} me-1">${esc(o.label)}</span>`).join('')}</div>` : ''}
       </div>`
           )
           .join('') || `<div class="list-group-item text-muted">${d.empty}</div>`
@@ -433,7 +438,7 @@ async function renderPerformance(el: HTMLElement, quizId: string): Promise<void>
       pass_rate: number;
       per_question: { prompt: string; answered: number; correct_rate: number }[];
     };
-    el.innerHTML = `<div class="card"><div class="card-header"><h3 class="card-title">${d.performance}: ${p.title}</h3></div>
+    el.innerHTML = `<div class="card"><div class="card-header"><h3 class="card-title">${d.performance}: ${esc(p.title)}</h3></div>
       <div class="card-body"><div class="row mb-3">
       ${[
         [d.attempts, p.attempts],
@@ -450,8 +455,8 @@ async function renderPerformance(el: HTMLElement, quizId: string): Promise<void>
           .map(
             (
               q
-            ) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${q.prompt}</span><span class="text-muted">${q.correct_rate}%</span></div>
-      <div class="progress"><div class="progress-bar" style="width:${q.correct_rate}%"></div></div></div>`
+            ) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${esc(q.prompt)}</span><span class="text-muted">${Number(q.correct_rate)}%</span></div>
+      <div class="progress"><div class="progress-bar" style="width:${Number(q.correct_rate)}%"></div></div></div>`
           )
           .join('') || `<p class="text-muted">${d.empty}</p>`
       }</div></div>`;

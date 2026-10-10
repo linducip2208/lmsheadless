@@ -513,7 +513,7 @@ platform.get('/api/v1/audit-logs', requireAuth(), async (c) => {
     )?.n ?? 0;
   const rows = await queryAll(
     db,
-    'SELECT id, actor_id, action, entity, entity_id, created_at FROM audit_logs WHERE organization_id = ? OR organization_id IS NULL ORDER BY created_at DESC LIMIT ? OFFSET ?',
+    'SELECT id, actor_id, action, entity, entity_id, created_at FROM audit_logs WHERE organization_id = ? OR organization_id IS NULL ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?',
     orgId,
     perPage,
     (page - 1) * perPage
@@ -532,14 +532,14 @@ platform.get('/api/v1/files', requireAuth(), async (c) => {
       return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
     const rows = await queryAll(
       db,
-      'SELECT id, object_key, file_name, mime_type, size_bytes, purpose, created_at FROM files WHERE organization_id = ? ORDER BY created_at DESC LIMIT 100',
+      'SELECT id, object_key, file_name, mime_type, size_bytes, purpose, created_at FROM files WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
       orgId
     );
     return ok(c, rows);
   }
   const rows = await queryAll(
     db,
-    'SELECT id, object_key, file_name, mime_type, size_bytes, purpose, created_at FROM files WHERE owner_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT id, object_key, file_name, mime_type, size_bytes, purpose, created_at FROM files WHERE owner_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     user.id
   );
   return ok(c, rows);

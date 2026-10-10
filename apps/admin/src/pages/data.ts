@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderData(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -101,7 +101,7 @@ async function renderImports(el: HTMLElement, orgId: string): Promise<void> {
         `<div class="alert alert-info">${j.data.valid ?? j.data.processed} / ${j.data.total}. Errors: ${(j.data.errors ?? []).length}</div>` +
         (j.data.errors ?? [])
           .slice(0, 20)
-          .map((x) => `<div class="small">Row ${x.row}: ${x.errors.join('; ')}</div>`)
+          .map((x) => `<div class="small">Row ${Number(x.row)}: ${esc(x.errors.join('; '))}</div>`)
           .join('');
       await loadJobs();
     } catch (err) {
@@ -119,7 +119,7 @@ async function renderImports(el: HTMLElement, orgId: string): Promise<void> {
     (el.querySelector(`[data-jr="${btn.dataset.job}"]`) as HTMLElement).innerHTML =
       (det.error_report?.errors ?? [])
         .slice(0, 30)
-        .map((x) => `<div class="small">Row ${x.row}: ${x.errors.join('; ')}</div>`)
+        .map((x) => `<div class="small">Row ${Number(x.row)}: ${esc(x.errors.join('; '))}</div>`)
         .join('') || `<div class="small text-muted">${d.empty}</div>`;
   });
   await loadJobs();
@@ -192,7 +192,7 @@ async function renderAI(el: HTMLElement, orgId: string): Promise<void> {
           input_ref: (el.querySelector('#ai-in') as HTMLInputElement).value,
         }),
       })) as { output?: string; note?: string };
-      out.innerHTML = `<div class="alert alert-warning">${r.note ?? ''}</div><pre class="card card-body">${(r.output ?? '').slice(0, 4000)}</pre>`;
+      out.innerHTML = `<div class="alert alert-warning">${esc(r.note ?? '')}</div><pre class="card card-body">${esc((r.output ?? '').slice(0, 4000))}</pre>`;
       await loadJobs();
     } catch (err) {
       out.innerHTML = errorHtml(err);
@@ -264,7 +264,7 @@ async function renderEmail(el: HTMLElement, orgId: string): Promise<void> {
           .map(
             (
               m
-            ) => `<tr><td>${m.to_email}</td><td>${m.subject}</td><td><span class="badge ${m.status === 'sent' ? 'bg-green' : 'bg-yellow'}">${m.status}</span></td>
+            ) => `<tr><td>${esc(m.to_email)}</td><td>${esc(m.subject)}</td><td><span class="badge ${m.status === 'sent' ? 'bg-green' : 'bg-yellow'}">${esc(m.status)}</span></td>
         <td>${m.status !== 'sent' ? `<button class="btn btn-sm btn-outline-primary" data-send="${m.id}">${d.verify}</button>` : ''}</td></tr>`
           )
           .join('')}</tbody></table></div>`
@@ -275,17 +275,21 @@ async function renderEmail(el: HTMLElement, orgId: string): Promise<void> {
   };
   (el.querySelector('#em-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
-    await call('/api/v1/email/queue', {
-      method: 'POST',
-      body: JSON.stringify({
-        organization_id: orgId,
-        to: (el.querySelector('#em-to') as HTMLInputElement).value,
-        subject: (el.querySelector('#em-sub') as HTMLInputElement).value,
-        body: (el.querySelector('#em-body') as HTMLTextAreaElement).value,
-      }),
-    });
-    toast(d.created, 'success');
-    await load();
+    try {
+      await call('/api/v1/email/queue', {
+        method: 'POST',
+        body: JSON.stringify({
+          organization_id: orgId,
+          to: (el.querySelector('#em-to') as HTMLInputElement).value,
+          subject: (el.querySelector('#em-sub') as HTMLInputElement).value,
+          body: (el.querySelector('#em-body') as HTMLTextAreaElement).value,
+        }),
+      });
+      toast(d.created, 'success');
+      await load();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
   });
   el.querySelector('#em-list')?.addEventListener('click', async (e) => {
     const btn = (e.target as HTMLElement).closest('[data-send]') as HTMLElement | null;
@@ -324,7 +328,7 @@ async function renderInvites(el: HTMLElement, orgId: string): Promise<void> {
         }),
       })) as { invite_url: string };
       (el.querySelector('#in-out') as HTMLElement).innerHTML =
-        `<div class="alert alert-success"><code>${r.invite_url}</code></div>`;
+        `<div class="alert alert-success"><code>${esc(r.invite_url)}</code></div>`;
     } catch (err) {
       (el.querySelector('#in-out') as HTMLElement).innerHTML = errorHtml(err);
     }
@@ -339,35 +343,43 @@ async function renderInvites(el: HTMLElement, orgId: string): Promise<void> {
     box.innerHTML =
       units
         .map(
-          (u) => `<div class="d-flex gap-2 align-items-center mb-1"><span>${u.name}</span>
+          (u) => `<div class="d-flex gap-2 align-items-center mb-1"><span>${esc(u.name)}</span>
       <button class="btn btn-sm btn-outline-primary ms-auto" data-unit="${u.id}">${d.create}</button></div>`
         )
         .join('') || `<p class="text-muted">${d.empty}</p>`;
   };
   (el.querySelector('#ou-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
-    await call('/api/v1/org-units', {
-      method: 'POST',
-      body: JSON.stringify({
-        organization_id: orgId,
-        name: (el.querySelector('#ou-name') as HTMLInputElement).value,
-      }),
-    });
-    toast(d.created, 'success');
-    await loadUnits();
+    try {
+      await call('/api/v1/org-units', {
+        method: 'POST',
+        body: JSON.stringify({
+          organization_id: orgId,
+          name: (el.querySelector('#ou-name') as HTMLInputElement).value,
+        }),
+      });
+      toast(d.created, 'success');
+      await loadUnits();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
   });
   el.querySelector('#ou-list')?.addEventListener('click', async (e) => {
     const btn = (e.target as HTMLElement).closest('[data-unit]') as HTMLElement | null;
     if (!btn?.dataset.unit) return;
-    const data = await modalForm(d.members, [
-      { name: 'user_id', label: `${d.users} ID`, required: true },
-    ]);
-    if (!data) return;
-    await call(`/api/v1/org-units/${btn.dataset.unit}/members`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-    toast(d.created, 'success');
+    try {
+      const data = await modalForm(d.members, [
+        { name: 'user_id', label: `${d.users} ID`, required: true },
+      ]);
+      if (!data) return;
+      await call(`/api/v1/org-units/${btn.dataset.unit}/members`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      toast(d.created, 'success');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
   });
   await loadUnits();
 }

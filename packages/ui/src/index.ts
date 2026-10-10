@@ -203,6 +203,19 @@ export function createClient(opts: ClientOptions) {
 
 export type ApiClient = ReturnType<typeof createClient>;
 
+// ---- HTML escaping (stored-XSS boundary) ----
+// Every server/user-controlled string interpolated into innerHTML templates
+// must pass through esc(). Lesson bodies are treated as untrusted text:
+// there is no sanitizer allowlist, so raw HTML is never rendered.
+export function esc(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ---- Toasts ----
 export function toast(
   message: string,

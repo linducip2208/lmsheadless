@@ -174,7 +174,7 @@ xapi.get('/xapi/statements', requireAuth(), async (c) => {
     )?.n ?? 0;
   const rows = await queryAll(
     db,
-    `SELECT statement_id as id, actor_name, verb, object_id, object_name, result_score, result_success, result_completion, timestamp, stored_at FROM xapi_statements ${clause} ORDER BY stored_at DESC LIMIT ? OFFSET ?`,
+    `SELECT statement_id as id, actor_name, verb, object_id, object_name, result_score, result_success, result_completion, timestamp, stored_at FROM xapi_statements ${clause} ORDER BY stored_at DESC, statement_id DESC LIMIT ? OFFSET ?`,
     ...params,
     perPage,
     (page - 1) * perPage
@@ -244,7 +244,7 @@ xapi.get('/xapi/export', requireAuth(), async (c) => {
     )?.n ?? 0;
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM xapi_statements WHERE organization_id = ? ORDER BY stored_at ASC LIMIT ? OFFSET ?',
+    'SELECT * FROM xapi_statements WHERE organization_id = ? ORDER BY stored_at ASC, statement_id ASC LIMIT ? OFFSET ?',
     orgId,
     perPage,
     (page - 1) * perPage

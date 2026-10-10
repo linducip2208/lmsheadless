@@ -5,7 +5,14 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { courseOrg, canTeach, isPrivileged, parseCsv, toCsv } from '../access.js';
+import {
+  courseOrg,
+  canTeach,
+  isPrivileged,
+  parseCsv,
+  toCsv,
+  wantsNotification,
+} from '../access.js';
 import { hashPassword, randomToken, sha256Hex } from '../crypto.js';
 import type { AppVars, AuthUser } from '../types.js';
 import type { D1Like } from '../db.js';
@@ -339,7 +346,7 @@ growth.get('/ai/jobs', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT id, kind, status, created_by, created_at, reviewed_at FROM ai_jobs WHERE organization_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT id, kind, status, created_by, created_at, reviewed_at FROM ai_jobs WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     orgId
   );
   return ok(c, rows);
@@ -396,7 +403,7 @@ growth.get('/exercises', requireAuth(), async (c) => {
   // Never leak example solutions/expected outputs beyond the statement.
   const rows = await queryAll(
     db,
-    'SELECT id, title, language, execution_mode, max_attempts FROM exercises WHERE course_id = ? ORDER BY created_at ASC',
+    'SELECT id, title, language, execution_mode, max_attempts FROM exercises WHERE course_id = ? ORDER BY created_at ASC, id ASC',
     courseId
   );
   return ok(c, rows);
@@ -479,7 +486,7 @@ growth.get('/exercises/:id/submissions', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT es.*, u.name as student_name FROM exercise_submissions es JOIN users u ON u.id = es.student_id WHERE es.exercise_id = ? ORDER BY es.created_at DESC LIMIT 200',
+    'SELECT es.*, u.name as student_name FROM exercise_submissions es JOIN users u ON u.id = es.student_id WHERE es.exercise_id = ? ORDER BY es.created_at DESC, es.id DESC LIMIT 200',
     c.req.param('id')
   );
   return ok(c, rows);
@@ -805,7 +812,7 @@ growth.get('/ai/conversations', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const rows = await queryAll(
     c.get('db'),
-    'SELECT id, course_id, created_at, updated_at FROM ai_conversations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50',
+    'SELECT id, course_id, created_at, updated_at FROM ai_conversations WHERE user_id = ? ORDER BY updated_at DESC, id DESC LIMIT 50',
     user.id
   );
   return ok(c, rows);
@@ -822,7 +829,7 @@ growth.get('/ai/conversations/:id/messages', requireAuth(), async (c) => {
   if (!own) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT role, body, sources, created_at FROM ai_messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 200',
+    'SELECT role, body, sources, created_at FROM ai_messages WHERE conversation_id = ? ORDER BY created_at ASC, rowid ASC LIMIT 200',
     c.req.param('id')
   );
   return ok(c, rows);
@@ -1558,6 +1565,7 @@ growth.post('/reports/compliance/remind', requireAuth(), async (c) => {
   );
   let reminded = 0;
   for (const row of overdue) {
+    if (!(await wantsNotification(db, row.student_id, 'system'))) continue;
     await execute(
       db,
       'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
@@ -1966,7 +1974,7 @@ growth.get('/imports', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT id, kind, status, total_rows, processed_rows, created_at FROM import_jobs WHERE organization_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT id, kind, status, total_rows, processed_rows, created_at FROM import_jobs WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     orgId
   );
   return ok(c, rows);

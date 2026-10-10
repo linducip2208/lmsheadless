@@ -287,7 +287,7 @@ scorm.get('/scorm/packages', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     db,
-    'SELECT id, title, version, entry_url, package_version, course_id, created_at FROM scorm_packages WHERE organization_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT id, title, version, entry_url, package_version, course_id, created_at FROM scorm_packages WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     orgId
   );
   return ok(c, rows);
@@ -337,7 +337,7 @@ scorm.post('/scorm/attempts', requireAuth(), async (c) => {
     suspend_data: string | null;
   }>(
     db,
-    "SELECT id, completion, location, suspend_data FROM scorm_attempts WHERE package_id = ? AND student_id = ? AND completion NOT IN ('completed') ORDER BY updated_at DESC LIMIT 1",
+    "SELECT id, completion, location, suspend_data FROM scorm_attempts WHERE package_id = ? AND student_id = ? AND completion NOT IN ('completed') ORDER BY updated_at DESC, id DESC LIMIT 1",
     body.package_id,
     user.id
   );
@@ -467,7 +467,7 @@ scorm.get('/scorm/packages/:id/attempts', requireAuth(), async (c) => {
   if (role === 'student') {
     const mine = await queryAll(
       db,
-      'SELECT * FROM scorm_attempts WHERE package_id = ? AND student_id = ? ORDER BY updated_at DESC',
+      'SELECT * FROM scorm_attempts WHERE package_id = ? AND student_id = ? ORDER BY updated_at DESC, id DESC',
       c.req.param('id'),
       user.id
     );
@@ -475,7 +475,7 @@ scorm.get('/scorm/packages/:id/attempts', requireAuth(), async (c) => {
   }
   const rows = await queryAll(
     db,
-    'SELECT a.*, u.name as student_name FROM scorm_attempts a JOIN users u ON u.id = a.student_id WHERE a.package_id = ? ORDER BY a.updated_at DESC LIMIT 200',
+    'SELECT a.*, u.name as student_name FROM scorm_attempts a JOIN users u ON u.id = a.student_id WHERE a.package_id = ? ORDER BY a.updated_at DESC, a.id DESC LIMIT 200',
     c.req.param('id')
   );
   return ok(c, rows);

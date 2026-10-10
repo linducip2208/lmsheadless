@@ -25,7 +25,8 @@
 2. D1 migrations applied in order 001→014; verify `PRAGMA foreign_keys`.
 3. R2 bucket + KV namespace bound; uncomment wrangler blocks.
 4. Run `POST /setup` once, then confirm `setup/status.locked`.
-5. Configure SMTP/VAPID/payment provider keys to activate those paths
+5. Configure email HTTP webhook (`email_api_url` + `email_api_key` — there is
+   no SMTP driver), VAPID/payment provider keys to activate those paths
    (features report “not configured” until then — by design).
 6. Set up D1 backups + R2 lifecycle per `docs/backup-recovery.md`.
 7. Review `LICENSE` selection before any sale/distribution.

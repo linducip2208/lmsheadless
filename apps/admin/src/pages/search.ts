@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderSearch(el: HTMLElement, query: string): Promise<void> {
   const d = t();
@@ -25,32 +25,32 @@ export async function renderSearch(el: HTMLElement, query: string): Promise<void
     const section = (title: string, items: string) =>
       `<div class="card mb-3"><div class="card-header"><h3 class="card-title">${title}</h3></div><div class="list-group list-group-flush">${items || `<div class="list-group-item text-muted">${d.empty}</div>`}</div></div>`;
     el.innerHTML =
-      `<h2>${d.search}: “${query.slice(0, 60)}”</h2>` +
+      `<h2>${d.search}: “${esc(query.slice(0, 60))}”</h2>` +
       section(
         d.courses,
         r.courses
           .map(
             (c) =>
-              `<a class="list-group-item list-group-item-action" href="#/courses/${c.id}"><strong>${c.title}</strong> <span class="text-muted">${c.code}</span></a>`
+              `<a class="list-group-item list-group-item-action" href="#/courses/${c.id}"><strong>${esc(c.title)}</strong> <span class="text-muted">${esc(c.code)}</span></a>`
           )
           .join('')
       ) +
       section(
         d.lessons,
-        r.lessons.map((l) => `<div class="list-group-item">${l.title}</div>`).join('')
+        r.lessons.map((l) => `<div class="list-group-item">${esc(l.title)}</div>`).join('')
       ) +
       section(
         d.users,
         r.users
           .map(
             (u) =>
-              `<a class="list-group-item list-group-item-action" href="#/users/${encodeURIComponent(u.email)}"><strong>${u.name}</strong> <span class="text-muted">${u.email}</span></a>`
+              `<a class="list-group-item list-group-item-action" href="#/users/${encodeURIComponent(u.email)}"><strong>${esc(u.name)}</strong> <span class="text-muted">${esc(u.email)}</span></a>`
           )
           .join('')
       ) +
       section(
         d.announcements,
-        r.announcements.map((a) => `<div class="list-group-item">${a.title}</div>`).join('')
+        r.announcements.map((a) => `<div class="list-group-item">${esc(a.title)}</div>`).join('')
       );
   } catch (e) {
     el.innerHTML = errorHtml(e);
@@ -79,7 +79,7 @@ export async function renderNotifications(el: HTMLElement): Promise<void> {
             .map(
               (
                 n
-              ) => `<div class="alert ${n.is_read ? 'alert-info' : 'alert-success'} py-2"><strong>${n.title}</strong><br>${n.body.slice(0, 500)}
+              ) => `<div class="alert ${n.is_read ? 'alert-info' : 'alert-success'} py-2"><strong>${esc(n.title)}</strong><br>${esc(n.body.slice(0, 500))}
           <div class="mt-1"><span class="text-muted small">${n.created_at?.slice(0, 16).replace('T', ' ') ?? ''}</span>
           ${n.is_read ? '' : ` <button class="btn btn-sm btn-outline-primary" data-read="${n.id}">${d.markRead}</button>`}</div></div>`
             )

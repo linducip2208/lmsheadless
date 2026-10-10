@@ -48,7 +48,7 @@ banks.get('/question-banks', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM question_banks WHERE organization_id = ? ORDER BY created_at DESC LIMIT 200',
+    'SELECT * FROM question_banks WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
     orgId
   );
   return ok(c, rows);
@@ -151,7 +151,7 @@ banks.get('/question-banks/:id/questions', requireAuth(), async (c) => {
     category: string | null;
   }>(
     db,
-    'SELECT id, type, prompt, points, difficulty, category FROM bank_questions WHERE bank_id = ? ORDER BY created_at DESC LIMIT 200',
+    'SELECT id, type, prompt, points, difficulty, category FROM bank_questions WHERE bank_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
     c.req.param('id')
   );
   return ok(c, questions);

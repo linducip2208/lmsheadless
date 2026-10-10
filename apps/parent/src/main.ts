@@ -5,6 +5,7 @@ import {
   themeToggleHtml,
   bindThemeToggles,
   bindSwUpdates,
+  esc,
   type ApiClient,
 } from '@lms/ui';
 import { getDict, type ParentDict } from './i18n.js';
@@ -85,7 +86,7 @@ async function childDetail(el: HTMLElement, orgId: string, child: Child): Promis
     );
     const cohorts = mine;
     el.innerHTML = `<a href="#/" class="btn btn-sm btn-outline-secondary mb-2">← ${d.back}</a>
-      <h2>${child.name}</h2><p class="text-muted">${child.email}</p>
+      <h2>${esc(child.name)}</h2><p class="text-muted">${esc(child.email)}</p>
       <div class="row row-cards">
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">${d.progress}</h3></div>
       <div class="card-body">${
@@ -93,8 +94,8 @@ async function childDetail(el: HTMLElement, orgId: string, child: Child): Promis
           .map(
             (
               x
-            ) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${x.course_title}</span><span>${x.progress_percent}%</span></div>
-      <div class="progress"><div class="progress-bar" style="width:${x.progress_percent}%"></div></div></div>`
+            ) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${esc(x.course_title)}</span><span>${Number(x.progress_percent)}%</span></div>
+      <div class="progress"><div class="progress-bar" style="width:${Number(x.progress_percent)}%"></div></div></div>`
           )
           .join('') || `<p class="text-muted">${d.noEnroll}</p>`
       }</div></div>
@@ -104,23 +105,23 @@ async function childDetail(el: HTMLElement, orgId: string, child: Child): Promis
           .slice(0, 20)
           .map(
             (g) =>
-              `<div class="d-flex justify-content-between border-bottom py-1"><span>${g.category}</span><strong>${g.score}</strong></div>`
+              `<div class="d-flex justify-content-between border-bottom py-1"><span>${esc(g.category)}</span><strong>${Number(g.score)}</strong></div>`
           )
           .join('') || `<p class="text-muted">${d.noGrades}</p>`
       }</div></div></div>
-      <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">${d.attendance} (${att.attendance_pct}%)</h3></div>
+      <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">${d.attendance} (${Number(att.attendance_pct)}%)</h3></div>
       <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>Session</th><th>Date</th><th>Status</th></tr></thead><tbody>
       ${
         (att.records as { status: string; title: string; session_date: string }[])
           .slice(0, 30)
           .map(
             (r) =>
-              `<tr><td>${r.title}</td><td>${r.session_date}</td><td><span class="badge ${r.status === 'present' ? 'bg-green' : r.status === 'absent' ? 'bg-red' : 'bg-yellow'}">${r.status}</span></td></tr>`
+              `<tr><td>${esc(r.title)}</td><td>${esc(r.session_date)}</td><td><span class="badge ${r.status === 'present' ? 'bg-green' : r.status === 'absent' ? 'bg-red' : 'bg-yellow'}">${esc(r.status)}</span></td></tr>`
           )
           .join('') || `<tr><td colspan="3">${d.noRecords}</td></tr>`
       }</tbody></table></div></div></div>
       <div class="card"><div class="card-header"><h3 class="card-title">${d.cohorts}</h3></div>
-      <div class="card-body">${cohorts.map((x) => `<div class="mb-1">👥 ${x.name}</div>`).join('') || `<p class="text-muted">${d.notInCohort}</p>`}</div></div></div></div>`;
+      <div class="card-body">${cohorts.map((x) => `<div class="mb-1">👥 ${esc(x.name)}</div>`).join('') || `<p class="text-muted">${d.notInCohort}</p>`}</div></div></div></div>`;
   } catch (e) {
     el.innerHTML = errHtml(e);
   }
@@ -152,7 +153,7 @@ async function home(el: HTMLElement): Promise<void> {
     el.innerHTML = `<h2>${d.children}</h2><div class="row row-cards">${children
       .map(
         (c) => `<div class="col-md-6"><div class="card">
-      <div class="card-body"><h3 class="card-title">${c.name}</h3><p class="text-muted">${c.email}</p>
+      <div class="card-body"><h3 class="card-title">${esc(c.name)}</h3><p class="text-muted">${esc(c.email)}</p>
       <button class="btn btn-primary" data-child="${c.id}">${d.progress}</button></div></div></div>`
       )
       .join('')}</div>
@@ -161,7 +162,8 @@ async function home(el: HTMLElement): Promise<void> {
         notifs
           .slice(0, 5)
           .map(
-            (n) => `<div class="alert alert-info"><strong>${n.title}</strong><br>${n.body}</div>`
+            (n) =>
+              `<div class="alert alert-info"><strong>${esc(n.title)}</strong><br>${esc(n.body)}</div>`
           )
           .join('') || `<p class="text-muted">${d.none}</p>`
       }</div></div>
@@ -192,7 +194,7 @@ async function router(): Promise<void> {
   }
   app.innerHTML = `<div class="page"><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
     <a class="navbar-brand" href="#/">${d.title}</a>
-    <div class="ms-auto d-flex gap-2 align-items-center"><span class="text-muted small">${me.name}</span>${themeToggleHtml(THEME_KEY)}
+    <div class="ms-auto d-flex gap-2 align-items-center"><span class="text-muted small">${esc(me.name)}</span>${themeToggleHtml(THEME_KEY)}
     <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language">
     <option value="en"${localStorage.getItem('parent-locale') !== 'id' ? ' selected' : ''}>EN</option>
     <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option></select>

@@ -1,4 +1,4 @@
-import { call, crud, loadingHtml, errorHtml, toast, modalForm, getMe, t } from '../lib.js';
+import { call, crud, loadingHtml, errorHtml, toast, modalForm, getMe, t, esc } from '../lib.js';
 
 export async function renderOrgs(el: HTMLElement): Promise<void> {
   const me = getMe();
@@ -52,7 +52,7 @@ async function showOrgDetail(el: HTMLElement, orgId: string): Promise<void> {
       <div class="col-md-7"><div class="card"><div class="card-header d-flex align-items-center">
         <h3 class="card-title">${d.members}</h3><button class="btn btn-sm btn-primary ms-auto" id="add-member">${d.create}</button></div>
         <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.name}</th><th scope="col">${d.email}</th><th scope="col">${d.role}</th></tr></thead>
-        <tbody>${members.map((m) => `<tr><td>${m.name}</td><td>${m.email}</td><td><span class="badge bg-blue">${m.role}</span></td></tr>`).join('') || `<tr><td colspan="3">${d.empty}</td></tr>`}</tbody></table></div></div></div></div>
+        <tbody>${members.map((m) => `<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td><span class="badge bg-blue">${esc(m.role)}</span></td></tr>`).join('') || `<tr><td colspan="3">${d.empty}</td></tr>`}</tbody></table></div></div></div></div>
       <div class="col-md-5"><div class="card"><div class="card-header"><h3 class="card-title">${d.branding}</h3></div>
         <div class="card-body"><dl class="row">
         ${['app_name', 'primary_color', 'secondary_color', 'logo_url', 'footer_text', 'support_email'].map((k) => `<dt class="col-5">${k}</dt><dd class="col-7">${branding[k] ?? '—'}</dd>`).join('')}

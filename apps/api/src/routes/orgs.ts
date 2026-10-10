@@ -15,7 +15,7 @@ orgs.get('/', requireAuth(), async (c) => {
   if (user.isSuperAdmin) {
     const rows = await queryAll(
       db,
-      'SELECT * FROM organizations WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 500'
+      'SELECT * FROM organizations WHERE deleted_at IS NULL ORDER BY created_at DESC, id DESC LIMIT 500'
     );
     return ok(c, rows);
   }
@@ -131,7 +131,7 @@ orgs.get('/:id/academic-years', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM academic_years WHERE organization_id = ? ORDER BY start_date DESC LIMIT 500',
+    'SELECT * FROM academic_years WHERE organization_id = ? ORDER BY start_date DESC, id DESC LIMIT 500',
     id
   );
   return ok(c, rows);
@@ -175,7 +175,7 @@ orgs.get('/:id/terms', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM terms WHERE organization_id = ? ORDER BY start_date DESC LIMIT 500',
+    'SELECT * FROM terms WHERE organization_id = ? ORDER BY start_date DESC, id DESC LIMIT 500',
     id
   );
   return ok(c, rows);
@@ -218,7 +218,7 @@ orgs.get('/:id/classes', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM classes WHERE organization_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 500',
+    'SELECT * FROM classes WHERE organization_id = ? AND deleted_at IS NULL ORDER BY created_at DESC, id DESC LIMIT 500',
     id
   );
   return ok(c, rows);

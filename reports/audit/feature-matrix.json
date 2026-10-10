@@ -1,0 +1,3303 @@
+{
+  "summary": {
+    "generated_at": "2026-10-10T07:34:39.241Z",
+    "commit": "fe6a8ec",
+    "counts": {
+      "endpoints": 257,
+      "public_endpoints": 16,
+      "with_backend_test": 255,
+      "with_e2e": 101,
+      "frontend_hashes": 56,
+      "tables": 108,
+      "migrations": 22
+    }
+  },
+  "endpoints": [
+    {
+      "id": "BE-001",
+      "method": "GET",
+      "path": "/grading/queue",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-002",
+      "method": "POST",
+      "path": "/quizzes",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-003",
+      "method": "GET",
+      "path": "/quizzes",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-004",
+      "method": "POST",
+      "path": "/quizzes/:id/questions",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-005",
+      "method": "GET",
+      "path": "/quizzes/:id/questions",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-006",
+      "method": "GET",
+      "path": "/quizzes/:id/attempts",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-007",
+      "method": "POST",
+      "path": "/quizzes/:id/attempts",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-008",
+      "method": "POST",
+      "path": "/quiz-attempts/:attemptId/submit",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-009",
+      "method": "GET",
+      "path": "/quiz-attempts/:attemptId/answers",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-010",
+      "method": "POST",
+      "path": "/assignments/:id/rubric",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-011",
+      "method": "GET",
+      "path": "/assignments/:id/rubric",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-012",
+      "method": "POST",
+      "path": "/assignments",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-013",
+      "method": "GET",
+      "path": "/assignments",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-014",
+      "method": "GET",
+      "path": "/assignments/:id/submissions",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-015",
+      "method": "POST",
+      "path": "/assignments/:id/submissions",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-016",
+      "method": "POST",
+      "path": "/submissions/:id/grade",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-017",
+      "method": "POST",
+      "path": "/grades",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-018",
+      "method": "GET",
+      "path": "/grades",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-019",
+      "method": "PATCH",
+      "path": "/questions/:questionId",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-020",
+      "method": "DELETE",
+      "path": "/questions/:questionId",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-021",
+      "method": "POST",
+      "path": "/quizzes/:id/questions/reorder",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-022",
+      "method": "POST",
+      "path": "/quiz-attempts/:attemptId/grade",
+      "module": "assessment",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-023",
+      "method": "POST",
+      "path": "/register",
+      "module": "auth",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-024",
+      "method": "POST",
+      "path": "/login",
+      "module": "auth",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-025",
+      "method": "POST",
+      "path": "/refresh",
+      "module": "auth",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-026",
+      "method": "POST",
+      "path": "/logout",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-027",
+      "method": "GET",
+      "path": "/me",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-028",
+      "method": "GET",
+      "path": "/sessions",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-029",
+      "method": "DELETE",
+      "path": "/sessions/:id",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-030",
+      "method": "POST",
+      "path": "/sessions/revoke-all",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-031",
+      "method": "POST",
+      "path": "/password/change",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-032",
+      "method": "POST",
+      "path": "/password/forgot",
+      "module": "auth",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-033",
+      "method": "POST",
+      "path": "/password/reset",
+      "module": "auth",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-034",
+      "method": "GET",
+      "path": "/verify-status",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-035",
+      "method": "POST",
+      "path": "/verify-email/request",
+      "module": "auth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-036",
+      "method": "POST",
+      "path": "/verify-email",
+      "module": "auth",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-037",
+      "method": "GET",
+      "path": "/course-tags",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-038",
+      "method": "POST",
+      "path": "/course-tags",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-039",
+      "method": "PUT",
+      "path": "/courses/:id/tags",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-040",
+      "method": "POST",
+      "path": "/courses/:id/prerequisites",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-041",
+      "method": "GET",
+      "path": "/courses/:id/prerequisites",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-042",
+      "method": "DELETE",
+      "path": "/courses/:id/prerequisites/:reqId",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-043",
+      "method": "POST",
+      "path": "/lessons/:lessonId/prerequisites",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-044",
+      "method": "GET",
+      "path": "/courses/:id/drip",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-045",
+      "method": "POST",
+      "path": "/courses/:id/drip",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-046",
+      "method": "DELETE",
+      "path": "/courses/:id/drip/:lessonId",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-047",
+      "method": "GET",
+      "path": "/lessons/:lessonId/notes",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-048",
+      "method": "POST",
+      "path": "/lessons/:lessonId/notes",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-049",
+      "method": "POST",
+      "path": "/courses/:id/waitlist",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-050",
+      "method": "GET",
+      "path": "/courses/:id/waitlist",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-051",
+      "method": "POST",
+      "path": "/courses/:id/waitlist/:entryId/promote",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-052",
+      "method": "POST",
+      "path": "/courses/:id/duplicate",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-053",
+      "method": "GET",
+      "path": "/courses/:id/versions",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-054",
+      "method": "POST",
+      "path": "/courses/:id/versions",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-055",
+      "method": "GET",
+      "path": "/courses/export",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-056",
+      "method": "POST",
+      "path": "/courses/:id/request-approval",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-057",
+      "method": "GET",
+      "path": "/publish-approvals",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-058",
+      "method": "POST",
+      "path": "/publish-approvals/:id/approve",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-059",
+      "method": "POST",
+      "path": "/publish-approvals/:id/reject",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-060",
+      "method": "POST",
+      "path": "/courses/publish-due",
+      "module": "authoring",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-061",
+      "method": "POST",
+      "path": "/question-banks",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-062",
+      "method": "GET",
+      "path": "/question-banks",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-063",
+      "method": "POST",
+      "path": "/question-banks/:id/questions",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-064",
+      "method": "GET",
+      "path": "/question-banks/:id/questions",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-065",
+      "method": "POST",
+      "path": "/question-banks/:bankId/questions/:qId/copy-to/:quizId",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-066",
+      "method": "POST",
+      "path": "/quizzes/:id/pools",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-067",
+      "method": "PUT",
+      "path": "/quiz-attempts/:attemptId/autosave",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-068",
+      "method": "GET",
+      "path": "/quiz-attempts/:attemptId/autosave",
+      "module": "banks",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-069",
+      "method": "POST",
+      "path": "/cohorts",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-070",
+      "method": "GET",
+      "path": "/cohorts",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-071",
+      "method": "POST",
+      "path": "/cohorts/:id/members",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-072",
+      "method": "GET",
+      "path": "/cohorts/:id/members",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-073",
+      "method": "POST",
+      "path": "/cohorts/:id/courses",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-074",
+      "method": "GET",
+      "path": "/cohorts/:id/progress",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-075",
+      "method": "POST",
+      "path": "/programs",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-076",
+      "method": "GET",
+      "path": "/programs",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-077",
+      "method": "POST",
+      "path": "/programs/:id/courses",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-078",
+      "method": "GET",
+      "path": "/programs/:id",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-079",
+      "method": "POST",
+      "path": "/competencies",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-080",
+      "method": "POST",
+      "path": "/competencies/:id/assess",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-081",
+      "method": "GET",
+      "path": "/competencies/student",
+      "module": "cohorts",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-082",
+      "method": "POST",
+      "path": "/bundles",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-083",
+      "method": "GET",
+      "path": "/bundles",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-084",
+      "method": "GET",
+      "path": "/bundles/:id",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-085",
+      "method": "PATCH",
+      "path": "/bundles/:id",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-086",
+      "method": "POST",
+      "path": "/coupons",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-087",
+      "method": "GET",
+      "path": "/coupons",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-088",
+      "method": "POST",
+      "path": "/orders",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-089",
+      "method": "GET",
+      "path": "/orders",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-090",
+      "method": "GET",
+      "path": "/orders/:id",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-091",
+      "method": "POST",
+      "path": "/orders/:id/payments/manual",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-092",
+      "method": "POST",
+      "path": "/payments/:id/confirm",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-093",
+      "method": "POST",
+      "path": "/payments/webhooks/:provider",
+      "module": "commerce",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-094",
+      "method": "POST",
+      "path": "/orders/:id/refund",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-095",
+      "method": "GET",
+      "path": "/subscription-plans",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-096",
+      "method": "POST",
+      "path": "/subscription-plans",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-097",
+      "method": "POST",
+      "path": "/subscriptions",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-098",
+      "method": "GET",
+      "path": "/commissions",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-099",
+      "method": "POST",
+      "path": "/payouts",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-100",
+      "method": "POST",
+      "path": "/payouts/:id/decide",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-101",
+      "method": "GET",
+      "path": "/affiliates",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-102",
+      "method": "GET",
+      "path": "/payouts",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-103",
+      "method": "POST",
+      "path": "/affiliates",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-104",
+      "method": "POST",
+      "path": "/referrals",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-105",
+      "method": "POST",
+      "path": "/orders/:id/gift",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-106",
+      "method": "POST",
+      "path": "/gifts/redeem",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-107",
+      "method": "GET",
+      "path": "/catalog/courses",
+      "module": "commerce",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-108",
+      "method": "GET",
+      "path": "/catalog/bundles",
+      "module": "commerce",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-109",
+      "method": "GET",
+      "path": "/catalog/bundles/:id",
+      "module": "commerce",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-110",
+      "method": "GET",
+      "path": "/catalog/instructors/:id",
+      "module": "commerce",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-111",
+      "method": "GET",
+      "path": "/commerce/revenue",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-112",
+      "method": "GET",
+      "path": "/invoices/order/:orderId",
+      "module": "commerce",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-113",
+      "method": "GET",
+      "path": "/instructor/courses",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-114",
+      "method": "GET",
+      "path": "/courses",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-115",
+      "method": "POST",
+      "path": "/courses",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-116",
+      "method": "GET",
+      "path": "/courses/:id",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-117",
+      "method": "PATCH",
+      "path": "/courses/:id",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-118",
+      "method": "DELETE",
+      "path": "/courses/:id",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-119",
+      "method": "GET",
+      "path": "/courses/:id/sections",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-120",
+      "method": "POST",
+      "path": "/courses/:id/sections",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-121",
+      "method": "GET",
+      "path": "/courses/sections/:sectionId/lessons",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-122",
+      "method": "POST",
+      "path": "/courses/sections/:sectionId/lessons",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-123",
+      "method": "POST",
+      "path": "/enrollments",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-124",
+      "method": "GET",
+      "path": "/courses/:id/enrollments",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-125",
+      "method": "GET",
+      "path": "/courses/:id/enrollment-requests",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-126",
+      "method": "POST",
+      "path": "/enrollment-requests/:requestId/approve",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-127",
+      "method": "POST",
+      "path": "/enrollment-requests/:requestId/reject",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-128",
+      "method": "POST",
+      "path": "/lessons/:lessonId/complete",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-129",
+      "method": "GET",
+      "path": "/courses/:id/progress",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-130",
+      "method": "PATCH",
+      "path": "/courses/sections/:sectionId",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-131",
+      "method": "DELETE",
+      "path": "/courses/sections/:sectionId",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-132",
+      "method": "POST",
+      "path": "/courses/:id/sections/reorder",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-133",
+      "method": "PATCH",
+      "path": "/lessons/:lessonId",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-134",
+      "method": "DELETE",
+      "path": "/lessons/:lessonId",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-135",
+      "method": "POST",
+      "path": "/courses/sections/:sectionId/lessons/reorder",
+      "module": "courses",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-136",
+      "method": "GET",
+      "path": "/ai/config",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-137",
+      "method": "PUT",
+      "path": "/ai/config",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-138",
+      "method": "POST",
+      "path": "/ai/jobs",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-139",
+      "method": "POST",
+      "path": "/ai/jobs/:id/review",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-140",
+      "method": "GET",
+      "path": "/ai/jobs",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-141",
+      "method": "POST",
+      "path": "/exercises",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-142",
+      "method": "GET",
+      "path": "/exercises",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-143",
+      "method": "POST",
+      "path": "/exercises/:id/submissions",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-144",
+      "method": "GET",
+      "path": "/exercises/:id/submissions",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-145",
+      "method": "POST",
+      "path": "/exercise-submissions/:id/feedback",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-146",
+      "method": "POST",
+      "path": "/ai/index/rebuild",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-147",
+      "method": "POST",
+      "path": "/ai/ask",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-148",
+      "method": "GET",
+      "path": "/ai/conversations",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-149",
+      "method": "GET",
+      "path": "/ai/conversations/:id/messages",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-150",
+      "method": "POST",
+      "path": "/ai/retention/purge",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-151",
+      "method": "POST",
+      "path": "/ai/jobs/:id/apply",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-152",
+      "method": "POST",
+      "path": "/email/queue",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-153",
+      "method": "GET",
+      "path": "/email/queue",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-154",
+      "method": "POST",
+      "path": "/email/queue/:id/send",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-155",
+      "method": "POST",
+      "path": "/invitations",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-156",
+      "method": "POST",
+      "path": "/invitations/accept",
+      "module": "growth",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-157",
+      "method": "POST",
+      "path": "/org-units",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-158",
+      "method": "GET",
+      "path": "/org-units",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-159",
+      "method": "POST",
+      "path": "/org-units/:id/members",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-160",
+      "method": "GET",
+      "path": "/alerts/rules",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-161",
+      "method": "GET",
+      "path": "/alerts",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-162",
+      "method": "POST",
+      "path": "/alerts/:id/dismiss",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-163",
+      "method": "GET",
+      "path": "/reports/compliance",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-164",
+      "method": "POST",
+      "path": "/reports/compliance/remind",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-165",
+      "method": "GET",
+      "path": "/exports/organization",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-166",
+      "method": "POST",
+      "path": "/imports",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-167",
+      "method": "GET",
+      "path": "/imports",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-168",
+      "method": "GET",
+      "path": "/imports/:id",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-169",
+      "method": "GET",
+      "path": "/reports/engagement",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-170",
+      "method": "GET",
+      "path": "/reports/export",
+      "module": "growth",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-171",
+      "method": "POST",
+      "path": "/live-sessions",
+      "module": "live",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-172",
+      "method": "GET",
+      "path": "/live-sessions",
+      "module": "live",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-173",
+      "method": "POST",
+      "path": "/live-sessions/:id/register",
+      "module": "live",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-174",
+      "method": "PATCH",
+      "path": "/live-sessions/:id",
+      "module": "live",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-175",
+      "method": "POST",
+      "path": "/live-sessions/:id/cancel",
+      "module": "live",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-176",
+      "method": "POST",
+      "path": "/live-sessions/:id/attendance",
+      "module": "live",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-177",
+      "method": "GET",
+      "path": "/live-sessions.ics",
+      "module": "live",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-178",
+      "method": "POST",
+      "path": "/api/v1/attendance/sessions",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-179",
+      "method": "POST",
+      "path": "/api/v1/attendance/records",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-180",
+      "method": "GET",
+      "path": "/api/v1/attendance/sessions",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-181",
+      "method": "GET",
+      "path": "/api/v1/certificates/verify/:number",
+      "module": "ops",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-182",
+      "method": "GET",
+      "path": "/api/v1/certificates",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-183",
+      "method": "POST",
+      "path": "/api/v1/certificates/issue",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-184",
+      "method": "POST",
+      "path": "/api/v1/certificates/bulk-issue",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-185",
+      "method": "POST",
+      "path": "/api/v1/certificates/:id/revoke",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-186",
+      "method": "GET",
+      "path": "/api/v1/certificates/:id/pdf",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-187",
+      "method": "GET",
+      "path": "/api/v1/announcements",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-188",
+      "method": "POST",
+      "path": "/api/v1/announcements",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-189",
+      "method": "GET",
+      "path": "/api/v1/notifications",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-190",
+      "method": "POST",
+      "path": "/api/v1/notifications/:id/read",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-191",
+      "method": "GET",
+      "path": "/api/v1/discussions",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-192",
+      "method": "POST",
+      "path": "/api/v1/discussions",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-193",
+      "method": "GET",
+      "path": "/api/v1/discussions/:threadId/replies",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-194",
+      "method": "POST",
+      "path": "/api/v1/discussions/:threadId/replies",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-195",
+      "method": "GET",
+      "path": "/api/v1/reports/organization-summary",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-196",
+      "method": "GET",
+      "path": "/api/v1/reports/student-progress",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-197",
+      "method": "POST",
+      "path": "/api/v1/uploads",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-198",
+      "method": "GET",
+      "path": "/api/v1/reports/completion",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": false,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_NOT_VERIFIED"
+    },
+    {
+      "id": "BE-199",
+      "method": "GET",
+      "path": "/api/v1/reports/quiz-performance",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-200",
+      "method": "GET",
+      "path": "/api/v1/reports/attendance",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": false,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_NOT_VERIFIED"
+    },
+    {
+      "id": "BE-201",
+      "method": "GET",
+      "path": "/api/v1/reports/teacher-activity",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-202",
+      "method": "GET",
+      "path": "/api/v1/attendance/student",
+      "module": "ops",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-203",
+      "method": "GET",
+      "path": "/",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-204",
+      "method": "POST",
+      "path": "/",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-205",
+      "method": "GET",
+      "path": "/:id",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-206",
+      "method": "GET",
+      "path": "/:id/members",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-207",
+      "method": "POST",
+      "path": "/:id/members",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-208",
+      "method": "GET",
+      "path": "/:id/academic-years",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-209",
+      "method": "POST",
+      "path": "/:id/academic-years",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-210",
+      "method": "GET",
+      "path": "/:id/terms",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-211",
+      "method": "POST",
+      "path": "/:id/terms",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-212",
+      "method": "GET",
+      "path": "/:id/classes",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-213",
+      "method": "POST",
+      "path": "/:id/classes",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-214",
+      "method": "POST",
+      "path": "/classes/:classId/members",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-215",
+      "method": "GET",
+      "path": "/:id/subjects",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-216",
+      "method": "POST",
+      "path": "/:id/subjects",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-217",
+      "method": "GET",
+      "path": "/api/v1/system/health",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-218",
+      "method": "GET",
+      "path": "/api/v1/system/status",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-219",
+      "method": "GET",
+      "path": "/api/v1/setup/status",
+      "module": "platform",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-220",
+      "method": "POST",
+      "path": "/api/v1/setup",
+      "module": "platform",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-221",
+      "method": "GET",
+      "path": "/api/v1/settings",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-222",
+      "method": "PUT",
+      "path": "/api/v1/settings",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-223",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/branding",
+      "module": "platform",
+      "auth": "PUBLIC",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-224",
+      "method": "PUT",
+      "path": "/api/v1/organizations/:id",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-225",
+      "method": "POST",
+      "path": "/api/v1/organizations/:id/domain",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-226",
+      "method": "GET",
+      "path": "/api/v1/permissions",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-227",
+      "method": "PUT",
+      "path": "/api/v1/roles/:role/permissions",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-228",
+      "method": "GET",
+      "path": "/api/v1/roles",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-229",
+      "method": "GET",
+      "path": "/api/v1/users/me/permissions",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-230",
+      "method": "GET",
+      "path": "/api/v1/audit-logs",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-231",
+      "method": "GET",
+      "path": "/api/v1/files",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-232",
+      "method": "GET",
+      "path": "/api/v1/files/:id/download",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-233",
+      "method": "GET",
+      "path": "/api/v1/search",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-234",
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-235",
+      "method": "POST",
+      "path": "/api/v1/notifications/read-all",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-236",
+      "method": "GET",
+      "path": "/api/v1/notification-preferences",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-237",
+      "method": "PUT",
+      "path": "/api/v1/notification-preferences",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-238",
+      "method": "GET",
+      "path": "/api/v1/push/config",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-239",
+      "method": "POST",
+      "path": "/api/v1/push/subscriptions",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-240",
+      "method": "GET",
+      "path": "/api/v1/push/subscriptions",
+      "module": "platform",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-241",
+      "method": "POST",
+      "path": "/scorm/upload",
+      "module": "scorm",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-242",
+      "method": "GET",
+      "path": "/scorm/packages",
+      "module": "scorm",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-243",
+      "method": "GET",
+      "path": "/scorm/content/:pkgId/*",
+      "module": "scorm",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-244",
+      "method": "POST",
+      "path": "/scorm/attempts",
+      "module": "scorm",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-245",
+      "method": "POST",
+      "path": "/scorm/attempts/:id/commit",
+      "module": "scorm",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-246",
+      "method": "GET",
+      "path": "/scorm/packages/:id/attempts",
+      "module": "scorm",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-247",
+      "method": "GET",
+      "path": "/",
+      "module": "users",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-248",
+      "method": "POST",
+      "path": "/",
+      "module": "users",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-249",
+      "method": "GET",
+      "path": "/:id",
+      "module": "users",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-250",
+      "method": "PATCH",
+      "path": "/:id",
+      "module": "users",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-251",
+      "method": "DELETE",
+      "path": "/:id",
+      "module": "users",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-252",
+      "method": "POST",
+      "path": "/:id/parent-links",
+      "module": "users",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-253",
+      "method": "GET",
+      "path": "/:id/linked-students",
+      "module": "users",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": true,
+      "status": "IMPLEMENTED_AND_VERIFIED"
+    },
+    {
+      "id": "BE-254",
+      "method": "POST",
+      "path": "/xapi/statements",
+      "module": "xapi",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-255",
+      "method": "GET",
+      "path": "/xapi/statements",
+      "module": "xapi",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-256",
+      "method": "DELETE",
+      "path": "/xapi/statements",
+      "module": "xapi",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    },
+    {
+      "id": "BE-257",
+      "method": "GET",
+      "path": "/xapi/export",
+      "module": "xapi",
+      "auth": "requireAuth",
+      "backend_test": true,
+      "e2e_test": false,
+      "status": "IMPLEMENTED_PARTIALLY_VERIFIED"
+    }
+  ],
+  "feRoutes": [
+    {
+      "id": "FE-AD-01",
+      "portal": "admin",
+      "hash": "#/users"
+    },
+    {
+      "id": "FE-AD-02",
+      "portal": "admin",
+      "hash": "#/organizations"
+    },
+    {
+      "id": "FE-AD-03",
+      "portal": "admin",
+      "hash": "#/roles"
+    },
+    {
+      "id": "FE-AD-04",
+      "portal": "admin",
+      "hash": "#/courses"
+    },
+    {
+      "id": "FE-AD-05",
+      "portal": "admin",
+      "hash": "#/cohorts"
+    },
+    {
+      "id": "FE-AD-06",
+      "portal": "admin",
+      "hash": "#/quizzes"
+    },
+    {
+      "id": "FE-AD-07",
+      "portal": "admin",
+      "hash": "#/assignments"
+    },
+    {
+      "id": "FE-AD-08",
+      "portal": "admin",
+      "hash": "#/attendance"
+    },
+    {
+      "id": "FE-AD-09",
+      "portal": "admin",
+      "hash": "#/live"
+    },
+    {
+      "id": "FE-AD-10",
+      "portal": "admin",
+      "hash": "#/scorm"
+    },
+    {
+      "id": "FE-AD-11",
+      "portal": "admin",
+      "hash": "#/commerce"
+    },
+    {
+      "id": "FE-AD-12",
+      "portal": "admin",
+      "hash": "#/data"
+    },
+    {
+      "id": "FE-AD-13",
+      "portal": "admin",
+      "hash": "#/grades"
+    },
+    {
+      "id": "FE-AD-14",
+      "portal": "admin",
+      "hash": "#/community"
+    },
+    {
+      "id": "FE-AD-15",
+      "portal": "admin",
+      "hash": "#/certificates"
+    },
+    {
+      "id": "FE-AD-16",
+      "portal": "admin",
+      "hash": "#/alerts"
+    },
+    {
+      "id": "FE-AD-17",
+      "portal": "admin",
+      "hash": "#/system"
+    },
+    {
+      "id": "FE-AD-18",
+      "portal": "admin",
+      "hash": "#/notifications"
+    },
+    {
+      "id": "FE-AD-19",
+      "portal": "admin",
+      "hash": "#/files"
+    },
+    {
+      "id": "FE-AD-20",
+      "portal": "admin",
+      "hash": "#/reports"
+    },
+    {
+      "id": "FE-AD-21",
+      "portal": "admin",
+      "hash": "#/settings"
+    },
+    {
+      "id": "FE-AD-22",
+      "portal": "admin",
+      "hash": "#/search"
+    },
+    {
+      "id": "FE-AD-23",
+      "portal": "admin",
+      "hash": "#/login"
+    },
+    {
+      "id": "FE-TE-01",
+      "portal": "teacher",
+      "hash": "#/login"
+    },
+    {
+      "id": "FE-TE-02",
+      "portal": "teacher",
+      "hash": "#/courses"
+    },
+    {
+      "id": "FE-TE-03",
+      "portal": "teacher",
+      "hash": "#/banks"
+    },
+    {
+      "id": "FE-TE-04",
+      "portal": "teacher",
+      "hash": "#/grading"
+    },
+    {
+      "id": "FE-TE-05",
+      "portal": "teacher",
+      "hash": "#/attendance"
+    },
+    {
+      "id": "FE-TE-06",
+      "portal": "teacher",
+      "hash": "#/live"
+    },
+    {
+      "id": "FE-TE-07",
+      "portal": "teacher",
+      "hash": "#/cohorts"
+    },
+    {
+      "id": "FE-TE-08",
+      "portal": "teacher",
+      "hash": "#/ai"
+    },
+    {
+      "id": "FE-TE-09",
+      "portal": "teacher",
+      "hash": "#/exercises"
+    },
+    {
+      "id": "FE-TE-10",
+      "portal": "teacher",
+      "hash": "#/students"
+    },
+    {
+      "id": "FE-TE-11",
+      "portal": "teacher",
+      "hash": "#/profile"
+    },
+    {
+      "id": "FE-ST-01",
+      "portal": "student",
+      "hash": "#/login"
+    },
+    {
+      "id": "FE-ST-02",
+      "portal": "student",
+      "hash": "#/courses"
+    },
+    {
+      "id": "FE-ST-03",
+      "portal": "student",
+      "hash": "#/grades"
+    },
+    {
+      "id": "FE-ST-04",
+      "portal": "student",
+      "hash": "#/more"
+    },
+    {
+      "id": "FE-ST-05",
+      "portal": "student",
+      "hash": "#/shop"
+    },
+    {
+      "id": "FE-ST-06",
+      "portal": "student",
+      "hash": "#/live"
+    },
+    {
+      "id": "FE-ST-07",
+      "portal": "student",
+      "hash": "#/programs"
+    },
+    {
+      "id": "FE-ST-08",
+      "portal": "student",
+      "hash": "#/tutor"
+    },
+    {
+      "id": "FE-ST-09",
+      "portal": "student",
+      "hash": "#/scorm"
+    },
+    {
+      "id": "FE-PA-01",
+      "portal": "parent",
+      "hash": "#/login"
+    },
+    {
+      "id": "FE-WE-01",
+      "portal": "web",
+      "hash": "#/login"
+    },
+    {
+      "id": "FE-WE-02",
+      "portal": "web",
+      "hash": "#/register"
+    },
+    {
+      "id": "FE-WE-03",
+      "portal": "web",
+      "hash": "#/features"
+    },
+    {
+      "id": "FE-WE-04",
+      "portal": "web",
+      "hash": "#/pricing"
+    },
+    {
+      "id": "FE-WE-05",
+      "portal": "web",
+      "hash": "#/documentation"
+    },
+    {
+      "id": "FE-WE-06",
+      "portal": "web",
+      "hash": "#/schools"
+    },
+    {
+      "id": "FE-WE-07",
+      "portal": "web",
+      "hash": "#/training"
+    },
+    {
+      "id": "FE-WE-08",
+      "portal": "web",
+      "hash": "#/corporate"
+    },
+    {
+      "id": "FE-WE-09",
+      "portal": "web",
+      "hash": "#/about"
+    },
+    {
+      "id": "FE-WE-10",
+      "portal": "web",
+      "hash": "#/contact"
+    },
+    {
+      "id": "FE-WE-11",
+      "portal": "web",
+      "hash": "#/verify/DEMO"
+    },
+    {
+      "id": "FE-WE-12",
+      "portal": "web",
+      "hash": "#/bundles"
+    }
+  ],
+  "tables": [
+    {
+      "table": "organizations",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "users",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "organization_members",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "permissions",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "role_permissions",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "refresh_tokens",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "password_resets",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "email_verifications",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "parent_links",
+      "migration": "001_core.sql"
+    },
+    {
+      "table": "academic_years",
+      "migration": "002_academic.sql"
+    },
+    {
+      "table": "terms",
+      "migration": "002_academic.sql"
+    },
+    {
+      "table": "classes",
+      "migration": "002_academic.sql"
+    },
+    {
+      "table": "class_members",
+      "migration": "002_academic.sql"
+    },
+    {
+      "table": "subjects",
+      "migration": "002_academic.sql"
+    },
+    {
+      "table": "course_categories",
+      "migration": "003_courses.sql"
+    },
+    {
+      "table": "courses",
+      "migration": "003_courses.sql"
+    },
+    {
+      "table": "course_instructors",
+      "migration": "003_courses.sql"
+    },
+    {
+      "table": "course_sections",
+      "migration": "003_courses.sql"
+    },
+    {
+      "table": "lessons",
+      "migration": "003_courses.sql"
+    },
+    {
+      "table": "lesson_attachments",
+      "migration": "003_courses.sql"
+    },
+    {
+      "table": "enrollments",
+      "migration": "003_courses.sql"
+    },
+    {
+      "table": "quizzes",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "questions",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "question_options",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "quiz_attempts",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "quiz_answers",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "assignments",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "submissions",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "submission_attachments",
+      "migration": "004_assessment.sql"
+    },
+    {
+      "table": "lesson_progress",
+      "migration": "005_progress.sql"
+    },
+    {
+      "table": "course_progress",
+      "migration": "005_progress.sql"
+    },
+    {
+      "table": "grade_categories",
+      "migration": "005_progress.sql"
+    },
+    {
+      "table": "grades",
+      "migration": "005_progress.sql"
+    },
+    {
+      "table": "attendance_sessions",
+      "migration": "005_progress.sql"
+    },
+    {
+      "table": "attendance_records",
+      "migration": "005_progress.sql"
+    },
+    {
+      "table": "certificate_templates",
+      "migration": "006_social.sql"
+    },
+    {
+      "table": "certificates",
+      "migration": "006_social.sql"
+    },
+    {
+      "table": "announcements",
+      "migration": "006_social.sql"
+    },
+    {
+      "table": "notifications",
+      "migration": "006_social.sql"
+    },
+    {
+      "table": "discussion_threads",
+      "migration": "006_social.sql"
+    },
+    {
+      "table": "discussion_replies",
+      "migration": "006_social.sql"
+    },
+    {
+      "table": "settings",
+      "migration": "007_platform.sql"
+    },
+    {
+      "table": "audit_logs",
+      "migration": "007_platform.sql"
+    },
+    {
+      "table": "files",
+      "migration": "007_platform.sql"
+    },
+    {
+      "table": "idempotency_keys",
+      "migration": "007_platform.sql"
+    },
+    {
+      "table": "notification_preferences",
+      "migration": "007_platform.sql"
+    },
+    {
+      "table": "push_subscriptions",
+      "migration": "007_platform.sql"
+    },
+    {
+      "table": "course_tags",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "course_tag_links",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "course_prerequisites",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "lesson_prerequisites",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "drip_rules",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "instructor_notes",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "waitlists",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "course_versions",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "import_jobs",
+      "migration": "008_authoring.sql"
+    },
+    {
+      "table": "question_banks",
+      "migration": "009_assessment2.sql"
+    },
+    {
+      "table": "bank_questions",
+      "migration": "009_assessment2.sql"
+    },
+    {
+      "table": "bank_options",
+      "migration": "009_assessment2.sql"
+    },
+    {
+      "table": "quiz_pools",
+      "migration": "009_assessment2.sql"
+    },
+    {
+      "table": "attempt_autosaves",
+      "migration": "009_assessment2.sql"
+    },
+    {
+      "table": "cohorts",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "cohort_members",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "cohort_courses",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "programs",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "program_courses",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "competencies",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "competency_links",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "competency_evidence",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "milestones",
+      "migration": "010_cohorts.sql"
+    },
+    {
+      "table": "live_sessions",
+      "migration": "011_live.sql"
+    },
+    {
+      "table": "live_registrations",
+      "migration": "011_live.sql"
+    },
+    {
+      "table": "live_attendance",
+      "migration": "011_live.sql"
+    },
+    {
+      "table": "bundles",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "bundle_courses",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "coupons",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "orders",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "order_items",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "payments",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "invoices",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "payment_webhooks",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "commissions",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "payouts",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "affiliates",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "referrals",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "gifts",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "entitlements",
+      "migration": "012_commerce.sql"
+    },
+    {
+      "table": "scorm_packages",
+      "migration": "013_scorm.sql"
+    },
+    {
+      "table": "scorm_attempts",
+      "migration": "013_scorm.sql"
+    },
+    {
+      "table": "ai_configs",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "ai_jobs",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "exercises",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "exercise_submissions",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "email_queue",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "invitations",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "org_units",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "org_unit_members",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "publish_approvals",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "activity_log",
+      "migration": "014_growth.sql"
+    },
+    {
+      "table": "subscription_plans",
+      "migration": "015_commerce2.sql"
+    },
+    {
+      "table": "subscriptions",
+      "migration": "015_commerce2.sql"
+    },
+    {
+      "table": "enrollment_requests",
+      "migration": "016_enrollment_requests.sql"
+    },
+    {
+      "table": "xapi_statements",
+      "migration": "018_xapi.sql"
+    },
+    {
+      "table": "ai_conversations",
+      "migration": "019_ai_tutor.sql"
+    },
+    {
+      "table": "ai_messages",
+      "migration": "019_ai_tutor.sql"
+    },
+    {
+      "table": "ai_chunks",
+      "migration": "019_ai_tutor.sql"
+    },
+    {
+      "table": "rubric_criteria",
+      "migration": "020_enterprise.sql"
+    },
+    {
+      "table": "alerts",
+      "migration": "020_enterprise.sql"
+    }
+  ]
+}

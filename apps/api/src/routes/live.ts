@@ -5,7 +5,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { canTeach } from '../access.js';
+import { canTeach, wantsNotification } from '../access.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -87,7 +87,7 @@ live.get('/live-sessions', requireAuth(), async (c) => {
   const upcoming = url.searchParams.get('upcoming') === '1';
   const rows = await queryAll(
     c.get('db'),
-    `SELECT * FROM live_sessions WHERE organization_id = ? ${upcoming ? "AND starts_at >= ? AND status = 'scheduled'" : ''} ORDER BY starts_at ASC LIMIT 200`,
+    `SELECT * FROM live_sessions WHERE organization_id = ? ${upcoming ? "AND starts_at >= ? AND status = 'scheduled'" : ''} ORDER BY starts_at ASC, id ASC LIMIT 200`,
     ...(upcoming ? [orgId, nowIso()] : [orgId])
   );
   // Students only see sessions for courses/cohorts they belong to.
@@ -226,7 +226,9 @@ live.patch('/live-sessions/:id', requireAuth(), async (c) => {
     'SELECT user_id FROM live_registrations WHERE session_id = ?',
     c.req.param('id')
   );
+  let notified = 0;
   for (const reg of regs) {
+    if (!(await wantsNotification(db, reg.user_id, 'system'))) continue;
     await execute(
       db,
       'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
@@ -236,13 +238,14 @@ live.patch('/live-sessions/:id', requireAuth(), async (c) => {
       `New time: ${start}`.slice(0, 1000),
       nowIso()
     );
+    notified++;
   }
   await audit(c, 'live.rescheduled', {
     entity: 'live_session',
     entityId: c.req.param('id'),
     organizationId: sess.organization_id,
   });
-  return ok(c, { rescheduled: true, notified: regs.length });
+  return ok(c, { rescheduled: true, notified });
 });
 
 live.post('/live-sessions/:id/cancel', requireAuth(), async (c) => {
@@ -268,6 +271,7 @@ live.post('/live-sessions/:id/cancel', requireAuth(), async (c) => {
     c.req.param('id')
   );
   for (const reg of regs) {
+    if (!(await wantsNotification(db, reg.user_id, 'system'))) continue;
     await execute(
       db,
       'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
@@ -345,7 +349,7 @@ live.get('/live-sessions.ics', requireAuth(), async (c) => {
     meeting_url: string | null;
   }>(
     c.get('db'),
-    "SELECT title, description, starts_at, ends_at, meeting_url FROM live_sessions WHERE organization_id = ? AND status = 'scheduled' ORDER BY starts_at ASC LIMIT 200",
+    "SELECT title, description, starts_at, ends_at, meeting_url FROM live_sessions WHERE organization_id = ? AND status = 'scheduled' ORDER BY starts_at ASC, id ASC LIMIT 200",
     orgId
   );
   const esc = (s: string) =>

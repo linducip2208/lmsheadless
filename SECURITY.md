@@ -20,7 +20,7 @@
 - Zod validation on every write endpoint (email, password, enums, dates, pagination, file metadata, quiz answers, submissions).
 - SQL: parameterized `bind(...)` everywhere via D1 interface; sort columns allowlisted; `LIKE` bounded to 200 chars.
 - Uploads: MIME + extension allowlist, 25 MB cap, executable/active-content blocked, server-generated keys, traversal check (`..` rejected), auth required.
-- XSS: API returns JSON (no HTML reflection); frontends use `textContent`-style interpolation with slicing and no `innerHTML` of user data except escaped template strings — no `eval`.
+- XSS: API returns JSON (no HTML reflection) and stores submissions verbatim; all portals render server/user strings through the shared `esc()` output encoder in `@lms/ui` (`test/xss-escape.test.ts` pins the discussion/announcement/quiz sinks). No `eval`; lesson bodies are rendered as escaped text (no raw-HTML lesson rendering).
 - CSRF: API is token-based (Bearer, no cookies) → no CSRF surface; same-origin frontends use Authorization header.
 - Rate limiting: per-IP sliding window middleware; KV-backed in production (binding `KV`), in-memory fallback locally. Auth endpoints share the same limiter.
 

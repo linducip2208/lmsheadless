@@ -1,4 +1,4 @@
-import { toast, modalForm } from '@lms/ui';
+import { toast, modalForm, esc } from '@lms/ui';
 import type { ApiClient } from '@lms/ui';
 import { getDict } from './i18n.js';
 
@@ -29,25 +29,29 @@ export async function banksView(
             .map(
               (
                 b
-              ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${b.name}</h3>
+              ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${esc(b.name)}</h3>
         <div class="d-flex gap-1"><button class="btn btn-sm btn-outline-primary" data-bq="${b.id}">${d.questions}</button>
         <button class="btn btn-sm btn-outline-green" data-badd="${b.id}">${d.newQuestion}</button></div><div data-bd="${b.id}" class="mt-2"></div></div></div>`
             )
             .join('')
         : `<p class="text-muted">${d.empty}</p>`;
     } catch (e) {
-      box.innerHTML = `<div class="alert alert-danger">${e instanceof Error ? e.message : 'Error'}</div>`;
+      box.innerHTML = `<div class="alert alert-danger">${esc(e instanceof Error ? e.message : 'Error')}</div>`;
     }
   };
   (el.querySelector('#b-new') as HTMLButtonElement).addEventListener('click', async () => {
-    const data = await modalForm(d.newBank, [{ name: 'name', label: d.name, required: true }]);
-    if (!data) return;
-    await call('/api/v1/question-banks', {
-      method: 'POST',
-      body: JSON.stringify({ organization_id: orgId, ...data }),
-    });
-    toast(d.created, 'success');
-    await load();
+    try {
+      const data = await modalForm(d.newBank, [{ name: 'name', label: d.name, required: true }]);
+      if (!data) return;
+      await call('/api/v1/question-banks', {
+        method: 'POST',
+        body: JSON.stringify({ organization_id: orgId, ...data }),
+      });
+      toast(d.created, 'success');
+      await load();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
   });
   el.querySelector('#b-list')?.addEventListener('click', async (e) => {
     const btn = (e.target as HTMLElement).closest('button') as HTMLButtonElement | null;
@@ -61,7 +65,7 @@ export async function banksView(
           qs
             .map(
               (q) =>
-                `<div class="small mb-1"><span class="badge bg-blue">${q.type}</span> ${q.prompt.slice(0, 120)}</div>`
+                `<div class="small mb-1"><span class="badge bg-blue">${esc(q.type)}</span> ${esc(q.prompt.slice(0, 120))}</div>`
             )
             .join('') || `<p class="text-muted">${d.empty}</p>`;
       } else if (btn.dataset.badd) {
@@ -195,24 +199,28 @@ export async function cohortsView(
     ? items
         .map(
           (co) => `<div class="card mb-2"><div class="card-body">
-    <h3 class="card-title">${co.name}</h3><button class="btn btn-sm btn-outline-primary" data-p="${co.id}">${d.progress}</button>
+    <h3 class="card-title">${esc(co.name)}</h3><button class="btn btn-sm btn-outline-primary" data-p="${co.id}">${d.progress}</button>
     <div data-o="${co.id}" class="mt-2"></div></div></div>`
         )
         .join('')
     : `<p class="text-muted">${d.empty}</p>`;
   box.querySelectorAll('[data-p]').forEach((b) =>
     b.addEventListener('click', async () => {
-      const id = (b as HTMLElement).dataset.p ?? '';
-      const p = (await call<{ students: { name: string; avg_progress: number }[] }>(
-        `/api/v1/cohorts/${id}/progress`
-      )) as { students: { name: string; avg_progress: number }[] };
-      (box.querySelector(`[data-o="${id}"]`) as HTMLElement).innerHTML =
-        p.students
-          .map(
-            (s) =>
-              `<div class="d-flex justify-content-between"><span>${s.name}</span><span>${s.avg_progress}%</span></div>`
-          )
-          .join('') || `<span class="text-muted">${d.empty}</span>`;
+      try {
+        const id = (b as HTMLElement).dataset.p ?? '';
+        const p = (await call<{ students: { name: string; avg_progress: number }[] }>(
+          `/api/v1/cohorts/${id}/progress`
+        )) as { students: { name: string; avg_progress: number }[] };
+        (box.querySelector(`[data-o="${id}"]`) as HTMLElement).innerHTML =
+          p.students
+            .map(
+              (s) =>
+                `<div class="d-flex justify-content-between"><span>${esc(s.name)}</span><span>${Number(s.avg_progress)}%</span></div>`
+            )
+            .join('') || `<span class="text-muted">${d.empty}</span>`;
+      } catch (err) {
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
+      }
     })
   );
 }
@@ -246,9 +254,9 @@ export async function aiView(
           input_ref: (el.querySelector('#ai-i') as HTMLInputElement).value,
         }),
       })) as { output?: string; note?: string };
-      out.innerHTML = `<div class="alert alert-warning">${r.note ?? ''}</div><pre class="card card-body">${(r.output ?? '').slice(0, 3000)}</pre>`;
+      out.innerHTML = `<div class="alert alert-warning">${esc(r.note ?? '')}</div><pre class="card card-body">${esc((r.output ?? '').slice(0, 3000))}</pre>`;
     } catch (err) {
-      out.innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : d.failed}</div>`;
+      out.innerHTML = `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : d.failed)}</div>`;
     }
   });
 }
@@ -284,7 +292,7 @@ export async function exercisesView(
       (el.querySelector('#ex-f') as HTMLFormElement).reset();
     } catch (err) {
       (el.querySelector('#ex-o') as HTMLElement).innerHTML =
-        `<div class="alert alert-danger">${err instanceof Error ? err.message : d.failed}</div>`;
+        `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : d.failed)}</div>`;
     }
   });
   void orgId;

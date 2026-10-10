@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderScorm(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -78,7 +78,7 @@ export async function renderScorm(el: HTMLElement): Promise<void> {
       score: number | null;
     }[];
     box.innerHTML = `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">${d.users}</th><th scope="col">${d.status}</th><th scope="col">${d.total}</th></tr></thead><tbody>
-      ${rows.map((r) => `<tr><td>${r.student_name}</td><td>${r.completion}/${r.success}</td><td>${r.score ?? '—'}</td></tr>`).join('') || `<tr><td colspan="3">${d.empty}</td></tr>`}</tbody></table></div>`;
+      ${rows.map((r) => `<tr><td>${esc(r.student_name)}</td><td>${esc(r.completion)}/${esc(r.success)}</td><td>${r.score ?? '—'}</td></tr>`).join('') || `<tr><td colspan="3">${d.empty}</td></tr>`}</tbody></table></div>`;
   });
   await load();
 }

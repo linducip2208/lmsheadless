@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, currentOrgId } from '../lib.js';
+import { call, loadingHtml, errorHtml, currentOrgId, esc } from '../lib.js';
 
 export async function renderReports(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -77,20 +77,20 @@ export async function renderReports(el: HTMLElement): Promise<void> {
           .slice(-14)
           .map(
             (x) =>
-              `<div class="d-flex justify-content-between border-bottom py-1"><span>${x.day}</span><span class="text-muted">${x.dau} users · ${x.actions} actions</span></div>`
+              `<div class="d-flex justify-content-between border-bottom py-1"><span>${esc(x.day)}</span><span class="text-muted">${Number(x.dau)} users · ${Number(x.actions)} actions</span></div>`
           )
           .join('') || '<p class="text-muted">No activity yet.</p>'
       }
       <div class="mt-2 small">${engagement.by_kind
         .slice(0, 8)
-        .map((k) => `<span class="badge bg-blue me-1">${k.kind} ${k.n}</span>`)
+        .map((k) => `<span class="badge bg-blue me-1">${esc(k.kind)} ${Number(k.n)}</span>`)
         .join('')}</div>
       </div></div></div>
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Teacher activity</h3></div><div class="card-body">
-      ${teachers.map((t) => `<div class="d-flex justify-content-between border-bottom py-1"><span>${t.name}</span><span class="text-muted">${t.courses} courses · ${t.submissions_graded} graded</span></div>`).join('') || '<p class="text-muted">No teachers.</p>'}
+      ${teachers.map((t) => `<div class="d-flex justify-content-between border-bottom py-1"><span>${esc(t.name)}</span><span class="text-muted">${Number(t.courses)} courses · ${Number(t.submissions_graded)} graded</span></div>`).join('') || '<p class="text-muted">No teachers.</p>'}
       </div></div></div>
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Completion by course</h3></div><div class="card-body">
-      ${completion.map((c) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${c.title}</span><span class="text-muted">${c.completion_rate}%</span></div>${bar(c.completion_rate)}</div>`).join('') || '<p class="text-muted">No data.</p>'}
+      ${completion.map((c) => `<div class="mb-2"><div class="d-flex justify-content-between"><span>${esc(c.title)}</span><span class="text-muted">${Number(c.completion_rate)}%</span></div>${bar(Number(c.completion_rate))}</div>`).join('') || '<p class="text-muted">No data.</p>'}
       </div></div></div>
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Attendance (${attendance.sessions} sessions)</h3></div><div class="card-body">
       ${
@@ -98,7 +98,7 @@ export async function renderReports(el: HTMLElement): Promise<void> {
           .slice(0, 20)
           .map(
             (s) =>
-              `<div class="mb-2"><div class="d-flex justify-content-between"><span>${s.name}</span><span class="text-muted">${s.attendance_pct}%</span></div>${bar(s.attendance_pct)}</div>`
+              `<div class="mb-2"><div class="d-flex justify-content-between"><span>${esc(s.name)}</span><span class="text-muted">${Number(s.attendance_pct)}%</span></div>${bar(Number(s.attendance_pct))}</div>`
           )
           .join('') || '<p class="text-muted">No data.</p>'
       }

@@ -4,11 +4,12 @@ import {
   modalForm,
   confirmDialog,
   formatDateTime,
+  esc,
   type ApiClient,
 } from '@lms/ui';
 import { getDict, type Dict } from './i18n.js';
 
-export { toast, modalForm, confirmDialog, formatDateTime };
+export { toast, modalForm, confirmDialog, formatDateTime, esc };
 export type { ApiClient };
 export type { Me } from '@lms/ui';
 

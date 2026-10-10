@@ -67,7 +67,7 @@ commerce.get('/bundles', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM bundles WHERE organization_id = ? ORDER BY created_at DESC LIMIT 200',
+    'SELECT * FROM bundles WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
     orgId
   );
   return ok(c, rows);
@@ -194,7 +194,7 @@ commerce.get('/coupons', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM coupons WHERE organization_id = ? ORDER BY created_at DESC LIMIT 500',
+    'SELECT * FROM coupons WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 500',
     orgId
   );
   return ok(c, rows);
@@ -516,7 +516,7 @@ commerce.get('/orders', requireAuth(), async (c) => {
       )?.n ?? 0;
     const rows = await queryAll(
       db,
-      `SELECT * FROM orders WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT * FROM orders WHERE ${where} ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
       ...params,
       perPage,
       (page - 1) * perPage
@@ -525,7 +525,7 @@ commerce.get('/orders', requireAuth(), async (c) => {
   }
   const rows = await queryAll(
     db,
-    'SELECT * FROM orders WHERE buyer_id = ? ORDER BY created_at DESC LIMIT 100',
+    'SELECT * FROM orders WHERE buyer_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
     user.id
   );
   return ok(c, rows);
@@ -865,7 +865,26 @@ commerce.post('/payments/webhooks/:provider', async (c) => {
   if (!body) return fail(c, 400, 'VALIDATION_ERROR', 'Invalid payload');
   const db = c.get('db');
   const eventId = body.transaction_id ?? body.order_id ?? JSON.stringify(body).slice(0, 120);
-  // Replay protection: provider+event unique.
+  // Order + signature are verified BEFORE anything is written: unauthenticated
+  // callers must not be able to grow the replay table (storage-DoS).
+  const order = await queryFirst<{
+    id: string;
+    organization_id: string;
+    total: number;
+    total_minor: number | null;
+  }>(
+    db,
+    'SELECT id, organization_id, total, total_minor FROM orders WHERE id = ?',
+    body.order_id ?? ''
+  );
+  if (!order) return fail(c, 404, 'ORDER_NOT_FOUND', 'No matching order');
+  const serverKey = await orgSetting(db, order.organization_id, `payment_${provider}_server_key`);
+  if (!serverKey || !(await verifyProviderSignature(provider, body, serverKey))) {
+    return fail(c, 401, 'INVALID_SIGNATURE', 'Webhook signature verification failed');
+  }
+  // Replay protection: provider+event unique. Separate provider event IDs
+  // (e.g. pending vs settlement with distinct transaction_ids) each process;
+  // exact redeliveries collapse here.
   try {
     await execute(
       db,
@@ -878,35 +897,6 @@ commerce.post('/payments/webhooks/:provider', async (c) => {
     );
   } catch {
     return ok(c, { received: true, duplicate: true });
-  }
-  const order = await queryFirst<{
-    id: string;
-    organization_id: string;
-    total: number;
-    total_minor: number | null;
-  }>(
-    db,
-    'SELECT id, organization_id, total, total_minor FROM orders WHERE id = ?',
-    body.order_id ?? ''
-  );
-  if (!order) {
-    await execute(
-      db,
-      "UPDATE payment_webhooks SET status = 'ignored' WHERE provider = ? AND event_id = ?",
-      provider,
-      eventId
-    );
-    return fail(c, 404, 'ORDER_NOT_FOUND', 'No matching order');
-  }
-  const serverKey = await orgSetting(db, order.organization_id, `payment_${provider}_server_key`);
-  if (!serverKey || !(await verifyProviderSignature(provider, body, serverKey))) {
-    await execute(
-      db,
-      "UPDATE payment_webhooks SET status = 'rejected' WHERE provider = ? AND event_id = ?",
-      provider,
-      eventId
-    );
-    return fail(c, 401, 'INVALID_SIGNATURE', 'Webhook signature verification failed');
   }
   const now = nowIso();
   const status = body.transaction_status ?? '';
@@ -1081,7 +1071,7 @@ commerce.get('/subscription-plans', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT id, name, price, price_minor, interval, trial_days FROM subscription_plans WHERE organization_id = ? AND is_active = 1 ORDER BY price ASC',
+    'SELECT id, name, price, price_minor, interval, trial_days FROM subscription_plans WHERE organization_id = ? AND is_active = 1 ORDER BY price_minor ASC, id ASC',
     orgId
   );
   return ok(c, rows);
@@ -1196,7 +1186,7 @@ commerce.get('/commissions', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    `SELECT c.*, u.name as instructor_name FROM commissions c JOIN users u ON u.id = c.instructor_id WHERE ${where} ORDER BY c.created_at DESC LIMIT 200`,
+    `SELECT c.*, u.name as instructor_name FROM commissions c JOIN users u ON u.id = c.instructor_id WHERE ${where} ORDER BY c.created_at DESC, c.id DESC LIMIT 200`,
     ...params
   );
   return ok(c, rows);
@@ -1274,6 +1264,64 @@ commerce.post('/payouts/:id/decide', requireAuth(), async (c) => {
 });
 
 // ---------- Affiliates ----------
+commerce.get('/affiliates', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const url = new URL(c.req.url);
+  const orgId = url.searchParams.get('organization_id');
+  if (!orgId || !isPrivileged(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const page = Math.max(1, Number(url.searchParams.get('page') ?? '1') || 1);
+  const perPage = Math.min(
+    100,
+    Math.max(1, Number(url.searchParams.get('per_page') ?? '20') || 20)
+  );
+  const total =
+    (
+      await queryFirst<{ n: number }>(
+        c.get('db'),
+        'SELECT COUNT(*) as n FROM affiliates WHERE organization_id = ?',
+        orgId
+      )
+    )?.n ?? 0;
+  const rows = await queryAll(
+    c.get('db'),
+    'SELECT a.*, u.name as user_name FROM affiliates a JOIN users u ON u.id = a.user_id WHERE a.organization_id = ? ORDER BY a.created_at DESC, a.id DESC LIMIT ? OFFSET ?',
+    orgId,
+    perPage,
+    (page - 1) * perPage
+  );
+  return ok(c, rows, paginationMeta(total, page, perPage));
+});
+
+commerce.get('/payouts', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const url = new URL(c.req.url);
+  const orgId = url.searchParams.get('organization_id');
+  if (!orgId || !isPrivileged(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const page = Math.max(1, Number(url.searchParams.get('page') ?? '1') || 1);
+  const perPage = Math.min(
+    100,
+    Math.max(1, Number(url.searchParams.get('per_page') ?? '20') || 20)
+  );
+  const total =
+    (
+      await queryFirst<{ n: number }>(
+        c.get('db'),
+        'SELECT COUNT(*) as n FROM payouts WHERE organization_id = ?',
+        orgId
+      )
+    )?.n ?? 0;
+  const rows = await queryAll(
+    c.get('db'),
+    'SELECT p.*, u.name as instructor_name FROM payouts p JOIN users u ON u.id = p.instructor_id WHERE p.organization_id = ? ORDER BY p.created_at DESC, p.id DESC LIMIT ? OFFSET ?',
+    orgId,
+    perPage,
+    (page - 1) * perPage
+  );
+  return ok(c, rows, paginationMeta(total, page, perPage));
+});
+
 commerce.post('/affiliates', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const body = (await c.req.json().catch(() => null)) as {
@@ -1466,7 +1514,7 @@ commerce.get('/catalog/courses', async (c) => {
   if (q) params.push(`%${q}%`, `%${q}%`);
   const rows = await queryAll(
     db,
-    `SELECT id, organization_id, code, title, description, price, price_minor, thumbnail_url FROM courses WHERE ${where} ${scope} ${like} ORDER BY created_at DESC LIMIT 50`,
+    `SELECT id, organization_id, code, title, description, price, price_minor, thumbnail_url FROM courses WHERE ${where} ${scope} ${like} ORDER BY created_at DESC, id DESC LIMIT 50`,
     ...params
   );
   return ok(c, rows);
@@ -1477,7 +1525,7 @@ commerce.get('/catalog/bundles', async (c) => {
   const db = c.get('db');
   const rows = await queryAll(
     db,
-    `SELECT * FROM bundles WHERE status = 'published' ${orgId ? 'AND organization_id = ?' : ''} ORDER BY created_at DESC LIMIT 50`,
+    `SELECT * FROM bundles WHERE status = 'published' ${orgId ? 'AND organization_id = ?' : ''} ORDER BY created_at DESC, id DESC LIMIT 50`,
     ...(orgId ? [orgId] : [])
   );
   return ok(c, rows);

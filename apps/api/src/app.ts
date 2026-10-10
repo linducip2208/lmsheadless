@@ -31,6 +31,14 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.use('*', async (c, next) => {
     c.set('db', db);
     c.set('env', env);
+    // D1 enforces foreign keys by default; the local SQLite adapter sets the
+    // pragma at connect. Re-assert per request so exotic adapters that hand
+    // out fresh connections also honor REFERENCES/CASCADE clauses.
+    try {
+      await db.exec('PRAGMA foreign_keys = ON');
+    } catch {
+      /* adapters without PRAGMA support ignore this */
+    }
     await next();
   });
   app.use('*', cors());
@@ -38,9 +46,22 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.use('/api/*', rateLimit());
   app.use('/api/*', authOptional());
   // Stricter bucket for credential-abuse targets (brute force, enumeration).
-  app.use('/api/v1/auth/login', rateLimit({ prefix: 'auth' }));
-  app.use('/api/v1/auth/register', rateLimit({ prefix: 'auth' }));
-  app.use('/api/v1/auth/refresh', rateLimit({ prefix: 'auth' }));
+  // Token-consuming endpoints carry no per-account throttle (tokens are
+  // 256-bit), so the IP bucket is their only brake against guessing/DB burn.
+  for (const p of [
+    '/api/v1/auth/login',
+    '/api/v1/auth/register',
+    '/api/v1/auth/refresh',
+    '/api/v1/auth/password/forgot',
+    '/api/v1/auth/password/reset',
+    '/api/v1/auth/verify-email',
+    '/api/v1/auth/verify-email/request',
+    '/api/v1/invitations/accept',
+    '/api/v1/invitations',
+    '/api/v1/setup',
+  ]) {
+    app.use(p, rateLimit({ prefix: 'auth' }));
+  }
   app.use('/api/*', maintenance());
   app.use('/api/*', idempotency());
 

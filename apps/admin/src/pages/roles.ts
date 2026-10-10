@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, t, esc } from '../lib.js';
 
 export async function renderRoles(el: HTMLElement): Promise<void> {
   const d = t();
@@ -11,8 +11,8 @@ export async function renderRoles(el: HTMLElement): Promise<void> {
     el.innerHTML = `<div class="card"><div class="card-header"><h3 class="card-title">${d.roles}</h3>
       <span class="ms-2 text-muted">Enforced server-side on every request</span></div>
       <div class="card-body p-0"><div class="table-responsive"><table class="table card-table table-hover">
-      <thead><tr><th scope="col">Permission</th>${roles.map((r) => `<th scope="col">${r.role}<br><button class="btn btn-sm btn-outline-primary mt-1" data-editrole="${r.role}">${d.edit}</button></th>`).join('')}</tr></thead>
-      <tbody>${catalog.map((p) => `<tr><td><code>${p.key}</code><div class="text-muted small">${p.description}</div></td>${roles.map((r) => `<td>${r.permissions.includes(p.key) ? '<span class="badge bg-green" aria-label="allowed">✓</span>' : '<span class="text-muted" aria-label="denied">—</span>'}</td>`).join('')}</tr>`).join('')}</tbody>
+      <thead><tr><th scope="col">Permission</th>${roles.map((r) => `<th scope="col">${esc(r.role)}<br><button class="btn btn-sm btn-outline-primary mt-1" data-editrole="${r.role}">${d.edit}</button></th>`).join('')}</tr></thead>
+      <tbody>${catalog.map((p) => `<tr><td><code>${esc(p.key)}</code><div class="text-muted small">${esc(p.description)}</div></td>${roles.map((r) => `<td>${r.permissions.includes(p.key) ? '<span class="badge bg-green" aria-label="allowed">✓</span>' : '<span class="text-muted" aria-label="denied">—</span>'}</td>`).join('')}</tr>`).join('')}</tbody>
       </table></div></div></div><div class="alert alert-info mt-2">Custom mapping is saved via <code>PUT /roles/:role/permissions</code> (super_admin only); unknown keys are rejected and enforcement reads the database.</div>`;
     el.querySelectorAll('[data-editrole]').forEach((b) =>
       b.addEventListener('click', async () => {

@@ -8,6 +8,7 @@ import {
   confirmDialog,
   currentOrgId,
   t,
+  esc,
 } from '../lib.js';
 
 export async function renderCourses(el: HTMLElement): Promise<void> {
@@ -144,29 +145,37 @@ async function renderApprovals(el: HTMLElement, orgId: string | null): Promise<v
       <div class="list-group list-group-flush">${items
         .map(
           (a) => `<div class="list-group-item d-flex gap-2 align-items-center flex-wrap">
-      <span><strong>${a.course_title}</strong> <span class="text-muted">· ${a.requested_by_name}</span></span>
+      <span><strong>${esc(a.course_title)}</strong> <span class="text-muted">· ${esc(a.requested_by_name)}</span></span>
       <span class="ms-auto d-flex gap-1"><button class="btn btn-sm btn-primary" data-approve="${a.id}">${d.approve}</button>
       <button class="btn btn-sm btn-outline-danger" data-reject="${a.id}">${d.reject}</button></span></div>`
         )
         .join('')}</div></div>`;
     el.querySelectorAll('[data-approve]').forEach((b) =>
       b.addEventListener('click', async () => {
-        await call(`/api/v1/publish-approvals/${(b as HTMLElement).dataset.approve}/approve`, {
-          method: 'POST',
-          body: '{}',
-        });
-        toast(d.saved, 'success');
-        await renderApprovals(el, orgId);
+        try {
+          await call(`/api/v1/publish-approvals/${(b as HTMLElement).dataset.approve}/approve`, {
+            method: 'POST',
+            body: '{}',
+          });
+          toast(d.saved, 'success');
+          await renderApprovals(el, orgId);
+        } catch (e) {
+          toast(e instanceof Error ? e.message : d.failed, 'danger');
+        }
       })
     );
     el.querySelectorAll('[data-reject]').forEach((b) =>
       b.addEventListener('click', async () => {
-        await call(`/api/v1/publish-approvals/${(b as HTMLElement).dataset.reject}/reject`, {
-          method: 'POST',
-          body: JSON.stringify({}),
-        });
-        toast(d.saved, 'success');
-        await renderApprovals(el, orgId);
+        try {
+          await call(`/api/v1/publish-approvals/${(b as HTMLElement).dataset.reject}/reject`, {
+            method: 'POST',
+            body: JSON.stringify({}),
+          });
+          toast(d.saved, 'success');
+          await renderApprovals(el, orgId);
+        } catch (e) {
+          toast(e instanceof Error ? e.message : d.failed, 'danger');
+        }
       })
     );
   } catch {
@@ -186,14 +195,14 @@ async function renderBuilder(el: HTMLElement, courseId: string): Promise<void> {
     ]);
     const sorted = [...sections].sort((a, b) => a.position - b.position);
     el.innerHTML = `<div class="card"><div class="card-header">
-      <div><h3 class="card-title">${d.builder}: ${String(course.title)}</h3></div>
+      <div><h3 class="card-title">${d.builder}: ${esc(course.title)}</h3></div>
       <button class="btn btn-primary ms-auto" id="add-section">${d.create} ${d.sections}</button></div>
       <div class="card-body" id="sections">
       ${sorted.length ? '' : `<p class="text-muted">${d.empty}</p>`}
       ${sorted
         .map(
           (s, i) => `<div class="card mb-2" data-section="${s.id}">
-        <div class="card-header py-2"><strong>${i + 1}. ${s.title}</strong>
+        <div class="card-header py-2"><strong>${i + 1}. ${esc(s.title)}</strong>
         <span class="ms-auto d-flex gap-1">
           <button class="btn btn-sm btn-outline-secondary" data-sec-up="${s.id}" ${i === 0 ? 'disabled' : ''} aria-label="Move section up">↑</button>
           <button class="btn btn-sm btn-outline-secondary" data-sec-down="${s.id}" ${i === sorted.length - 1 ? 'disabled' : ''} aria-label="Move section down">↓</button>
@@ -306,7 +315,7 @@ async function renderBuilder(el: HTMLElement, courseId: string): Promise<void> {
                 .map(
                   (
                     w
-                  ) => `<div class="d-flex gap-2 align-items-center mb-1"><span>${w.student_name} <span class="badge bg-blue">${w.status}</span></span>
+                  ) => `<div class="d-flex gap-2 align-items-center mb-1"><span>${esc(w.student_name)} <span class="badge bg-blue">${esc(w.status)}</span></span>
           ${w.status === 'waiting' ? `<button class="btn btn-sm btn-outline-green ms-auto" data-promote="${w.id}">${d.approve}</button>` : ''}</div>`
                 )
                 .join('')
@@ -316,11 +325,15 @@ async function renderBuilder(el: HTMLElement, courseId: string): Promise<void> {
           .querySelectorAll('[data-promote]')
           .forEach((b) =>
             b.addEventListener('click', async () => {
-              await call(
-                `/api/v1/courses/${courseId}/waitlist/${(b as HTMLElement).dataset.promote}/promote`,
-                { method: 'POST', body: '{}' }
-              );
-              toast(d.saved, 'success');
+              try {
+                await call(
+                  `/api/v1/courses/${courseId}/waitlist/${(b as HTMLElement).dataset.promote}/promote`,
+                  { method: 'POST', body: '{}' }
+                );
+                toast(d.saved, 'success');
+              } catch (e) {
+                toast(e instanceof Error ? e.message : d.failed, 'danger');
+              }
             })
           );
       } catch (e) {
@@ -328,16 +341,20 @@ async function renderBuilder(el: HTMLElement, courseId: string): Promise<void> {
       }
     });
     (el.querySelector('#adv-dup') as HTMLButtonElement).addEventListener('click', async () => {
-      const data = await modalForm(d.duplicate, [
-        { name: 'code', label: d.code, required: true },
-        { name: 'title', label: d.title, required: true },
-      ]);
-      if (!data) return;
-      const r = (await call(`/api/v1/courses/${courseId}/duplicate`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      })) as { id: string };
-      toast(`${d.duplicate} (${r.id.slice(0, 8)})`, 'success');
+      try {
+        const data = await modalForm(d.duplicate, [
+          { name: 'code', label: d.code, required: true },
+          { name: 'title', label: d.title, required: true },
+        ]);
+        if (!data) return;
+        const r = (await call(`/api/v1/courses/${courseId}/duplicate`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        })) as { id: string };
+        toast(`${d.duplicate} (${r.id.slice(0, 8)})`, 'success');
+      } catch (e) {
+        toast(e instanceof Error ? e.message : d.failed, 'danger');
+      }
     });
     (el.querySelector('#adv-vers') as HTMLButtonElement).addEventListener('click', async () => {
       const vers = (await call<{ version: number; created_at: string }[]>(
@@ -350,20 +367,28 @@ async function renderBuilder(el: HTMLElement, courseId: string): Promise<void> {
       );
     });
     (el.querySelector('#adv-approve') as HTMLButtonElement).addEventListener('click', async () => {
-      await call(`/api/v1/courses/${courseId}/request-approval`, { method: 'POST', body: '{}' });
-      toast(d.saved, 'success');
+      try {
+        await call(`/api/v1/courses/${courseId}/request-approval`, { method: 'POST', body: '{}' });
+        toast(d.saved, 'success');
+      } catch (e) {
+        toast(e instanceof Error ? e.message : d.failed, 'danger');
+      }
     });
     (el.querySelector('#add-section') as HTMLButtonElement).addEventListener('click', async () => {
-      const data = await modalForm(`${d.create} ${d.sections}`, [
-        { name: 'title', label: d.title, required: true },
-      ]);
-      if (!data) return;
-      await call(`/api/v1/courses/${courseId}/sections`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      toast(d.created, 'success');
-      await renderBuilder(el, courseId);
+      try {
+        const data = await modalForm(`${d.create} ${d.sections}`, [
+          { name: 'title', label: d.title, required: true },
+        ]);
+        if (!data) return;
+        await call(`/api/v1/courses/${courseId}/sections`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+        toast(d.created, 'success');
+        await renderBuilder(el, courseId);
+      } catch (e) {
+        toast(e instanceof Error ? e.message : d.failed, 'danger');
+      }
     });
     el.addEventListener(
       'click',
@@ -482,9 +507,9 @@ async function loadLessons(root: HTMLElement, sectionId: string): Promise<void> 
       ? list
           .map(
             (l, i) => `<div class="list-group-item d-flex align-items-center gap-2 flex-wrap">
-      <span class="badge bg-blue">${l.content_type}</span>
+      <span class="badge bg-blue">${esc(l.content_type)}</span>
       ${l.status === 'draft' ? '<span class="badge bg-yellow">draft</span>' : ''}
-      <span>${l.title}</span>
+      <span>${esc(l.title)}</span>
       <span class="ms-auto d-flex gap-1">
         <button class="btn btn-sm btn-outline-secondary" data-lesson-up="${l.id}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">↑</button>
         <button class="btn btn-sm btn-outline-secondary" data-lesson-down="${l.id}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Move down">↓</button>

@@ -9,6 +9,7 @@ import {
   bindOnlineIndicator,
   toast,
   modalForm,
+  esc,
   type ApiClient,
 } from '@lms/ui';
 import { getDict } from './i18n.js';
@@ -25,7 +26,7 @@ function loading(msg = d.loading): string {
   return `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status"></div><span>${msg}</span></div>`;
 }
 function errHtml(e: unknown): string {
-  return `<div class="alert alert-danger" role="alert">${e instanceof Error ? e.message : 'Error'}</div>`;
+  return `<div class="alert alert-danger" role="alert">${esc(e instanceof Error ? e.message : 'Error')}</div>`;
 }
 
 const NAV = [
@@ -114,7 +115,7 @@ async function dashboard(el: HTMLElement): Promise<void> {
       <div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">${d.pending}</div><div class="h1">${queue.submissions.length}</div></div></div></div>
       <div class="col-sm-4"><div class="card"><div class="card-body"><div class="subheader">Quiz reviews</div><div class="h1">${queue.attempts.length}</div></div></div></div></div>
       <div class="card"><div class="card-header"><h3 class="card-title">${d.myCourses}</h3></div>
-      <div class="list-group list-group-flush">${courses.map((c) => `<a class="list-group-item list-group-item-action" href="#/courses/${c.id}"><strong>${c.title}</strong><span class="text-muted"> · ${c.code}</span></a>`).join('') || `<div class="list-group-item text-muted">${d.empty}</div>`}</div></div>`;
+      <div class="list-group list-group-flush">${courses.map((c) => `<a class="list-group-item list-group-item-action" href="#/courses/${c.id}"><strong>${esc(c.title)}</strong><span class="text-muted"> · ${esc(c.code)}</span></a>`).join('') || `<div class="list-group-item text-muted">${d.empty}</div>`}</div></div>`;
   } catch (e) {
     el.innerHTML = errHtml(e);
   }
@@ -133,7 +134,7 @@ async function renderCourseExercises(el: HTMLElement, courseId: string): Promise
       ? items
           .map(
             (x) =>
-              `<div class="mb-2"><strong>${x.title}</strong> <span class="badge bg-blue">${x.language}</span>
+              `<div class="mb-2"><strong>${esc(x.title)}</strong> <span class="badge bg-blue">${esc(x.language)}</span>
         <button class="btn btn-sm btn-outline-primary ms-2" data-exsubs="${x.id}">Submissions</button>
         <div data-exbox="${x.id}"></div></div>`
           )
@@ -155,8 +156,8 @@ async function renderCourseExercises(el: HTMLElement, courseId: string): Promise
           ? subs
               .map(
                 (s) =>
-                  `<div class="border rounded p-2 mb-1"><strong>${s.student_name}</strong> <span class="badge bg-yellow">${s.status}</span>
-            <pre class="small mt-1">${s.code.slice(0, 800)}</pre>
+                  `<div class="border rounded p-2 mb-1"><strong>${esc(s.student_name)}</strong> <span class="badge bg-yellow">${esc(s.status)}</span>
+            <pre class="small mt-1">${esc(s.code.slice(0, 800))}</pre>
             <form data-exfb="${s.id}" class="d-flex gap-1 mt-1"><input name="feedback" class="form-control form-control-sm" placeholder="Feedback" required>
             <select name="status" class="form-select form-select-sm w-auto"><option value="reviewed">reviewed</option><option value="approved">approved</option><option value="needs_work">needs_work</option></select>
             <button class="btn btn-sm btn-primary">Send</button></form></div>`
@@ -166,15 +167,22 @@ async function renderCourseExercises(el: HTMLElement, courseId: string): Promise
         target.querySelectorAll('[data-exfb]').forEach((f) =>
           (f as HTMLFormElement).addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fd = new FormData(f as HTMLFormElement);
-            await call(`/api/v1/exercise-submissions/${(f as HTMLElement).dataset.exfb}/feedback`, {
-              method: 'POST',
-              body: JSON.stringify({
-                feedback: String(fd.get('feedback')),
-                status: String(fd.get('status')),
-              }),
-            });
-            toast('Feedback sent', 'success');
+            try {
+              const fd = new FormData(f as HTMLFormElement);
+              await call(
+                `/api/v1/exercise-submissions/${(f as HTMLElement).dataset.exfb}/feedback`,
+                {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    feedback: String(fd.get('feedback')),
+                    status: String(fd.get('status')),
+                  }),
+                }
+              );
+              toast('Feedback sent', 'success');
+            } catch (err) {
+              toast(err instanceof Error ? err.message : 'Failed', 'danger');
+            }
           })
         );
       })
@@ -197,14 +205,14 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
       ).catch(() => []),
     ]);
     el.innerHTML = `<a href="#/courses" class="btn btn-sm btn-outline-secondary mb-2">← ${d.myCourses}</a>
-      <h2>${String(course.title)}</h2><p class="text-muted">${String(course.description ?? '')}</p>
+      <h2>${esc(course.title)}</h2><p class="text-muted">${esc(course.description ?? '')}</p>
       <div class="row row-cards">
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">Sections & lessons</h3>
       <button class="btn btn-sm btn-primary ms-auto" id="sec-add">+ Section</button></div>
-      <div class="card-body" id="secs">${(sections as { id: string; title: string }[]).map((s) => `<div class="mb-2"><strong>${s.title}</strong> <button class="btn btn-sm btn-outline-green" data-ladd="${s.id}">+ Lesson</button><div data-less="${s.id}" class="mt-1"></div></div>`).join('') || '<p class="text-muted">No sections.</p>'}</div></div></div>
+      <div class="card-body" id="secs">${(sections as { id: string; title: string }[]).map((s) => `<div class="mb-2"><strong>${esc(s.title)}</strong> <button class="btn btn-sm btn-outline-green" data-ladd="${s.id}">+ Lesson</button><div data-less="${s.id}" class="mt-1"></div></div>`).join('') || '<p class="text-muted">No sections.</p>'}</div></div></div>
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">${d.upcoming}</h3>
       <button class="btn btn-sm btn-primary ms-auto" id="asg-add">+ Assignment</button></div>
-      <div class="list-group list-group-flush">${(assignments as { id: string; title: string; due_at: string | null }[]).map((a) => `<div class="list-group-item">${a.title}<span class="text-muted"> · ${a.due_at ?? 'no due date'}</span></div>`).join('') || '<div class="list-group-item text-muted">None.</div>'}</div></div>
+      <div class="list-group list-group-flush">${(assignments as { id: string; title: string; due_at: string | null }[]).map((a) => `<div class="list-group-item">${esc(a.title)}<span class="text-muted"> · ${esc(a.due_at ?? 'no due date')}</span></div>`).join('') || '<div class="list-group-item text-muted">None.</div>'}</div></div>
       <div class="card mt-3"><div class="card-header"><h3 class="card-title">Enrollments</h3></div><div class="card-body" id="enr">Loading…</div></div>
       <div class="card mt-3"><div class="card-header"><h3 class="card-title">${d.exercises}</h3></div><div class="card-body" id="exlist">Loading…</div></div></div></div>`;
     for (const s of sections as { id: string }[]) {
@@ -216,7 +224,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
         lessons
           .map(
             (l) =>
-              `<div class="small">• ${l.title} <span class="badge bg-blue">${l.content_type}</span></div>`
+              `<div class="small">• ${esc(l.title)} <span class="badge bg-blue">${esc(l.content_type)}</span></div>`
           )
           .join('') || '<div class="small text-muted">No lessons.</div>';
     }
@@ -228,65 +236,77 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
       ? enr
           .map(
             (x) =>
-              `<div class="d-flex justify-content-between border-bottom py-1"><span>${x.student_name}</span><span>${x.progress_percent}%</span></div>`
+              `<div class="d-flex justify-content-between border-bottom py-1"><span>${esc(x.student_name)}</span><span>${Number(x.progress_percent)}%</span></div>`
           )
           .join('')
       : 'No enrollments yet.';
     await renderCourseExercises(el, courseId);
     (el.querySelector('#sec-add') as HTMLButtonElement).addEventListener('click', async () => {
-      const data = await modalForm('Add section', [
-        { name: 'title', label: 'Title', required: true },
-      ]);
-      if (!data) return;
-      await call(`/api/v1/courses/${courseId}/sections`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      toast('Added', 'success');
-      await courseDetail(el, courseId);
-    });
-    el.querySelectorAll('[data-ladd]').forEach((b) =>
-      b.addEventListener('click', async () => {
-        const data = await modalForm('Add lesson', [
+      try {
+        const data = await modalForm('Add section', [
           { name: 'title', label: 'Title', required: true },
-          {
-            name: 'content_type',
-            label: 'Type',
-            options: ['text', 'video', 'document', 'image', 'external'].map((x) => ({
-              value: x,
-              label: x,
-            })),
-          },
-          { name: 'body', label: 'Body', type: 'textarea' },
         ]);
         if (!data) return;
-        await call(`/api/v1/courses/sections/${(b as HTMLElement).dataset.ladd}/lessons`, {
+        await call(`/api/v1/courses/${courseId}/sections`, {
           method: 'POST',
           body: JSON.stringify(data),
         });
         toast('Added', 'success');
         await courseDetail(el, courseId);
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      }
+    });
+    el.querySelectorAll('[data-ladd]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        try {
+          const data = await modalForm('Add lesson', [
+            { name: 'title', label: 'Title', required: true },
+            {
+              name: 'content_type',
+              label: 'Type',
+              options: ['text', 'video', 'document', 'image', 'external'].map((x) => ({
+                value: x,
+                label: x,
+              })),
+            },
+            { name: 'body', label: 'Body', type: 'textarea' },
+          ]);
+          if (!data) return;
+          await call(`/api/v1/courses/sections/${(b as HTMLElement).dataset.ladd}/lessons`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+          });
+          toast('Added', 'success');
+          await courseDetail(el, courseId);
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        }
       })
     );
     (el.querySelector('#asg-add') as HTMLButtonElement).addEventListener('click', async () => {
-      const data = await modalForm('New assignment', [
-        { name: 'title', label: 'Title', required: true },
-        { name: 'description', label: 'Instructions', type: 'textarea' },
-        { name: 'due_at', label: 'Due date (optional)' },
-        { name: 'max_score', label: 'Max score', type: 'number', value: '100' },
-      ]);
-      if (!data) return;
-      await call('/api/v1/assignments', {
-        method: 'POST',
-        body: JSON.stringify({
-          course_id: courseId,
-          ...data,
-          max_score: Number(data.max_score),
-          due_at: data.due_at || undefined,
-        }),
-      });
-      toast('Created', 'success');
-      await courseDetail(el, courseId);
+      try {
+        const data = await modalForm('New assignment', [
+          { name: 'title', label: 'Title', required: true },
+          { name: 'description', label: 'Instructions', type: 'textarea' },
+          { name: 'due_at', label: 'Due date (optional)' },
+          { name: 'max_score', label: 'Max score', type: 'number', value: '100' },
+        ]);
+        if (!data) return;
+        await call('/api/v1/assignments', {
+          method: 'POST',
+          body: JSON.stringify({
+            course_id: courseId,
+            ...data,
+            max_score: Number(data.max_score),
+            due_at: data.due_at || undefined,
+          }),
+        });
+        toast('Created', 'success');
+        await courseDetail(el, courseId);
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      }
     });
   } catch (e) {
     el.innerHTML = errHtml(e);
@@ -327,7 +347,7 @@ async function grading(el: HTMLElement): Promise<void> {
           .map(
             (
               s
-            ) => `<tr><td>${s.student_name}</td><td>${s.assignment_title}</td><td><span class="badge bg-yellow">${s.status}</span></td>
+            ) => `<tr><td>${esc(s.student_name)}</td><td>${esc(s.assignment_title)}</td><td><span class="badge bg-yellow">${esc(s.status)}</span></td>
       <td><button class="btn btn-sm btn-primary" data-grade="${s.id}">Review & grade</button></td></tr>`
           )
           .join('') || '<tr><td colspan="4">All caught up.</td></tr>'
@@ -339,7 +359,7 @@ async function grading(el: HTMLElement): Promise<void> {
           .slice(0, 20)
           .map(
             (a) =>
-              `<tr><td>${a.student_name}</td><td>${a.quiz_title}</td><td>${a.score ?? '—'}</td><td><button class="btn btn-sm btn-outline-primary" data-review="${a.id}">${d.review ?? 'Review'}</button></td></tr>
+              `<tr><td>${esc(a.student_name)}</td><td>${esc(a.quiz_title)}</td><td>${a.score ?? '—'}</td><td><button class="btn btn-sm btn-outline-primary" data-review="${a.id}">${d.review ?? 'Review'}</button></td></tr>
                <tr><td colspan="4" class="p-0 border-0"><div data-answers="${a.id}"></div></td></tr>`
           )
           .join('') || '<tr><td colspan="4">None.</td></tr>'
@@ -380,10 +400,10 @@ async function grading(el: HTMLElement): Promise<void> {
           box.innerHTML = `<div class="p-2 bg-light border rounded">${
             answers
               .map(
-                (a) => `<div class="mb-2"><strong>${a.prompt.slice(0, 160)}</strong>
-            <span class="badge bg-blue">${a.type}</span>
-            <div class="small">Answer: ${a.option_label ?? (a.answer_text ?? '—').slice(0, 500)}</div>
-            <div class="small text-muted">Awarded: ${a.points_awarded}/${a.points}${a.is_correct === 1 ? ' ✓' : a.is_correct === 0 ? ' ✗' : ' (pending)'}</div>
+                (a) => `<div class="mb-2"><strong>${esc(a.prompt.slice(0, 160))}</strong>
+            <span class="badge bg-blue">${esc(a.type)}</span>
+            <div class="small">Answer: ${esc(a.option_label ?? (a.answer_text ?? '—').slice(0, 500))}</div>
+            <div class="small text-muted">Awarded: ${Number(a.points_awarded)}/${Number(a.points)}${a.is_correct === 1 ? ' ✓' : a.is_correct === 0 ? ' ✗' : ' (pending)'}</div>
             <form data-manual="${a.question_id}:${id}" class="d-flex gap-1 mt-1">
             <input type="number" name="points" min="0" max="${a.points}" step="0.5" class="form-control form-control-sm w-auto" placeholder="${d.score}" required>
             <button class="btn btn-sm btn-outline-primary">${d.grade}</button></form></div>`
@@ -393,43 +413,54 @@ async function grading(el: HTMLElement): Promise<void> {
           box.querySelectorAll('[data-manual]').forEach((f) =>
             (f as HTMLFormElement).addEventListener('submit', async (e) => {
               e.preventDefault();
-              const [qid, aid] = ((f as HTMLElement).dataset.manual ?? '').split(':');
-              const pts = Number(new FormData(f as HTMLFormElement).get('points'));
-              await call(`/api/v1/quiz-attempts/${aid}/grade`, {
-                method: 'POST',
-                body: JSON.stringify({ question_id: qid, points_awarded: pts }),
-              });
-              toast(d.save, 'success');
-              delete box.dataset.loaded;
-              (b as HTMLElement).click();
+              try {
+                const [qid, aid] = ((f as HTMLElement).dataset.manual ?? '').split(':');
+                const pts = Number(new FormData(f as HTMLFormElement).get('points'));
+                await call(`/api/v1/quiz-attempts/${aid}/grade`, {
+                  method: 'POST',
+                  body: JSON.stringify({ question_id: qid, points_awarded: pts }),
+                });
+                toast(d.save, 'success');
+                delete box.dataset.loaded;
+                (b as HTMLElement).click();
+              } catch (err) {
+                toast(err instanceof Error ? err.message : 'Failed', 'danger');
+              }
             })
           );
         } catch (err) {
-          box.innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Failed'}</div>`;
+          box.innerHTML = `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : 'Failed')}</div>`;
         }
       })
     );
     el.querySelectorAll('[data-grade]').forEach((b) =>
       b.addEventListener('click', async () => {
-        const id = (b as HTMLElement).dataset.grade ?? '';
-        const sub = q.submissions.find((x) => x.id === id);
-        const data = await modalForm(`Grade — ${sub?.student_name ?? ''}`, [
-          {
-            name: 'info',
-            label: `Submission: ${(sub?.body ?? '').slice(0, 500)}`,
-            type: 'text',
-            value: '',
-          },
-          { name: 'score', label: 'Score', type: 'number', required: true },
-          { name: 'feedback', label: 'Feedback', type: 'textarea' },
-        ]);
-        if (!data?.score) return;
-        await call(`/api/v1/submissions/${id}/grade`, {
-          method: 'POST',
-          body: JSON.stringify({ score: Number(data.score), feedback: data.feedback || undefined }),
-        });
-        toast('Graded', 'success');
-        await grading(el);
+        try {
+          const id = (b as HTMLElement).dataset.grade ?? '';
+          const sub = q.submissions.find((x) => x.id === id);
+          const data = await modalForm(`Grade — ${sub?.student_name ?? ''}`, [
+            {
+              name: 'info',
+              label: `Submission: ${(sub?.body ?? '').slice(0, 500)}`,
+              type: 'text',
+              value: '',
+            },
+            { name: 'score', label: 'Score', type: 'number', required: true },
+            { name: 'feedback', label: 'Feedback', type: 'textarea' },
+          ]);
+          if (!data?.score) return;
+          await call(`/api/v1/submissions/${id}/grade`, {
+            method: 'POST',
+            body: JSON.stringify({
+              score: Number(data.score),
+              feedback: data.feedback || undefined,
+            }),
+          });
+          toast('Graded', 'success');
+          await grading(el);
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        }
       })
     );
   } catch (e) {
@@ -459,14 +490,14 @@ async function studentsView(el: HTMLElement): Promise<void> {
         student_name: string;
         progress_percent: number;
       }[];
-      html += `<div class="card mb-3"><div class="card-header"><h3 class="card-title">${c.title} (${enr.length})</h3></div>
+      html += `<div class="card mb-3"><div class="card-header"><h3 class="card-title">${esc(c.title)} (${enr.length})</h3></div>
         <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>Student</th><th>Progress</th><th></th></tr></thead><tbody>
         ${
           enr
             .map(
               (
                 s
-              ) => `<tr><td>${s.student_name}</td><td style="min-width:160px"><div class="progress"><div class="progress-bar" style="width:${s.progress_percent}%"></div></div></td>
+              ) => `<tr><td>${esc(s.student_name)}</td><td style="min-width:160px"><div class="progress"><div class="progress-bar" style="width:${Number(s.progress_percent)}%"></div></div></td>
         <td><button class="btn btn-sm btn-outline-primary" data-prog="${c.id}:${s.student_id}">Detail</button></td></tr>`
             )
             .join('') || '<tr><td colspan="3">No students.</td></tr>'
@@ -475,19 +506,23 @@ async function studentsView(el: HTMLElement): Promise<void> {
     el.innerHTML = html || '<div class="alert alert-info">No courses.</div>';
     el.querySelectorAll('[data-prog]').forEach((b) =>
       b.addEventListener('click', async () => {
-        const [cid, sid] = ((b as HTMLElement).dataset.prog ?? '').split(':');
-        const rep = (await call<{
-          progress?: { percent: number };
-          lessons: { title: string; is_completed: number }[];
-        }>(`/api/v1/courses/${cid}/progress`, {}, { student_id: sid })) as {
-          progress?: { percent: number };
-          lessons: { title: string; is_completed: number }[];
-        };
-        const box = (b as HTMLElement)
-          .closest('.card')
-          ?.parentElement?.querySelector('[data-det]') as HTMLElement | null;
-        if (box)
-          box.innerHTML = `<div class="alert alert-info">Progress ${rep.progress?.percent ?? 0}% — ${rep.lessons.filter((l) => l.is_completed).length}/${rep.lessons.length} lessons done.</div>`;
+        try {
+          const [cid, sid] = ((b as HTMLElement).dataset.prog ?? '').split(':');
+          const rep = (await call<{
+            progress?: { percent: number };
+            lessons: { title: string; is_completed: number }[];
+          }>(`/api/v1/courses/${cid}/progress`, {}, { student_id: sid })) as {
+            progress?: { percent: number };
+            lessons: { title: string; is_completed: number }[];
+          };
+          const box = (b as HTMLElement)
+            .closest('.card')
+            ?.parentElement?.querySelector('[data-det]') as HTMLElement | null;
+          if (box)
+            box.innerHTML = `<div class="alert alert-info">Progress ${Number(rep.progress?.percent ?? 0)}% — ${rep.lessons.filter((l) => l.is_completed).length}/${rep.lessons.length} lessons done.</div>`;
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        }
       })
     );
   } catch (e) {
@@ -509,7 +544,7 @@ async function attendanceView(el: HTMLElement): Promise<void> {
       { organization_id: orgId }
     )) as { id: string; title: string }[];
     el.innerHTML = `<div class="card"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
-      <div><label class="form-label" for="at-course">Course</label><select id="at-course" class="form-select">${courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('')}</select></div>
+      <div><label class="form-label" for="at-course">Course</label><select id="at-course" class="form-select">${courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select></div>
       <div><label class="form-label" for="at-title">Session title</label><input id="at-title" class="form-control" value="Pertemuan"></div>
       <div><label class="form-label" for="at-date">Date</label><input id="at-date" type="date" class="form-control" value="${new Date().toISOString().slice(0, 10)}"></div>
       <button class="btn btn-primary" id="at-create">Create session</button></div></div><div id="at-list" class="mt-3"></div>`;
@@ -531,25 +566,29 @@ async function attendanceView(el: HTMLElement): Promise<void> {
             (
               s
             ) => `<div class="card mb-2"><div class="card-body d-flex gap-2 align-items-center flex-wrap">
-        <div><strong>${s.title}</strong><div class="text-muted small">${s.session_date}</div></div>
+        <div><strong>${esc(s.title)}</strong><div class="text-muted small">${esc(s.session_date)}</div></div>
         <button class="btn btn-sm btn-primary ms-auto" data-take="${s.id}">Take attendance</button></div>
         <div data-rec="${s.id}"></div></div>`
           )
           .join('') || '<div class="alert alert-info">No sessions yet.</div>';
     };
     (el.querySelector('#at-create') as HTMLButtonElement).addEventListener('click', async () => {
-      const cid = (el.querySelector('#at-course') as HTMLSelectElement).value;
-      await call('/api/v1/attendance/sessions', {
-        method: 'POST',
-        body: JSON.stringify({
-          organization_id: orgId,
-          course_id: cid,
-          title: (el.querySelector('#at-title') as HTMLInputElement).value,
-          session_date: (el.querySelector('#at-date') as HTMLInputElement).value,
-        }),
-      });
-      toast('Session created', 'success');
-      await load();
+      try {
+        const cid = (el.querySelector('#at-course') as HTMLSelectElement).value;
+        await call('/api/v1/attendance/sessions', {
+          method: 'POST',
+          body: JSON.stringify({
+            organization_id: orgId,
+            course_id: cid,
+            title: (el.querySelector('#at-title') as HTMLInputElement).value,
+            session_date: (el.querySelector('#at-date') as HTMLInputElement).value,
+          }),
+        });
+        toast('Session created', 'success');
+        await load();
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      }
     });
     (el.querySelector('#at-course') as HTMLSelectElement).addEventListener(
       'change',
@@ -558,34 +597,42 @@ async function attendanceView(el: HTMLElement): Promise<void> {
     el.querySelector('#at-list')?.addEventListener('click', async (e) => {
       const b = (e.target as HTMLElement).closest('[data-take]') as HTMLElement | null;
       if (!b?.dataset.take) return;
-      const sessId = b.dataset.take;
-      const cid = (el.querySelector('#at-course') as HTMLSelectElement).value;
-      const enr = (await call<{ student_id: string; student_name: string }[]>(
-        `/api/v1/courses/${cid}/enrollments`
-      )) as { student_id: string; student_name: string }[];
-      const box = el.querySelector(`[data-rec="${sessId}"]`) as HTMLElement;
-      box.innerHTML = `<div class="card-body">${
-        enr
-          .map(
-            (
-              s
-            ) => `<div class="d-flex gap-2 align-items-center mb-1"><span style="min-width:140px">${s.student_name}</span>
-        <select class="form-select w-auto" data-s="${s.student_id}">${['present', 'absent', 'late', 'excused'].map((o) => `<option>${o}</option>`).join('')}</select></div>`
-          )
-          .join('') || 'No enrolled students.'
-      }
-        ${enr.length ? '<button class="btn btn-primary mt-2" id="at-save">Save</button>' : ''}</div>`;
-      box.querySelector('#at-save')?.addEventListener('click', async () => {
-        const records = enr.map((s) => ({
-          student_id: s.student_id,
-          status: (box.querySelector(`[data-s="${s.student_id}"]`) as HTMLSelectElement).value,
-        }));
-        await call('/api/v1/attendance/records', {
-          method: 'POST',
-          body: JSON.stringify({ session_id: sessId, records }),
+      try {
+        const sessId = b.dataset.take;
+        const cid = (el.querySelector('#at-course') as HTMLSelectElement).value;
+        const enr = (await call<{ student_id: string; student_name: string }[]>(
+          `/api/v1/courses/${cid}/enrollments`
+        )) as { student_id: string; student_name: string }[];
+        const box = el.querySelector(`[data-rec="${sessId}"]`) as HTMLElement;
+        box.innerHTML = `<div class="card-body">${
+          enr
+            .map(
+              (
+                s
+              ) => `<div class="d-flex gap-2 align-items-center mb-1"><span style="min-width:140px">${esc(s.student_name)}</span>
+          <select class="form-select w-auto" data-s="${s.student_id}">${['present', 'absent', 'late', 'excused'].map((o) => `<option>${o}</option>`).join('')}</select></div>`
+            )
+            .join('') || 'No enrolled students.'
+        }
+          ${enr.length ? '<button class="btn btn-primary mt-2" id="at-save">Save</button>' : ''}</div>`;
+        box.querySelector('#at-save')?.addEventListener('click', async () => {
+          try {
+            const records = enr.map((s) => ({
+              student_id: s.student_id,
+              status: (box.querySelector(`[data-s="${s.student_id}"]`) as HTMLSelectElement).value,
+            }));
+            await call('/api/v1/attendance/records', {
+              method: 'POST',
+              body: JSON.stringify({ session_id: sessId, records }),
+            });
+            toast(`Recorded ${records.length}`, 'success');
+          } catch (err) {
+            toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          }
         });
-        toast(`Recorded ${records.length}`, 'success');
-      });
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      }
     });
     await load();
   } catch (e) {
@@ -595,7 +642,7 @@ async function attendanceView(el: HTMLElement): Promise<void> {
 
 async function profile(el: HTMLElement): Promise<void> {
   const me = getMe();
-  el.innerHTML = `<div class="card"><div class="card-body"><h3>${me?.name}</h3><p class="text-muted">${me?.email}</p>
+  el.innerHTML = `<div class="card"><div class="card-body"><h3>${esc(me?.name)}</h3><p class="text-muted">${esc(me?.email)}</p>
     <form id="pw"><label class="form-label">New password (min 8)</label><input type="password" id="npw" class="form-control mb-2" required>
     <label class="form-label">Current password</label><input type="password" id="cpw" class="form-control mb-2" required>
     <button class="btn btn-primary">Change password</button></form></div></div>`;
@@ -642,7 +689,7 @@ async function router(): Promise<void> {
         {},
         orgId ? { organization_id: orgId } : {}
       )) as { id: string; title: string; code: string }[];
-      view.innerHTML = `<div class="row row-cards">${courses.map((c) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3>${c.title}</h3><p class="text-muted">${c.code}</p><a class="btn btn-primary" href="#/courses/${c.id}">Open</a></div></div></div>`).join('')}</div>`;
+      view.innerHTML = `<div class="row row-cards">${courses.map((c) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3>${esc(c.title)}</h3><p class="text-muted">${esc(c.code)}</p><a class="btn btn-primary" href="#/courses/${c.id}">Open</a></div></div></div>`).join('')}</div>`;
     } else if (route.startsWith('/courses/')) await courseDetail(view, route.split('/')[2]);
     else if (route.startsWith('/grading')) await grading(view);
     else if (route === '/banks') await banksView(view, client, currentOrg());

@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderGrades(el: HTMLElement): Promise<void> {
   const d = t();
@@ -18,7 +18,7 @@ export async function renderGrades(el: HTMLElement): Promise<void> {
     orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
   ).catch(() => [])) as { id: string; title: string }[];
   courseSel.innerHTML =
-    courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('') ||
+    courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('') ||
     '<option value="">No courses</option>';
   const load = async () => {
     if (!courseSel.value) {
@@ -53,8 +53,8 @@ export async function renderGrades(el: HTMLElement): Promise<void> {
           .map(
             (
               g
-            ) => `<tr><td class="text-truncate" style="max-width:200px">${g.student_id.slice(0, 8)}…</td>
-        <td>${g.category}</td><td><strong>${g.score}</strong> / ${g.max_score}</td><td>${g.feedback ?? '—'}</td></tr>`
+            ) => `<tr><td class="text-truncate" style="max-width:200px">${esc(g.student_id.slice(0, 8))}…</td>
+        <td>${esc(g.category)}</td><td><strong>${Number(g.score)}</strong> / ${Number(g.max_score)}</td><td>${esc(g.feedback ?? '—')}</td></tr>`
           )
           .join('')}</tbody></table></div></div></div>`
         : `<div class="alert alert-info">${d.empty}</div>`;

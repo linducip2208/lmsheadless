@@ -6,8 +6,8 @@ import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
 import { logActivity } from './growth.js';
+import { isPrivileged, wantsNotification } from '../access.js';
 import { minor, pickMinor } from './commerce.js';
-import { isPrivileged } from '../access.js';
 import { snapshotCourse } from './authoring.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
@@ -98,7 +98,7 @@ courses.get('/courses', requireAuth(), async (c) => {
     )?.n ?? 0;
   const rows = await queryAll(
     db,
-    `SELECT * FROM courses WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    `SELECT * FROM courses WHERE ${where} ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
     ...params,
     perPage,
     (page - 1) * perPage
@@ -616,7 +616,7 @@ courses.get('/courses/:id/enrollment-requests', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const rows = await queryAll(
     db,
-    "SELECT er.*, u.name as student_name FROM enrollment_requests er JOIN users u ON u.id = er.student_id WHERE er.course_id = ? AND er.status = 'pending' ORDER BY er.created_at ASC LIMIT 500",
+    "SELECT er.*, u.name as student_name FROM enrollment_requests er JOIN users u ON u.id = er.student_id WHERE er.course_id = ? AND er.status = 'pending' ORDER BY er.created_at ASC, er.id ASC LIMIT 500",
     c.req.param('id')
   );
   return ok(c, rows);
@@ -654,15 +654,17 @@ courses.post('/enrollment-requests/:requestId/approve', requireAuth(), async (c)
     now,
     c.req.param('requestId')
   );
-  await execute(
-    db,
-    'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
-    newId(),
-    req.student_id,
-    'Enrollment approved',
-    'Your enrollment request was approved.',
-    now
-  );
+  if (await wantsNotification(db, req.student_id, 'system')) {
+    await execute(
+      db,
+      'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
+      newId(),
+      req.student_id,
+      'Enrollment approved',
+      'Your enrollment request was approved.',
+      now
+    );
+  }
   await audit(c, 'enrollment.approved', {
     entity: 'enrollment_request',
     entityId: c.req.param('requestId'),
@@ -691,15 +693,17 @@ courses.post('/enrollment-requests/:requestId/reject', requireAuth(), async (c) 
     nowIso(),
     c.req.param('requestId')
   );
-  await execute(
-    db,
-    'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
-    newId(),
-    req.student_id,
-    'Enrollment decision',
-    'Your enrollment request was not approved.',
-    nowIso()
-  );
+  if (await wantsNotification(db, req.student_id, 'system')) {
+    await execute(
+      db,
+      'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
+      newId(),
+      req.student_id,
+      'Enrollment decision',
+      'Your enrollment request was not approved.',
+      nowIso()
+    );
+  }
   return ok(c, { rejected: true });
 });
 

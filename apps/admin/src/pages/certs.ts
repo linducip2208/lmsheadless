@@ -1,4 +1,13 @@
-import { call, loadingHtml, errorHtml, toast, confirmDialog, currentOrgId, t } from '../lib.js';
+import {
+  call,
+  loadingHtml,
+  errorHtml,
+  toast,
+  confirmDialog,
+  currentOrgId,
+  t,
+  esc,
+} from '../lib.js';
 
 export async function renderCerts(el: HTMLElement): Promise<void> {
   const d = t();
@@ -25,7 +34,7 @@ export async function renderCerts(el: HTMLElement): Promise<void> {
     orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
   ).catch(() => [])) as { id: string; title: string }[];
   (el.querySelector('#cert-course') as HTMLSelectElement).innerHTML = courses
-    .map((c) => `<option value="${c.id}">${c.title}</option>`)
+    .map((c) => `<option value="${c.id}">${esc(c.title)}</option>`)
     .join('');
   (el.querySelector('#cert-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -51,7 +60,7 @@ export async function renderCerts(el: HTMLElement): Promise<void> {
       const r = (await call(`/api/v1/certificates/verify/${encodeURIComponent(num)}`)) as {
         certificate: Record<string, string>;
       };
-      out.innerHTML = `<div class="alert alert-success">Valid — ${r.certificate.student_name} · ${r.certificate.course_title} · ${r.certificate.issued_at?.slice(0, 10) ?? ''}</div>`;
+      out.innerHTML = `<div class="alert alert-success">Valid — ${esc(r.certificate.student_name)} · ${esc(r.certificate.course_title)} · ${esc(r.certificate.issued_at?.slice(0, 10) ?? '')}</div>`;
     } catch {
       out.innerHTML = '<div class="alert alert-danger">Not found.</div>';
     }
@@ -78,7 +87,7 @@ export async function renderCerts(el: HTMLElement): Promise<void> {
         ? `<div class="list-group">${items
             .map(
               (c) => `<div class="list-group-item d-flex gap-2 align-items-center">
-        <div><code>${c.certificate_number}</code><div class="text-muted small">${c.issued_at?.slice(0, 10) ?? ''} ${c.revoked_at ? '· REVOKED' : ''}</div></div>
+        <div><code>${esc(c.certificate_number)}</code><div class="text-muted small">${esc(c.issued_at?.slice(0, 10) ?? '')} ${c.revoked_at ? '· REVOKED' : ''}</div></div>
         ${!c.revoked_at ? `<button class="btn btn-sm btn-outline-danger ms-auto" data-revoke="${c.id}">${d.revoke}</button>` : ''}</div>`
             )
             .join('')}</div>`

@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderAssignments(el: HTMLElement): Promise<void> {
   const d = t();
@@ -16,7 +16,7 @@ export async function renderAssignments(el: HTMLElement): Promise<void> {
     orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
   ).catch(() => [])) as { id: string; title: string }[];
   courseSel.innerHTML =
-    courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('') ||
+    courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('') ||
     '<option value="">No courses</option>';
   const load = async () => {
     if (!courseSel.value) {
@@ -37,8 +37,8 @@ export async function renderAssignments(el: HTMLElement): Promise<void> {
         ? `<div class="row row-cards">${items
             .map(
               (a) => `<div class="col-md-6"><div class="card">
-        <div class="card-body"><h3 class="card-title">${a.title}</h3>
-        <div class="text-muted">${d.dueDate}: ${a.due_at ?? '—'} · ${d.maxScore} ${a.max_score}</div>
+        <div class="card-body"><h3 class="card-title">${esc(a.title)}</h3>
+        <div class="text-muted">${d.dueDate}: ${esc(a.due_at ?? '—')} · ${d.maxScore} ${Number(a.max_score)}</div>
         <button class="btn btn-sm btn-primary mt-2" data-asg="${a.id}">${d.review}</button></div></div></div>`
             )
             .join('')}</div>`
@@ -115,9 +115,9 @@ async function renderSubmissions(el: HTMLElement, assignmentId: string): Promise
           .map(
             (
               s
-            ) => `<tr><td class="text-truncate" style="max-width:220px">${s.student_id.slice(0, 8)}…</td>
-      <td><span class="badge ${s.status === 'graded' ? 'bg-green' : 'bg-yellow'}">${s.status}</span></td>
-      <td>${s.score ?? '—'}</td><td>${s.submitted_at?.slice(0, 16).replace('T', ' ') ?? '—'}</td>
+            ) => `<tr><td class="text-truncate" style="max-width:220px">${esc(s.student_id.slice(0, 8))}…</td>
+      <td><span class="badge ${s.status === 'graded' ? 'bg-green' : 'bg-yellow'}">${esc(s.status)}</span></td>
+      <td>${s.score ?? '—'}</td><td>${esc(s.submitted_at?.slice(0, 16).replace('T', ' ') ?? '—')}</td>
       <td><button class="btn btn-sm btn-outline-primary" data-grade="${s.id}">${d.grade}</button></td></tr>`
           )
           .join('') || `<tr><td colspan="5">${d.empty}</td></tr>`

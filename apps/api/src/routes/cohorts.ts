@@ -82,7 +82,7 @@ cohorts.get('/cohorts', requireAuth(), async (c) => {
   }
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM cohorts WHERE organization_id = ? ORDER BY created_at DESC LIMIT 500',
+    'SELECT * FROM cohorts WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 500',
     orgId
   );
   return ok(c, rows);
@@ -254,7 +254,7 @@ cohorts.get('/programs', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT * FROM programs WHERE organization_id = ? ORDER BY created_at DESC LIMIT 500',
+    'SELECT * FROM programs WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 500',
     orgId
   );
   return ok(c, rows);
@@ -432,7 +432,7 @@ cohorts.get('/competencies/student', requireAuth(), async (c) => {
   }
   const rows = await queryAll(
     c.get('db'),
-    'SELECT ce.*, comp.name as competency_name FROM competency_evidence ce JOIN competencies comp ON comp.id = ce.competency_id WHERE ce.student_id = ? AND comp.organization_id = ? ORDER BY ce.created_at DESC',
+    'SELECT ce.*, comp.name as competency_name FROM competency_evidence ce JOIN competencies comp ON comp.id = ce.competency_id WHERE ce.student_id = ? AND comp.organization_id = ? ORDER BY ce.created_at DESC, ce.id DESC',
     studentId,
     orgId
   );

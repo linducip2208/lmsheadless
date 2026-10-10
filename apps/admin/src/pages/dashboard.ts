@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderDashboard(el: HTMLElement): Promise<void> {
   const d = t();
@@ -53,10 +53,10 @@ export async function renderDashboard(el: HTMLElement): Promise<void> {
           ? completion
               .map(
                 (c) => `
-        <div class="mb-3"><div class="d-flex justify-content-between"><strong>${c.title}</strong>
-        <span class="text-muted">${c.completed}/${c.enrolled} · ${c.completion_rate}%</span></div>
-        <div class="progress" role="progressbar" aria-label="${c.title} progress" aria-valuenow="${c.avg_progress}" aria-valuemin="0" aria-valuemax="100">
-        <div class="progress-bar" style="width:${Math.min(100, c.avg_progress)}%"></div></div></div>`
+        <div class="mb-3"><div class="d-flex justify-content-between"><strong>${esc(c.title)}</strong>
+        <span class="text-muted">${Number(c.completed)}/${Number(c.enrolled)} · ${Number(c.completion_rate)}%</span></div>
+        <div class="progress" role="progressbar" aria-label="${esc(c.title)} progress" aria-valuenow="${Number(c.avg_progress)}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar" style="width:${Math.min(100, Number(c.avg_progress))}%"></div></div></div>`
               )
               .join('')
           : `<p class="text-muted">${d.empty}</p>`

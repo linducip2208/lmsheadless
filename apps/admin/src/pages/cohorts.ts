@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
 
 export async function renderCohorts(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -91,7 +91,7 @@ async function renderCohortList(el: HTMLElement, orgId: string): Promise<void> {
         )) as { name: string; role: string }[];
         out(ds.mem).innerHTML =
           members
-            .map((m) => `<span class="badge bg-blue me-1">${m.name} (${m.role})</span>`)
+            .map((m) => `<span class="badge bg-blue me-1">${esc(m.name)} (${esc(m.role)})</span>`)
             .join('') || `<span class="text-muted">${d.empty}</span>`;
       } else if (ds.add) {
         const data = await modalForm(d.members, [
@@ -122,7 +122,7 @@ async function renderCohortList(el: HTMLElement, orgId: string): Promise<void> {
           p.students
             .map(
               (s) =>
-                `<div class="d-flex justify-content-between"><span>${s.name}</span><span>${s.avg_progress}%</span></div>`
+                `<div class="d-flex justify-content-between"><span>${esc(s.name)}</span><span>${Number(s.avg_progress)}%</span></div>`
             )
             .join('') || `<span class="text-muted">${d.empty}</span>`;
       }
@@ -148,7 +148,7 @@ async function renderPrograms(el: HTMLElement, orgId: string): Promise<void> {
         ? items
             .map(
               (p) => `<div class="card mb-2"><div class="card-body">
-        <h3 class="card-title">${p.name}</h3>
+        <h3 class="card-title">${esc(p.name)}</h3>
         <div class="d-flex gap-1"><button class="btn btn-sm btn-outline-primary" data-view="${p.id}">${d.view}</button>
         <button class="btn btn-sm btn-outline-green" data-add="${p.id}">${d.create}</button></div>
         <div data-p="${p.id}" class="mt-2"></div></div></div>`
@@ -183,7 +183,7 @@ async function renderPrograms(el: HTMLElement, orgId: string): Promise<void> {
           courses: { course_title: string; is_required: number }[];
         };
         (el.querySelector(`[data-p="${btn.dataset.view}"]`) as HTMLElement).innerHTML =
-          `<ol>${det.courses.map((c) => `<li>${c.course_title}</li>`).join('')}</ol>`;
+          `<ol>${det.courses.map((c) => `<li>${esc(c.course_title)}</li>`).join('')}</ol>`;
       } else if (btn.dataset.add) {
         const data = await modalForm(d.courses, [
           { name: 'course_id', label: `${d.courses} ID`, required: true },
