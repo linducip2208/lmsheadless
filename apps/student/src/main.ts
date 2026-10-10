@@ -106,7 +106,8 @@ async function home(el: HTMLElement): Promise<void> {
       <div class="d-flex gap-1 flex-wrap mb-3">
       <a class="btn btn-sm btn-outline-primary" href="#/shop">🛍 ${d.shop}</a>
       <a class="btn btn-sm btn-outline-primary" href="#/live">📡 ${d.live}</a>
-      <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a></div>
+      <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a>
+      <a class="btn btn-sm btn-outline-primary" href="#/tutor">🤖 AI Tutor</a></div>
       <h3 class="mt-3">${d.enrolled}</h3>
       ${
         (rep.enrollments as { course_title: string; progress_percent: number; course_id: string }[])
@@ -785,7 +786,7 @@ async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
     })) as { id: string; resumed: boolean };
     el.innerHTML = `<a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary mb-2">←</a>
       <div class="ratio ratio-16x9 mb-2"><iframe title="SCORM content" sandbox="allow-scripts" src="/api/v1/scorm/content/${pkgId}/index.html" class="w-100 border rounded"></iframe></div>
-      <div class="alert alert-info">Sandboxed player — content cannot access your session. Use the buttons to record progress.</div>
+      <div class="alert alert-info">${d.sandboxNote}</div>
       <div class="d-flex gap-2">
       <button class="btn btn-outline-primary" id="sc-bm">${d.bookmark}</button>
       <button class="btn btn-primary" id="sc-done">${d.markSynced}</button></div><div id="sc-out" class="mt-2"></div>`;
@@ -804,6 +805,55 @@ async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
       });
       (el.querySelector('#sc-out') as HTMLElement).innerHTML =
         `<div class="alert alert-success">${d.markSynced} ✓</div>`;
+    });
+  } catch (e) {
+    el.innerHTML = errHtml(e);
+  }
+}
+
+async function tutorView(el: HTMLElement): Promise<void> {
+  el.innerHTML = loading();
+  try {
+    const orgId = currentOrg();
+    const courses = (await call<{ id: string; title: string }[]>(
+      '/api/v1/courses',
+      {},
+      orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
+    ).catch(() => [])) as { id: string; title: string }[];
+    el.innerHTML = `<h2>🤖 AI Tutor</h2><p class="text-muted">Answers come from your enrolled courses and are labeled when they don't.</p>
+      <div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
+      <div><label class="form-label">Course (optional)</label><select id="tu-course" class="form-select"><option value="">All my courses</option>${courses.map((c) => `<option value="${c.id}">${c.title}</option>`).join('')}</select></div>
+      <form id="tu-ask" class="d-flex gap-2 flex-fill"><input id="tu-q" class="form-control" placeholder="Ask about your lessons…" required maxlength="2000"><button class="btn btn-primary">Ask</button></form></div></div>
+      <div id="tu-out"></div>`;
+    (el.querySelector('#tu-ask') as HTMLFormElement).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const out = el.querySelector('#tu-out') as HTMLElement;
+      out.innerHTML = loading();
+      try {
+        const r = (await call<{
+          conversation_id: string;
+          answer: string;
+          grounded: boolean;
+          sources: { title: string }[];
+        }>('/api/v1/ai/ask', {
+          method: 'POST',
+          body: JSON.stringify({
+            organization_id: orgId,
+            course_id: (el.querySelector('#tu-course') as HTMLSelectElement).value || undefined,
+            question: (el.querySelector('#tu-q') as HTMLInputElement).value,
+          }),
+        })) as {
+          conversation_id: string;
+          answer: string;
+          grounded: boolean;
+          sources: { title: string }[];
+        };
+        out.innerHTML = `<div class="card"><div class="card-body"><span class="badge ${r.grounded ? 'bg-green' : 'bg-yellow'}">${r.grounded ? 'course-grounded' : 'general knowledge'}</span>
+          <p class="mt-2">${r.answer.slice(0, 4000)}</p>
+          ${r.sources.length ? `<div class="small text-muted">Sources: ${r.sources.map((s) => s.title).join(', ')}</div>` : ''}</div></div>`;
+      } catch (err) {
+        out.innerHTML = `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Failed'}</div>`;
+      }
     });
   } catch (e) {
     el.innerHTML = errHtml(e);
@@ -871,7 +921,8 @@ async function moreView(el: HTMLElement): Promise<void> {
     <div class="d-flex gap-1 flex-wrap mb-3">
       <a class="btn btn-sm btn-outline-primary" href="#/shop">🛍 ${d.shop}</a>
       <a class="btn btn-sm btn-outline-primary" href="#/live">📡 ${d.live}</a>
-      <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a></div>
+      <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a>
+      <a class="btn btn-sm btn-outline-primary" href="#/tutor">🤖 AI Tutor</a></div>
       <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.myAttendance} (${(att as { attendance_pct: number }).attendance_pct}%)</h3></div>
       <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>${d.session}</th><th>${d.date}</th><th>${d.status}</th></tr></thead><tbody>
       ${
@@ -952,6 +1003,7 @@ async function router(): Promise<void> {
     else if (route === '/shop') await shopView(view);
     else if (route === '/live') await liveView(view);
     else if (route === '/programs') await programsView(view);
+    else if (route === '/tutor') await tutorView(view);
     else if (route.startsWith('/scorm/')) await scormPlayer(view, route.split('/')[2]);
     else if (route.startsWith('/courses/')) await courseDetail(view, route.split('/')[2]);
     else if (route.startsWith('/grades')) await gradesView(view);

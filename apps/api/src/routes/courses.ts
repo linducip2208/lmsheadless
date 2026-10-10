@@ -6,6 +6,7 @@ import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
 import { logActivity } from './growth.js';
+import { minor, pickMinor } from './commerce.js';
 import { isPrivileged } from '../access.js';
 import { snapshotCourse } from './authoring.js';
 import type { AppVars, AuthUser } from '../types.js';
@@ -129,10 +130,15 @@ courses.post('/courses', requireAuth(), async (c) => {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '')
     ).slice(0, 120) || `course-${Date.now().toString(36)}`;
+  // Integer minor units are the source of truth: an explicit price_minor
+  // always wins and the REAL price is derived, so the two can never drift.
+  const priceMinor = parsed.data.price_minor ?? minor(parsed.data.price ?? 0);
+  const priceMajor =
+    parsed.data.price_minor !== undefined ? priceMinor / 100 : (parsed.data.price ?? 0);
   try {
     await execute(
       c.get('db'),
-      'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, thumbnail_url, price, created_by, created_at, updated_at, slug, visibility, start_at, end_at, enrollment_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, thumbnail_url, price, price_minor, is_compliance, created_by, created_at, updated_at, slug, visibility, start_at, end_at, enrollment_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       id,
       parsed.data.organization_id,
       parsed.data.category_id ?? null,
@@ -141,7 +147,9 @@ courses.post('/courses', requireAuth(), async (c) => {
       parsed.data.description ?? null,
       parsed.data.status ?? 'draft',
       parsed.data.thumbnail_url ?? null,
-      parsed.data.price ?? 0,
+      priceMajor,
+      priceMinor,
+      parsed.data.is_compliance ? 1 : 0,
       user.id,
       now,
       now,
@@ -190,6 +198,7 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
     status: (v) => (v === 'draft' || v === 'published' || v === 'archived' ? (v as string) : ''),
     thumbnail_url: (v) => (typeof v === 'string' ? v.slice(0, 1000) : ''),
     price: (v) => (typeof v === 'number' && v >= 0 ? v : ''),
+    price_minor: (v) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : ''),
     slug: (v) => (typeof v === 'string' && /^[a-z0-9-]{2,120}$/.test(v) ? v : ''),
     visibility: (v) => (v === 'private' || v === 'public' || v === 'unlisted' ? (v as string) : ''),
     start_at: (v) => (typeof v === 'string' && v.length <= 64 ? v : ''),
@@ -197,7 +206,17 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
     publish_at: (v) => (typeof v === 'string' && v.length <= 64 ? v : ''),
     enrollment_mode: (v) =>
       v === 'open' || v === 'approval' || v === 'closed' ? (v as string) : '',
+    is_compliance: (v) => (typeof v === 'boolean' ? (v ? 1 : 0) : ''),
   };
+  // Minor units win: when both are sent, the major price is derived from
+  // the minor value up front so the two columns can never drift.
+  if (
+    body.price_minor !== undefined &&
+    Number.isInteger(body.price_minor) &&
+    (body.price_minor as number) >= 0
+  ) {
+    body.price = (body.price_minor as number) / 100;
+  }
   const sets: string[] = [];
   const params: (string | number | null)[] = [];
   for (const [k, fn] of Object.entries(allowed)) {
@@ -212,6 +231,16 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
     }
   }
   if (!sets.length) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  // Keep minor units in sync whenever the major price changes without an explicit minor.
+  if (
+    body.price !== undefined &&
+    body.price_minor === undefined &&
+    typeof body.price === 'number' &&
+    body.price >= 0
+  ) {
+    sets.push('price_minor = ?');
+    params.push(minor(body.price));
+  }
   sets.push('updated_at = ?');
   params.push(nowIso(), c.req.param('id'));
   await execute(db, `UPDATE courses SET ${sets.join(', ')} WHERE id = ?`, ...params);
@@ -448,13 +477,14 @@ courses.post('/enrollments', requireAuth(), async (c) => {
   // Enrollment rules: windows, capacity, prerequisites, paid entitlement.
   const course = await queryFirst<{
     price: number;
+    price_minor: number | null;
     capacity: number | null;
     enrollment_start: string | null;
     enrollment_end: string | null;
     enrollment_mode: string | null;
   }>(
     db,
-    'SELECT price, capacity, enrollment_start, enrollment_end, enrollment_mode FROM courses WHERE id = ?',
+    'SELECT price, price_minor, capacity, enrollment_start, enrollment_end, enrollment_mode FROM courses WHERE id = ?',
     parsed.data.course_id
   );
   const nowMs = Date.now();
@@ -515,7 +545,8 @@ courses.post('/enrollments', requireAuth(), async (c) => {
       });
     }
   }
-  if ((course?.price ?? 0) > 0) {
+  // Paid gate reads integer minor units (falls back to legacy REAL rows).
+  if (pickMinor(course?.price_minor ?? null, course?.price ?? null) > 0) {
     const ent = await queryFirst<{ expires_at: string | null }>(
       db,
       'SELECT expires_at FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?',
@@ -695,12 +726,12 @@ courses.post('/lessons/:lessonId/complete', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   if (enr) {
     // Paid access expiry.
-    const course = await queryFirst<{ price: number }>(
+    const course = await queryFirst<{ price: number; price_minor: number | null }>(
       db,
-      'SELECT price FROM courses WHERE id = ?',
+      'SELECT price, price_minor FROM courses WHERE id = ?',
       lesson.course_id
     );
-    if ((course?.price ?? 0) > 0) {
+    if (pickMinor(course?.price_minor ?? null, course?.price ?? null) > 0) {
       const ent = await queryFirst<{ expires_at: string | null }>(
         db,
         'SELECT expires_at FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?',
@@ -821,7 +852,9 @@ courses.post('/lessons/:lessonId/complete', requireAuth(), async (c) => {
       user.id
     );
     if (!existingCert) {
-      const certNum = `CERT-${new Date().getUTCFullYear()}-${user.id.slice(0, 8).toUpperCase()}-${lesson.course_id.slice(0, 8).toUpperCase()}`;
+      // Entropy suffix: after a revocation, re-completion must mint a fresh
+      // number instead of colliding with the revoked row (UNIQUE violation).
+      const certNum = `CERT-${new Date().getUTCFullYear()}-${user.id.slice(0, 8).toUpperCase()}-${lesson.course_id.slice(0, 8).toUpperCase()}-${newId().slice(0, 8).toUpperCase()}`;
       await execute(
         db,
         'INSERT INTO certificates (id, organization_id, course_id, student_id, certificate_number, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',

@@ -57,7 +57,7 @@ interface Child {
 async function childDetail(el: HTMLElement, orgId: string, child: Child): Promise<void> {
   el.innerHTML = `<p>${d.loading}</p>`;
   try {
-    const [rep, att, notifs] = await Promise.all([
+    const [rep, att] = await Promise.all([
       call<{
         enrollments: { course_title: string; progress_percent: number; course_id: string }[];
         grades: { score: number; category: string }[];
@@ -66,13 +66,24 @@ async function childDetail(el: HTMLElement, orgId: string, child: Child): Promis
         records: { status: string; title: string; session_date: string }[];
         attendance_pct: number;
       }>(`/api/v1/attendance/student`, {}, { student_id: child.id, organization_id: orgId }),
-      call<{ title: string; body: string }[]>('/api/v1/notifications').catch(() => []),
     ]);
-    const cohorts = (await call<{ id: string; name: string }[]>(
+    // Cohorts filtered to this child's actual memberships (the org-wide
+    // list would misleadingly imply membership in every batch).
+    const allCohorts = (await call<{ id: string; name: string }[]>(
       '/api/v1/cohorts',
       {},
       { organization_id: orgId }
     ).catch(() => [])) as { id: string; name: string }[];
+    const mine: { id: string; name: string }[] = [];
+    await Promise.all(
+      allCohorts.map(async (ch) => {
+        const members = (await call<{ id: string }[]>(`/api/v1/cohorts/${ch.id}/members`).catch(
+          () => []
+        )) as { id: string }[];
+        if (members.some((m) => m.id === child.id)) mine.push(ch);
+      })
+    );
+    const cohorts = mine;
     el.innerHTML = `<a href="#/" class="btn btn-sm btn-outline-secondary mb-2">← ${d.back}</a>
       <h2>${child.name}</h2><p class="text-muted">${child.email}</p>
       <div class="row row-cards">
@@ -109,16 +120,7 @@ async function childDetail(el: HTMLElement, orgId: string, child: Child): Promis
           .join('') || `<tr><td colspan="3">${d.noRecords}</td></tr>`
       }</tbody></table></div></div></div>
       <div class="card"><div class="card-header"><h3 class="card-title">${d.cohorts}</h3></div>
-      <div class="card-body">${cohorts.map((x) => `<div class="mb-1">👥 ${x.name}</div>`).join('') || `<p class="text-muted">${d.notInCohort}</p>`}</div></div>
-      <div class="card mt-3"><div class="card-header"><h3 class="card-title">${d.announcements}</h3></div>
-      <div class="card-body">${
-        (notifs as { title: string; body: string }[])
-          .slice(0, 5)
-          .map(
-            (n) => `<div class="alert alert-info"><strong>${n.title}</strong><br>${n.body}</div>`
-          )
-          .join('') || `<p class="text-muted">${d.none}</p>`
-      }</div></div></div></div>`;
+      <div class="card-body">${cohorts.map((x) => `<div class="mb-1">👥 ${x.name}</div>`).join('') || `<p class="text-muted">${d.notInCohort}</p>`}</div></div></div></div>`;
   } catch (e) {
     el.innerHTML = errHtml(e);
   }
@@ -142,13 +144,28 @@ async function home(el: HTMLElement): Promise<void> {
       el.innerHTML = `<div class="alert alert-info">${d.noChildren}</div>`;
       return;
     }
+    // The parent's own inbox lives at parent level — it must never render
+    // inside a child's panel (wrong scope looked like the child's messages).
+    const notifs = (await call<{ title: string; body: string }[]>('/api/v1/notifications').catch(
+      () => []
+    )) as { title: string; body: string }[];
     el.innerHTML = `<h2>${d.children}</h2><div class="row row-cards">${children
       .map(
         (c) => `<div class="col-md-6"><div class="card">
       <div class="card-body"><h3 class="card-title">${c.name}</h3><p class="text-muted">${c.email}</p>
       <button class="btn btn-primary" data-child="${c.id}">${d.progress}</button></div></div></div>`
       )
-      .join('')}</div><div id="detail" class="mt-3"></div>`;
+      .join('')}</div>
+      <div class="card mt-3"><div class="card-header"><h3 class="card-title">${d.myNotifs}</h3></div>
+      <div class="card-body">${
+        notifs
+          .slice(0, 5)
+          .map(
+            (n) => `<div class="alert alert-info"><strong>${n.title}</strong><br>${n.body}</div>`
+          )
+          .join('') || `<p class="text-muted">${d.none}</p>`
+      }</div></div>
+      <div id="detail" class="mt-3"></div>`;
     el.querySelectorAll('[data-child]').forEach((b) =>
       b.addEventListener('click', () => {
         const child = children.find((x) => x.id === (b as HTMLElement).dataset.child);

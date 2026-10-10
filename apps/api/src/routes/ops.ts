@@ -84,6 +84,18 @@ ops.post('/api/v1/attendance/records', requireAuth(), async (c) => {
   ) {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   }
+  // Every recorded student must belong to the session's org: otherwise a
+  // teacher/staff of one org could inject attendance rows for arbitrary
+  // user IDs and pollute cross-org aggregates.
+  const want = [...new Set(parsed.data.records.map((r) => r.student_id))];
+  const have = await queryAll<{ user_id: string }>(
+    db,
+    `SELECT user_id FROM organization_members WHERE organization_id = ? AND user_id IN (${want.map(() => '?').join(',')})`,
+    sess.organization_id,
+    ...want
+  );
+  if (have.length !== want.length)
+    return fail(c, 400, 'INVALID_STUDENT', t('validation_failed', c.get('lang')));
   const now = nowIso();
   for (const r of parsed.data.records) {
     await execute(
@@ -108,19 +120,30 @@ ops.get('/api/v1/attendance/sessions', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const sessions = await queryAll(
     c.get('db'),
-    'SELECT * FROM attendance_sessions WHERE organization_id = ? ORDER BY session_date DESC',
+    'SELECT * FROM attendance_sessions WHERE organization_id = ? ORDER BY session_date DESC LIMIT 200',
     orgId
   );
-  const out: unknown[] = [];
-  for (const s of sessions) {
-    const sid = (s as { id: string }).id;
-    const records = await queryAll(
-      c.get('db'),
-      'SELECT * FROM attendance_records WHERE session_id = ?',
-      sid
-    );
-    out.push({ ...s, records });
+  // Single batched records query (previously one SELECT per session).
+  const ids = sessions.map((s) => (s as { id: string }).id);
+  const allRecords =
+    ids.length === 0
+      ? []
+      : await queryAll(
+          c.get('db'),
+          `SELECT * FROM attendance_records WHERE session_id IN (${ids.map(() => '?').join(',')})`,
+          ...ids
+        );
+  const bySession = new Map<string, unknown[]>();
+  for (const r of allRecords) {
+    const sid = (r as { session_id: string }).session_id;
+    const arr = bySession.get(sid) ?? [];
+    arr.push(r);
+    bySession.set(sid, arr);
   }
+  const out: unknown[] = sessions.map((s) => ({
+    ...s,
+    records: bySession.get((s as { id: string }).id) ?? [],
+  }));
   return ok(c, out);
 });
 
@@ -150,11 +173,27 @@ ops.get('/api/v1/certificates', requireAuth(), async (c) => {
   const url = new URL(c.req.url);
   const studentId = url.searchParams.get('student_id') ?? user.id;
   const db = c.get('db');
-  if (
-    studentId !== user.id &&
-    orgRole(user, url.searchParams.get('organization_id') ?? '') === 'student'
-  ) {
-    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (studentId !== user.id && !user.isSuperAdmin) {
+    // The org context is mandatory: without it a same-org student could
+    // omit organization_id and bypass the role check entirely.
+    const orgId = url.searchParams.get('organization_id');
+    if (!orgId || !canAccessOrg(user, orgId))
+      return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+    const role = orgRole(user, orgId);
+    if (role === 'student' || role === 'parent') {
+      // Students can never read another student's certificates; parents
+      // only via an explicit link to that child in this org.
+      const link = await queryFirst(
+        db,
+        'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ? AND organization_id = ?',
+        user.id,
+        studentId,
+        orgId
+      );
+      if (!link) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    } else if (role !== 'teacher' && role !== 'organization_admin' && role !== 'staff') {
+      return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    }
   }
   const rows = await queryAll(
     db,
@@ -328,6 +367,120 @@ ops.post('/api/v1/certificates/:id/revoke', requireAuth(), async (c) => {
     organizationId: cert.organization_id,
   });
   return ok(c, { revoked: true });
+});
+
+// PDF certificate (generated on demand with pdf-lib; revoked certs refused).
+ops.get('/api/v1/certificates/:id/pdf', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const cert = await queryFirst<{
+    organization_id: string;
+    course_id: string;
+    student_id: string;
+    certificate_number: string;
+    issued_at: string;
+    revoked_at: string | null;
+  }>(
+    db,
+    'SELECT organization_id, course_id, student_id, certificate_number, issued_at, revoked_at FROM certificates WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!cert) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  if (cert.revoked_at) return fail(c, 400, 'VALIDATION_ERROR', 'Certificate revoked');
+  const role = orgRole(user, cert.organization_id);
+  const allowed =
+    cert.student_id === user.id ||
+    user.isSuperAdmin ||
+    role === 'organization_admin' ||
+    role === 'teacher' ||
+    role === 'staff';
+  let parentOk = false;
+  if (!allowed && role === 'parent') {
+    const link = await queryFirst(
+      db,
+      'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+      user.id,
+      cert.student_id
+    );
+    parentOk = !!link;
+  }
+  if (!allowed && !parentOk) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const student = await queryFirst<{ name: string }>(
+    db,
+    'SELECT name FROM users WHERE id = ?',
+    cert.student_id
+  );
+  const course = await queryFirst<{ title: string }>(
+    db,
+    'SELECT title FROM courses WHERE id = ?',
+    cert.course_id
+  );
+  const org = await queryFirst<{ name: string; settings: string | null }>(
+    db,
+    'SELECT name, settings FROM organizations WHERE id = ?',
+    cert.organization_id
+  );
+  let appName = org?.name ?? 'LMS Headless';
+  try {
+    const s = JSON.parse(org?.settings ?? '{}') as Record<string, string>;
+    if (s.app_name) appName = s.app_name;
+  } catch {
+    /* default brand */
+  }
+  const { PDFDocument, StandardFonts, rgb } =
+    (await import('pdf-lib')) as unknown as typeof import('pdf-lib');
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([841.89, 595.28]);
+  const { width, height } = page.getSize();
+  const helv = await doc.embedFont(StandardFonts.Helvetica);
+  const helvBold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const center = (
+    text: string,
+    y: number,
+    size: number,
+    bold = false,
+    color = rgb(0.1, 0.1, 0.1)
+  ) => {
+    const font = bold ? helvBold : helv;
+    page.drawText(text.slice(0, 120), {
+      x: width / 2 - font.widthOfTextAtSize(text.slice(0, 120), size) / 2,
+      y,
+      size,
+      font,
+      color,
+    });
+  };
+  page.drawRectangle({
+    x: 24,
+    y: 24,
+    width: width - 48,
+    height: height - 48,
+    borderColor: rgb(0.13, 0.42, 0.77),
+    borderWidth: 3,
+  });
+  center(appName, height - 120, 22, true, rgb(0.13, 0.42, 0.77));
+  center('Certificate of Completion', height - 170, 30, true);
+  center('This certifies that', height - 220, 13);
+  center(student?.name ?? '', height - 260, 26, true);
+  center('has successfully completed', height - 300, 13);
+  center(course?.title ?? '', height - 335, 20, true);
+  center(`Certificate No: ${cert.certificate_number}`, height - 390, 11);
+  center(`Issued: ${cert.issued_at.slice(0, 10)}`, height - 410, 11);
+  center(
+    `Verify at /verify/${cert.certificate_number}`,
+    height - 440,
+    10,
+    false,
+    rgb(0.3, 0.3, 0.3)
+  );
+  const bytes = await doc.save();
+  c.header('Content-Type', 'application/pdf');
+  c.header('Content-Disposition', `inline; filename="${cert.certificate_number}.pdf"`);
+  c.header('X-Content-Type-Options', 'nosniff');
+  return c.body(
+    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer,
+    200
+  );
 });
 
 // ---------- Announcements / notifications ----------

@@ -72,6 +72,7 @@ export const courseSchema = z.object({
   status: courseStatus.optional(),
   thumbnail_url: z.string().max(1000).optional(),
   price: z.number().min(0).max(100000000).optional(),
+  price_minor: z.number().int().min(0).max(10000000000).optional(),
   slug: z
     .string()
     .min(2)
@@ -82,6 +83,7 @@ export const courseSchema = z.object({
   start_at: z.string().max(64).optional(),
   end_at: z.string().max(64).optional(),
   enrollment_mode: z.enum(['open', 'approval', 'closed']).optional(),
+  is_compliance: z.boolean().optional(),
 });
 
 export const sectionSchema = z.object({
@@ -146,6 +148,8 @@ export const assignmentSchema = z.object({
   due_at: z.string().max(64).optional(),
   max_score: z.number().min(0).max(10000),
   allow_resubmit: z.boolean().optional(),
+  allow_late: z.boolean().optional(),
+  late_penalty_percent: z.number().min(0).max(100).optional(),
   allowed_types: z.string().max(500).optional(),
   max_size_bytes: z.number().int().min(1024).max(262144000).optional(),
 });
@@ -292,6 +296,7 @@ export const bundleSchema = z.object({
   name: z.string().min(1).max(150),
   description: z.string().max(5000).optional(),
   price: z.number().min(0).max(100000000),
+  price_minor: z.number().int().min(0).max(10000000000).optional(),
   course_ids: z.array(z.string().min(1).max(64)).min(1).max(50),
 });
 
@@ -304,8 +309,10 @@ export const couponSchema = z.object({
     .regex(/^[A-Za-z0-9_-]+$/),
   kind: z.enum(['percent', 'fixed']),
   value: z.number().min(0),
+  value_minor: z.number().int().min(0).max(10000000000).optional(),
   max_uses: z.number().int().min(1).max(1000000).optional(),
   min_amount: z.number().min(0).optional(),
+  min_amount_minor: z.number().int().min(0).optional(),
   starts_at: z.string().max(64).optional(),
   ends_at: z.string().max(64).optional(),
 });

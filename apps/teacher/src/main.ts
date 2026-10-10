@@ -120,6 +120,70 @@ async function dashboard(el: HTMLElement): Promise<void> {
   }
 }
 
+async function renderCourseExercises(el: HTMLElement, courseId: string): Promise<void> {
+  const box = el.querySelector('#exlist') as HTMLElement | null;
+  if (!box) return;
+  try {
+    const items = (await call<{ id: string; title: string; language: string }[]>(
+      `/api/v1/exercises`,
+      {},
+      { course_id: courseId }
+    ).catch(() => [])) as { id: string; title: string; language: string }[];
+    box.innerHTML = items.length
+      ? items
+          .map(
+            (x) =>
+              `<div class="mb-2"><strong>${x.title}</strong> <span class="badge bg-blue">${x.language}</span>
+        <button class="btn btn-sm btn-outline-primary ms-2" data-exsubs="${x.id}">Submissions</button>
+        <div data-exbox="${x.id}"></div></div>`
+          )
+          .join('')
+      : '<span class="text-muted">No exercises.</span>';
+    box.querySelectorAll('[data-exsubs]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const id = (b as HTMLElement).dataset.exsubs ?? '';
+        const target = box.querySelector(`[data-exbox="${id}"]`) as HTMLElement;
+        const subs = (await call<
+          { id: string; student_name: string; status: string; code: string }[]
+        >(`/api/v1/exercises/${id}/submissions`).catch(() => [])) as {
+          id: string;
+          student_name: string;
+          status: string;
+          code: string;
+        }[];
+        target.innerHTML = subs.length
+          ? subs
+              .map(
+                (s) =>
+                  `<div class="border rounded p-2 mb-1"><strong>${s.student_name}</strong> <span class="badge bg-yellow">${s.status}</span>
+            <pre class="small mt-1">${s.code.slice(0, 800)}</pre>
+            <form data-exfb="${s.id}" class="d-flex gap-1 mt-1"><input name="feedback" class="form-control form-control-sm" placeholder="Feedback" required>
+            <select name="status" class="form-select form-select-sm w-auto"><option value="reviewed">reviewed</option><option value="approved">approved</option><option value="needs_work">needs_work</option></select>
+            <button class="btn btn-sm btn-primary">Send</button></form></div>`
+              )
+              .join('')
+          : '<span class="text-muted">No submissions.</span>';
+        target.querySelectorAll('[data-exfb]').forEach((f) =>
+          (f as HTMLFormElement).addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(f as HTMLFormElement);
+            await call(`/api/v1/exercise-submissions/${(f as HTMLElement).dataset.exfb}/feedback`, {
+              method: 'POST',
+              body: JSON.stringify({
+                feedback: String(fd.get('feedback')),
+                status: String(fd.get('status')),
+              }),
+            });
+            toast('Feedback sent', 'success');
+          })
+        );
+      })
+    );
+  } catch {
+    if (box) box.innerHTML = '<span class="text-danger">Failed to load.</span>';
+  }
+}
+
 async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
   el.innerHTML = loading();
   try {
@@ -141,7 +205,8 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">${d.upcoming}</h3>
       <button class="btn btn-sm btn-primary ms-auto" id="asg-add">+ Assignment</button></div>
       <div class="list-group list-group-flush">${(assignments as { id: string; title: string; due_at: string | null }[]).map((a) => `<div class="list-group-item">${a.title}<span class="text-muted"> · ${a.due_at ?? 'no due date'}</span></div>`).join('') || '<div class="list-group-item text-muted">None.</div>'}</div></div>
-      <div class="card mt-3"><div class="card-header"><h3 class="card-title">Enrollments</h3></div><div class="card-body" id="enr">Loading…</div></div></div></div>`;
+      <div class="card mt-3"><div class="card-header"><h3 class="card-title">Enrollments</h3></div><div class="card-body" id="enr">Loading…</div></div>
+      <div class="card mt-3"><div class="card-header"><h3 class="card-title">${d.exercises}</h3></div><div class="card-body" id="exlist">Loading…</div></div></div></div>`;
     for (const s of sections as { id: string }[]) {
       const box = el.querySelector(`[data-less="${s.id}"]`) as HTMLElement;
       const lessons = (await call<{ id: string; title: string; content_type: string }[]>(
@@ -167,6 +232,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
           )
           .join('')
       : 'No enrollments yet.';
+    await renderCourseExercises(el, courseId);
     (el.querySelector('#sec-add') as HTMLButtonElement).addEventListener('click', async () => {
       const data = await modalForm('Add section', [
         { name: 'title', label: 'Title', required: true },

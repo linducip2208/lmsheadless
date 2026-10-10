@@ -21,7 +21,17 @@ export async function runMigrations(db: D1Like, dir?: string): Promise<string[]>
   }
   for (const f of files) {
     const sql = readFileSync(join(d, f), 'utf8');
-    await db.exec(sql);
+    try {
+      await db.exec(sql);
+    } catch (e) {
+      // Boots re-run every migration file (no ledger). Files using
+      // CREATE ... IF NOT EXISTS are naturally re-runnable; bare
+      // ALTER TABLE ... ADD COLUMN (SQLite/D1 have no IF NOT EXISTS
+      // variant) throws once the column exists. That case is benign —
+      // anything else is a real failure and must still throw.
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!/duplicate column name|already exists/i.test(msg)) throw e;
+    }
   }
   await applyColumnPatches(db);
   return files;
@@ -59,6 +69,7 @@ const COLUMN_PATCHES: [string, string, string][] = [
   ['courses', 'review_status', "TEXT NOT NULL DEFAULT 'none'"],
   ['lessons', 'audio_url', 'TEXT'],
   ['orders', 'affiliate_id', 'TEXT'],
+  ['submissions', 'rubric_breakdown', 'TEXT'],
 ];
 
 async function applyColumnPatches(db: D1Like): Promise<void> {

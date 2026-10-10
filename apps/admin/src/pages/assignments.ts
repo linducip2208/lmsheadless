@@ -106,7 +106,8 @@ async function renderSubmissions(el: HTMLElement, assignmentId: string): Promise
       body: string;
       submitted_at: string;
     }[];
-    el.innerHTML = `<div class="card"><div class="card-header"><h3 class="card-title">${d.assignments} (${subs.length})</h3></div>
+    el.innerHTML = `<div class="card"><div class="card-header"><h3 class="card-title">${d.assignments} (${subs.length})</h3>
+      <button class="btn btn-sm btn-outline-primary ms-auto" id="rubric-btn">Rubric</button></div>
       <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr>
       <th scope="col">${d.students}</th><th scope="col">${d.status}</th><th scope="col">${d.total}</th><th scope="col">${d.date}</th><th scope="col"></th></tr></thead>
       <tbody>${
@@ -123,17 +124,45 @@ async function renderSubmissions(el: HTMLElement, assignmentId: string): Promise
       }</tbody></table></div></div></div>`;
     el.querySelectorAll('[data-grade]').forEach((b) =>
       b.addEventListener('click', async () => {
+        const subId = (b as HTMLElement).dataset.grade ?? '';
+        const rubric = (await call<{ id: string; label: string; max_points: number }[]>(
+          `/api/v1/assignments/${assignmentId}/rubric`
+        ).catch(() => [])) as { id: string; label: string; max_points: number }[];
         const data = await modalForm(d.grade, [
           { name: 'score', label: d.total, type: 'number', required: true },
           { name: 'feedback', label: d.feedback, type: 'textarea' },
+          ...(rubric.length
+            ? [
+                {
+                  name: 'rubric_json',
+                  label: `Rubric JSON: ${rubric.map((r) => `${r.label} (0–${r.max_points}, id ${r.id.slice(0, 8)})`).join(' · ')}`,
+                  type: 'textarea',
+                },
+              ]
+            : []),
         ]);
         if (!data) return;
+        let rubricScores: { criterion_id: string; points: number }[] | undefined;
+        if (rubric.length && data.rubric_json) {
+          try {
+            const parsed = JSON.parse(data.rubric_json) as {
+              criterion_id: string;
+              points: number;
+            }[];
+            if (!Array.isArray(parsed)) throw new Error('bad rubric');
+            rubricScores = parsed;
+          } catch {
+            toast('Invalid rubric JSON', 'danger');
+            return;
+          }
+        }
         try {
-          await call(`/api/v1/submissions/${(b as HTMLElement).dataset.grade}/grade`, {
+          await call(`/api/v1/submissions/${subId}/grade`, {
             method: 'POST',
             body: JSON.stringify({
               score: Number(data.score),
               feedback: data.feedback || undefined,
+              ...(rubricScores ? { rubric_scores: rubricScores } : {}),
             }),
           });
           toast(d.saved, 'success');
@@ -142,6 +171,41 @@ async function renderSubmissions(el: HTMLElement, assignmentId: string): Promise
           toast(e instanceof Error ? e.message : d.failed, 'danger');
         }
       })
+    );
+    (el.querySelector('#rubric-btn') as HTMLButtonElement | null)?.addEventListener(
+      'click',
+      async () => {
+        const existing = (await call<{ id: string; label: string; max_points: number }[]>(
+          `/api/v1/assignments/${assignmentId}/rubric`
+        ).catch(() => [])) as { id: string; label: string; max_points: number }[];
+        const data = await modalForm('Rubric', [
+          {
+            name: 'criteria',
+            label: 'One per line: Label = max points',
+            type: 'textarea',
+            value: existing.map((r) => `${r.label} = ${r.max_points}`).join('\n'),
+            required: true,
+          },
+        ]);
+        if (!data?.criteria) return;
+        const criteria = data.criteria
+          .split('\n')
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+          .map((l: string) => {
+            const [label, pts] = l.split('=').map((s: string) => s.trim());
+            return { label, max_points: Number(pts) };
+          });
+        try {
+          await call(`/api/v1/assignments/${assignmentId}/rubric`, {
+            method: 'POST',
+            body: JSON.stringify({ criteria }),
+          });
+          toast(d.saved, 'success');
+        } catch (e) {
+          toast(e instanceof Error ? e.message : d.failed, 'danger');
+        }
+      }
     );
   } catch (e) {
     el.innerHTML = errorHtml(e);

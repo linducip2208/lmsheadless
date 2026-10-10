@@ -6,8 +6,9 @@
 - Entry launch URL, per-learner attempts with resume (`location`,
   `suspend_data`), commit of `completion/success/score/total_time`.
 - Completion maps back to lesson progress when the package is lesson-attached.
-- Package versioning (re-uploads create new versions; old attempts keep
-  pointing at their version).
+- No package versioning yet: re-uploading the same course package replaces
+  stored files (the `package_version` column exists for a future versioning
+  scheme; old attempts are not pinned to a version).
 
 ## Security boundary
 
@@ -20,8 +21,10 @@
 
 ## Gaps (documented, not advertised)
 
-- **SCORM 2004**: rejected at import with `UNSUPPORTED_VERSION`. Sequencing/
-  navigation model not implemented.
+- **SCORM 2004**: accepted at import and stored with `version: '2004'`, but the
+  sequencing/navigation model is NOT interpreted (`sequencing:
+'not-interpreted'`) — only the same 1.2-style launch/track/commit subset
+  applies. Full 2004 RTE/sequencing is roadmap, not claimed.
 - **Full RTE adapter** (`window.API` bridge): roadmap — current player uses
   manual sync; runtime data model fields beyond the commit subset are not mapped.
 - **H5P**: no native runtime; safe-embed extension point is
@@ -29,6 +32,7 @@
 
 ## Testing
 
-`test/growth.test.ts` covers invalid zips, missing manifests, 2004 rejection,
-launch/resume/commit validation, completion mapping, tenant isolation on
-content serving, and traversal rejection.
+`test/growth.test.ts` covers invalid zips, missing manifests, 2004 import
+(stored, sequencing not interpreted), launch/resume/commit validation,
+completion mapping, tenant isolation on content serving, and traversal
+rejection.

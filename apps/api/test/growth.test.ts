@@ -88,15 +88,20 @@ describe('SCORM 1.2', () => {
     // zip without manifest rejected
     const noManifest = await upload(await makeZip({ 'index.html': '<h1>hi</h1>' }), 'a.zip');
     expect(noManifest.status).toBe(400);
-    // SCORM 2004 honestly rejected with documented gap
+    // SCORM 2004 imports (sequencing documented as not interpreted)
     const v2004 = await upload(
       await makeZip({ 'imsmanifest.xml': MANIFEST_2004, 'index.html': '<h1>hi</h1>' }),
       'b.zip'
     );
-    expect(v2004.status).toBe(400);
-    expect(((await v2004.json()) as { error: { code: string } }).error.code).toBe(
-      'UNSUPPORTED_VERSION'
+    expect(v2004.status).toBe(201);
+    const pkg2004 = (await v2004.json()) as { data: { id: string } };
+    const row2004 = await queryFirst<{ version: string; manifest_json: string }>(
+      db,
+      'SELECT version, manifest_json FROM scorm_packages WHERE id = ?',
+      pkg2004.data.id
     );
+    expect(row2004?.version).toBe('2004');
+    expect(row2004?.manifest_json).toContain('not-interpreted');
     // valid 1.2 package
     const good = await upload(
       await makeZip({ 'imsmanifest.xml': MANIFEST_12, 'index.html': '<h1>lesson</h1>' }),

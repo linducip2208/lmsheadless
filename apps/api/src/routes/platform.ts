@@ -37,7 +37,59 @@ async function can(
   return (await dbRolePerms(db, role)).includes(perm);
 }
 
-// ---------- First-run setup (locked after completion) ----------
+// ---------- System health & configuration status (standalone install) ----------
+platform.get('/api/v1/system/health', async (c) => {
+  return ok(c, { status: 'ok', time: nowIso(), version: '2.0.0' });
+});
+
+platform.get('/api/v1/system/status', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  if (!user.isSuperAdmin) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const db = c.get('db');
+  let database = 'ok';
+  let migrations = 0;
+  try {
+    await queryFirst(db, 'SELECT 1 as ok');
+    const files = await queryAll<{ name: string }>(
+      db,
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+    );
+    migrations = files.length;
+  } catch {
+    database = 'error';
+  }
+  const settings = Object.fromEntries(
+    (await queryAll<{ key: string; value: string }>(db, 'SELECT key, value FROM settings')).map(
+      (r) => [
+        r.key,
+        r.key.includes('key') || r.key.includes('secret')
+          ? r.value
+            ? 'configured'
+            : 'missing'
+          : r.value,
+      ]
+    )
+  );
+  const env = c.get('env');
+  return ok(c, {
+    database,
+    tables: migrations,
+    storage_driver: env.STORAGE_DRIVER,
+    email_configured: !!settings.email_api_url,
+    payments_configured: Object.keys(settings).some((k) => k.startsWith('payment_') && settings[k]),
+    push_configured: !!settings.vapid_public_key,
+    ai_organizations:
+      (
+        await queryFirst<{ n: number }>(
+          db,
+          "SELECT COUNT(*) as n FROM ai_configs WHERE provider != 'disabled'"
+        )
+      )?.n ?? 0,
+    maintenance_mode: settings.maintenance_mode === 'true',
+    registration_enabled: settings.registration_enabled !== 'false',
+    setup_completed: settings.setup_completed === 'true',
+  });
+});
 platform.get('/api/v1/setup/status', async (c) => {
   const row = await queryFirst<{ value: string }>(
     c.get('db'),

@@ -12,8 +12,13 @@ entitlements, drops enrollments).
 
 Coupons (percent/fixed, caps, minimums, windows, usage counts), affiliate
 attribution (expiry setting, anti-self-referral), tax via org setting
-`tax_rate`, currency via org setting. All rounding to 2 decimals, recomputed
-on every transition.
+`tax_rate`, currency via org setting. Money is stored and computed in integer
+minor units (`*_minor` columns; source of truth, half-up rounding); the REAL
+`price/total/amount` columns stay synced for backward compatibility and legacy
+rows fall back through rounding. For zero-decimal currencies (e.g. IDR — whole
+rupiah), set amounts in whole units and treat minor == major. Coupon claims
+are atomic (`used_count` conditional increment); commissions are idempotent
+per order; refunds reverse commissions and revoke entitlements.
 
 ## Providers
 
@@ -33,4 +38,9 @@ on every transition.
 
 Commissions are refund-aware; **payouts are manual bank transfers** tracked
 through request → approve/reject (the system never moves money). Gifts,
-bundles, subscriptions and revenue reports included. Refund/cancel flows tested.
+bundles, cohorts, subscriptions and revenue reports included. Refund flows
+tested (course/bundle/cohort revocation, commission reversal). There is no
+order-cancel endpoint: `cancelled` appears only as a fulfillment guard — do
+not advertise cancellation. Subscription records are point-in-time
+(active/pending) with no automated renewal, charge, or cancel linkage;
+recurring billing is provider-driven.

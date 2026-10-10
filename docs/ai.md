@@ -18,6 +18,13 @@ Core LMS works with AI fully `disabled` (default). Enable per organization:
   instructor-supplied `input_ref` topic/material.
 - Live-provider verification is **pending** (mocked contract paths tested);
   label accordingly in product demos.
+- Conversation retention: `retention_days` (default 30) is enforced by
+  `POST /ai/retention/purge` (privileged, audited) — run it on a schedule.
+  API keys are stored in the org database row in recoverable form: anyone with
+  database/backup access can read them, so protect backups accordingly.
+- The AI tutor answers only from the student's enrolled-course materials
+  (keyword RAG); anything else is labeled general knowledge, and lesson
+  "instruction" text is treated as untrusted data, never as instructions.
 
 ## Coding exercises
 

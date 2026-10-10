@@ -13,6 +13,7 @@ import live from './routes/live.js';
 import commerce from './routes/commerce.js';
 import scorm from './routes/scorm.js';
 import growth from './routes/growth.js';
+import xapi from './routes/xapi.js';
 import { authOptional, language, rateLimit, requestId } from './middleware/common.js';
 import { cors } from './middleware/cors.js';
 import { idempotency } from './middleware/idempotency.js';
@@ -67,6 +68,7 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.route('/api/v1', commerce);
   app.route('/api/v1', scorm);
   app.route('/api/v1', growth);
+  app.route('/api/v1', xapi);
   app.route('/', ops);
   app.route('/', platform);
 

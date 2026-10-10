@@ -390,7 +390,7 @@ authoring.post('/courses/:id/duplicate', requireAuth(), async (c) => {
   try {
     await execute(
       db,
-      'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, price, created_by, created_at, updated_at, slug, visibility, enrollment_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, price, price_minor, created_by, created_at, updated_at, slug, visibility, enrollment_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       newCourseId,
       orgId,
       (src.category_id as string | null) ?? null,
@@ -399,6 +399,7 @@ authoring.post('/courses/:id/duplicate', requireAuth(), async (c) => {
       (src.description as string | null) ?? null,
       'draft',
       (src.price as number | null) ?? 0,
+      (src.price_minor as number | null) ?? 0,
       user.id,
       now,
       now,

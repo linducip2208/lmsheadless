@@ -36,7 +36,7 @@ export async function renderData(el: HTMLElement): Promise<void> {
 async function renderImports(el: HTMLElement, orgId: string): Promise<void> {
   const d = t();
   el.innerHTML = `<div class="card mb-3"><div class="card-body"><form id="im-form" class="d-flex gap-2 flex-wrap align-items-end">
-    <div><label class="form-label">${d.status}</label><select id="im-kind" class="form-select"><option>users</option><option>enrollments</option><option>grades</option><option>attendance</option></select></div>
+    <div><label class="form-label">${d.status}</label><select id="im-kind" class="form-select"><option>users</option><option>enrollments</option><option>grades</option><option>attendance</option><option>courses</option></select></div>
     <div><label class="form-label">CSV</label><input id="im-file" type="file" accept=".csv" class="form-control" required></div>
     <label class="form-check"><input type="checkbox" id="im-dry" class="form-check-input" checked> Dry run</label>
     <button class="btn btn-primary">${d.verify}</button></form>

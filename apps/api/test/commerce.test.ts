@@ -456,6 +456,126 @@ describe('commerce core', () => {
   });
 });
 
+describe('minor-unit money arithmetic', () => {
+  it('computes percent/fixed/tax in integer cents with half-up rounding', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'cents');
+    await mkUser(db, 'adm@cents.com', 'organization_admin', org);
+    await mkUser(db, 's@cents.com', 'student', org);
+    const tokA = (await login(app, 'adm@cents.com')).access_token;
+    const tokS = (await login(app, 's@cents.com')).access_token;
+    // Course priced 9.99 → 999 minor via API.
+    const c = (await (
+      await app.request('/api/v1/courses', {
+        method: 'POST',
+        headers: H(tokA),
+        body: JSON.stringify({ organization_id: org, code: 'CENTS1', title: 'Cents', price: 9.99 }),
+      })
+    ).json()) as { data: { id: string } };
+    const row = await queryFirst<{ price_minor: number; price: number }>(
+      db,
+      'SELECT price_minor, price FROM courses WHERE id = ?',
+      c.data.id
+    );
+    expect(row?.price_minor).toBe(999);
+    expect(row?.price).toBe(9.99);
+    // 15% of 999 = 149.85 → 150 minor (half-up), total 849.
+    await app.request('/api/v1/coupons', {
+      method: 'POST',
+      headers: H(tokA),
+      body: JSON.stringify({ organization_id: org, code: 'P15', kind: 'percent', value: 15 }),
+    });
+    const order = (await (
+      await app.request('/api/v1/orders', {
+        method: 'POST',
+        headers: H(tokS),
+        body: JSON.stringify({
+          organization_id: org,
+          kind: 'course',
+          reference_id: c.data.id,
+          coupon_code: 'P15',
+        }),
+      })
+    ).json()) as {
+      data: { id: string; total: number; total_minor: number };
+    };
+    expect(order.data.total_minor).toBe(849);
+    expect(order.data.total).toBe(8.49);
+    const stored = await queryFirst<{
+      subtotal_minor: number;
+      discount_minor: number;
+      total_minor: number;
+    }>(
+      db,
+      'SELECT subtotal_minor, discount_minor, total_minor FROM orders WHERE id = ?',
+      order.data.id
+    );
+    expect(stored).toEqual({ subtotal_minor: 999, discount_minor: 150, total_minor: 849 });
+    // Fixed coupon in minor units, capped at subtotal.
+    await app.request('/api/v1/coupons', {
+      method: 'POST',
+      headers: H(tokA),
+      body: JSON.stringify({
+        organization_id: org,
+        code: 'F50',
+        kind: 'fixed',
+        value: 0,
+        value_minor: 5000,
+      }),
+    });
+    const big = (await (
+      await app.request('/api/v1/orders', {
+        method: 'POST',
+        headers: H(tokS),
+        body: JSON.stringify({
+          organization_id: org,
+          kind: 'course',
+          reference_id: c.data.id,
+          coupon_code: 'F50',
+        }),
+      })
+    ).json()) as {
+      data: { total_minor: number; status: string };
+    };
+    expect(big.data.total_minor).toBe(0);
+    expect(big.data.status).toBe('paid'); // fully discounted → auto-fulfilled
+    // Unvalidated value_minor rejected.
+    const bad = await app.request('/api/v1/coupons', {
+      method: 'POST',
+      headers: H(tokA),
+      body: JSON.stringify({
+        organization_id: org,
+        code: 'BAD',
+        kind: 'fixed',
+        value: 1,
+        value_minor: 1.5,
+      }),
+    });
+    expect(bad.status).toBe(400);
+  });
+
+  it('legacy REAL rows fall back to rounded minor units', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'legacy');
+    const t = await mkUser(db, 't@legacy.com', 'teacher', org);
+    await mkUser(db, 's@legacy.com', 'student', org);
+    const tokS = (await login(app, 's@legacy.com')).access_token;
+    // Simulate a pre-017 row: REAL price set, minor zeroed.
+    const c = await mkCourse(db, org, t, 'LEG1');
+    await execute(db, 'UPDATE courses SET price = 19.99, price_minor = 0 WHERE id = ?', c);
+    const order = (await (
+      await app.request('/api/v1/orders', {
+        method: 'POST',
+        headers: H(tokS),
+        body: JSON.stringify({ organization_id: org, kind: 'course', reference_id: c }),
+      })
+    ).json()) as {
+      data: { total_minor: number };
+    };
+    expect(order.data.total_minor).toBe(1999);
+  });
+});
+
 describe('marketplace auto-join', () => {
   it('buyers outside the organization auto-join as students on order', async () => {
     const { app, db } = await setup();

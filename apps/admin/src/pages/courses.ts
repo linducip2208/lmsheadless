@@ -115,6 +115,16 @@ export async function renderCourses(el: HTMLElement): Promise<void> {
       }
     }
   });
+  // Deep link from search: #/courses/<id> opens that course in the builder.
+  const deep = location.hash.replace('#/courses', '').replace(/^\//, '');
+  if (deep) {
+    try {
+      await renderBuilder(builder, decodeURIComponent(deep).slice(0, 120));
+      builder.scrollIntoView();
+    } catch {
+      /* unknown id: stay on the list */
+    }
+  }
 }
 
 async function renderApprovals(el: HTMLElement, orgId: string | null): Promise<void> {

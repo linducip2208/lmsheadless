@@ -20,6 +20,7 @@ export const en = {
   noRecords: 'No records.',
   none: 'None.',
   notInCohort: 'Not in any cohort.',
+  myNotifs: 'My notifications',
   loading: 'Loading…',
 };
 
@@ -47,6 +48,7 @@ export const id: Record<keyof ParentDict, string> = {
   noRecords: 'Tidak ada catatan.',
   none: 'Tidak ada.',
   notInCohort: 'Tidak di kohor mana pun.',
+  myNotifs: 'Notifikasi saya',
   loading: 'Memuat…',
 };
 

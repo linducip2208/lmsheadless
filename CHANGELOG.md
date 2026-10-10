@@ -1,5 +1,58 @@
 # Changelog
 
+## 1.8.0 — Correctness & hardening release
+
+Carried (previously uncommitted) work, now released and tested:
+
+- Integer minor-unit money columns across all financial tables with legacy
+  REAL backfill (`017_money`); order/invoice/commission math in cents
+- xAPI/LRS statement store with validation, idempotency, scoped reads,
+  retention purge, paginated export (`018_xapi`)
+- AI tutor with course-scoped RAG, review-gated Course Studio, conversation
+  isolation (`019_ai_tutor`); enterprise rubrics, late policy, compliance
+  flag, early-warning alerts (`020_enterprise`)
+
+Security fixes (each with a regression test):
+
+- Boot crash on migrated databases: migrations re-run tolerantly
+  (`duplicate column` no longer fatal); double-boot test added
+- Password reset now revokes all sessions (mirrors password change)
+- Certificate-list IDOR closed: org context mandatory, students blocked,
+  parents require an explicit link
+- Roster enumeration closed: user list and foreign profiles require a
+  teaching/administrative role
+- Grades cross-student oracle closed (auth decided before any row is read)
+- Attendance records validated against org membership; sessions list batched
+  (N+1 removed) and capped
+
+Financial correctness:
+
+- All paid/free gates (enrollment, lessons, quizzes, assignments, CSV import)
+  read minor units with legacy fallback — REAL/minor drift can no longer open
+  paid content
+- Course create/PATCH/duplicate/CSV-import keep both price columns in sync
+  (minor wins); catalog, bundle, instructor, and plan reads expose `price_minor`
+- Coupon claims are atomic (no overshoot of `max_uses`); commissions are
+  idempotent per order (webhook retries safe); cohort refunds revoke cohort
+  entitlement, membership, and granted courses
+
+Also fixed:
+
+- Certificate re-issue after revocation minted a colliding number (500) —
+  fresh entropy suffix added
+- AI `retention_days` now enforced by privileged, audited
+  `POST /ai/retention/purge`; provider-key storage documented honestly
+  (readable by DB holders; protect backups)
+- xAPI export paginated (`page/per_page` + totals) instead of silent 5000-row cut
+- Parent portal: cohorts filtered to the child's memberships; parent inbox
+  moved to parent level (no longer rendered inside the child panel)
+- Admin search results deep-link (`#/courses/:id` opens the builder,
+  `#/users/:query` prefills the roster filter); web bundle page fetches once;
+  student SCORM banner uses the translation key
+- Docs corrected to match code: SCORM 2004 accepted-but-not-sequenced (was
+  claimed rejected), no package versioning yet, no order-cancel endpoint,
+  subscriptions have no automated renewal linkage
+
 ## 1.7.0 — Completion release
 
 Added:

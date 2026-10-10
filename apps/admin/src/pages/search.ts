@@ -31,7 +31,7 @@ export async function renderSearch(el: HTMLElement, query: string): Promise<void
         r.courses
           .map(
             (c) =>
-              `<a class="list-group-item list-group-item-action" href="#/courses"><strong>${c.title}</strong> <span class="text-muted">${c.code}</span></a>`
+              `<a class="list-group-item list-group-item-action" href="#/courses/${c.id}"><strong>${c.title}</strong> <span class="text-muted">${c.code}</span></a>`
           )
           .join('')
       ) +
@@ -44,7 +44,7 @@ export async function renderSearch(el: HTMLElement, query: string): Promise<void
         r.users
           .map(
             (u) =>
-              `<a class="list-group-item list-group-item-action" href="#/users"><strong>${u.name}</strong> <span class="text-muted">${u.email}</span></a>`
+              `<a class="list-group-item list-group-item-action" href="#/users/${encodeURIComponent(u.email)}"><strong>${u.name}</strong> <span class="text-muted">${u.email}</span></a>`
           )
           .join('')
       ) +

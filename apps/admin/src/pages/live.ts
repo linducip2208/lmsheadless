@@ -38,7 +38,7 @@ export async function renderLive(el: HTMLElement): Promise<void> {
         <p class="text-muted">${s.starts_at?.slice(0, 16).replace('T', ' ') ?? ''} · ${s.provider} · <span class="badge ${s.status === 'scheduled' ? 'bg-green' : 'bg-red'}">${s.status}</span></p>
         ${s.meeting_url ? `<a href="${s.meeting_url}" target="_blank" rel="noopener">${d.view}</a>` : ''}
         <div class="mt-2 d-flex gap-1"><button class="btn btn-sm btn-outline-primary" data-att="${s.id}">${d.record}</button>
-        ${s.status === 'scheduled' ? `<button class="btn btn-sm btn-outline-danger" data-cancel="${s.id}">${d.cancel}</button>` : ''}</div></div></div>`
+        ${s.status === 'scheduled' ? `<button class="btn btn-sm btn-outline-secondary" data-resched="${s.id}">${d.edit}</button><button class="btn btn-sm btn-outline-danger" data-cancel="${s.id}">${d.cancel}</button>` : ''}</div></div></div>`
             )
             .join('')
         : `<p class="text-muted">${d.empty}</p>`;
@@ -89,6 +89,18 @@ export async function renderLive(el: HTMLElement): Promise<void> {
         await call(`/api/v1/live-sessions/${btn.dataset.cancel}/cancel`, {
           method: 'POST',
           body: '{}',
+        });
+        toast(d.saved, 'success');
+        await load();
+      } else if (btn.dataset.resched) {
+        const data = await modalForm(d.edit, [
+          { name: 'starts_at', label: d.date, required: true },
+          { name: 'ends_at', label: d.date, required: true },
+        ]);
+        if (!data) return;
+        await call(`/api/v1/live-sessions/${btn.dataset.resched}`, {
+          method: 'PATCH',
+          body: JSON.stringify(data),
         });
         toast(d.saved, 'success');
         await load();

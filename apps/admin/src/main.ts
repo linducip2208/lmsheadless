@@ -41,6 +41,7 @@ import { renderLive } from './pages/live.js';
 import { renderScorm } from './pages/scorm.js';
 import { renderData } from './pages/data.js';
 import { renderSearch, renderNotifications } from './pages/search.js';
+import { renderSystem, renderAlerts } from './pages/system.js';
 
 const THEME_KEY = 'admin-theme';
 applyTheme(THEME_KEY);
@@ -64,6 +65,8 @@ function navItems(): { hash: string; label: string; title: string }[] {
     { hash: '#/grades', label: d.grades, title: d.grades },
     { hash: '#/community', label: d.community, title: d.community },
     { hash: '#/certificates', label: d.certificates, title: d.certificates },
+    { hash: '#/alerts', label: d.alerts, title: d.alerts },
+    { hash: '#/system', label: d.system, title: d.system },
     { hash: '#/notifications', label: d.notifications, title: d.notifications },
     { hash: '#/files', label: d.files, title: d.files },
     { hash: '#/reports', label: d.reports, title: d.reports },
@@ -246,6 +249,8 @@ async function router(): Promise<void> {
       await renderSearch(view, decodeURIComponent(route.slice('/search/'.length)));
     else if (route.startsWith('/files')) await renderFilesPage(view);
     else if (route.startsWith('/reports')) await renderReports(view);
+    else if (route.startsWith('/alerts')) await renderAlerts(view);
+    else if (route.startsWith('/system')) await renderSystem(view);
     else if (route.startsWith('/settings')) await renderSettings(view);
     else await renderDashboard(view);
   } catch (e) {

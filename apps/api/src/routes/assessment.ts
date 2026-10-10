@@ -10,8 +10,10 @@ import { newId, nowIso } from '@lms/shared';
 import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
+import { audit } from '../auditlog.js';
 import { hasEntitlement } from '../access.js';
 import { logActivity } from './growth.js';
+import { pickMinor } from './commerce.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -326,12 +328,13 @@ assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
   if (!quiz) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   if (!canAccessOrg(user, quiz.organization_id))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const course = await queryFirst<{ price: number }>(
+  const course = await queryFirst<{ price: number; price_minor: number | null }>(
     db,
-    'SELECT price FROM courses WHERE id = ?',
+    'SELECT price, price_minor FROM courses WHERE id = ?',
     quiz.course_id
   );
-  if (!(await hasEntitlement(db, user.id, quiz.course_id, course?.price ?? 0))) {
+  const coursePrice = pickMinor(course?.price_minor ?? null, course?.price ?? null);
+  if (!(await hasEntitlement(db, user.id, quiz.course_id, coursePrice))) {
     const enr = await queryFirst(
       db,
       'SELECT id FROM enrollments WHERE course_id = ? AND student_id = ?',
@@ -339,8 +342,7 @@ assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
       user.id
     );
     if (!enr) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-    if ((course?.price ?? 0) > 0)
-      return fail(c, 403, 'ACCESS_EXPIRED', 'Course access has expired');
+    if (coursePrice > 0) return fail(c, 403, 'ACCESS_EXPIRED', 'Course access has expired');
   }
   // One active attempt per student: resume instead of duplicating.
   const active = await queryFirst<{ id: string }>(
@@ -716,6 +718,79 @@ assess.get('/quiz-attempts/:attemptId/answers', requireAuth(), async (c) => {
   );
 });
 
+// ---- Rubrics ----
+assess.post('/assignments/:id/rubric', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const asg = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM assignments WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!asg || !canTeach(user, asg.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as {
+    criteria?: { label?: string; max_points?: number }[];
+  } | null;
+  if (
+    !body?.criteria ||
+    !Array.isArray(body.criteria) ||
+    !body.criteria.length ||
+    body.criteria.length > 30
+  ) {
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  }
+  for (const cr of body.criteria) {
+    if (
+      typeof cr.label !== 'string' ||
+      !cr.label.trim() ||
+      typeof cr.max_points !== 'number' ||
+      cr.max_points < 0 ||
+      cr.max_points > 10000
+    ) {
+      return fail(
+        c,
+        400,
+        'VALIDATION_ERROR',
+        'Each criterion needs a label and 0–10000 max_points'
+      );
+    }
+  }
+  await execute(db, 'DELETE FROM rubric_criteria WHERE assignment_id = ?', c.req.param('id'));
+  let pos = 0;
+  for (const cr of body.criteria) {
+    await execute(
+      db,
+      'INSERT INTO rubric_criteria (id, assignment_id, label, max_points, position, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      newId(),
+      c.req.param('id'),
+      (cr.label as string).slice(0, 500),
+      cr.max_points as number,
+      pos++,
+      nowIso()
+    );
+  }
+  return created(c, { criteria: body.criteria.length });
+});
+
+assess.get('/assignments/:id/rubric', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const asg = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM assignments WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!asg || !canAccessOrg(user, asg.organization_id))
+    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  const rows = await queryAll(
+    db,
+    'SELECT id, label, max_points, position FROM rubric_criteria WHERE assignment_id = ? ORDER BY position ASC',
+    c.req.param('id')
+  );
+  return ok(c, rows);
+});
+
 // ---- Assignments ----
 assess.post('/assignments', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
@@ -737,7 +812,7 @@ assess.post('/assignments', requireAuth(), async (c) => {
   const now = nowIso();
   await execute(
     db,
-    'INSERT INTO assignments (id, course_id, organization_id, title, description, due_at, max_score, allow_resubmit, allowed_types, max_size_bytes, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO assignments (id, course_id, organization_id, title, description, due_at, max_score, allow_resubmit, allow_late, late_penalty_percent, allowed_types, max_size_bytes, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     nid,
     parsed.data.course_id,
     orgId,
@@ -746,6 +821,8 @@ assess.post('/assignments', requireAuth(), async (c) => {
     parsed.data.due_at ?? null,
     parsed.data.max_score,
     parsed.data.allow_resubmit === false ? 0 : 1,
+    parsed.data.allow_late === false ? 0 : 1,
+    parsed.data.late_penalty_percent ?? 0,
     parsed.data.allowed_types ?? null,
     parsed.data.max_size_bytes ?? 26214400,
     user.id,
@@ -812,21 +889,23 @@ assess.post('/assignments/:id/submissions', requireAuth(), async (c) => {
     organization_id: string;
     due_at: string | null;
     allow_resubmit: number;
+    allow_late: number | null;
     course_id: string;
   }>(
     db,
-    'SELECT id, organization_id, due_at, allow_resubmit, course_id FROM assignments WHERE id = ?',
+    'SELECT id, organization_id, due_at, allow_resubmit, allow_late, course_id FROM assignments WHERE id = ?',
     c.req.param('id')
   );
   if (!asg) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   if (!canAccessOrg(user, asg.organization_id))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const asgCourse = await queryFirst<{ price: number }>(
+  const asgCourse = await queryFirst<{ price: number; price_minor: number | null }>(
     db,
-    'SELECT price FROM courses WHERE id = ?',
+    'SELECT price, price_minor FROM courses WHERE id = ?',
     asg.course_id
   );
-  if (!(await hasEntitlement(db, user.id, asg.course_id, asgCourse?.price ?? 0))) {
+  const asgPrice = pickMinor(asgCourse?.price_minor ?? null, asgCourse?.price ?? null);
+  if (!(await hasEntitlement(db, user.id, asg.course_id, asgPrice))) {
     const enr = await queryFirst(
       db,
       'SELECT id FROM enrollments WHERE course_id = ? AND student_id = ?',
@@ -834,8 +913,7 @@ assess.post('/assignments/:id/submissions', requireAuth(), async (c) => {
       user.id
     );
     if (!enr) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-    if ((asgCourse?.price ?? 0) > 0)
-      return fail(c, 403, 'ACCESS_EXPIRED', 'Course access has expired');
+    if (asgPrice > 0) return fail(c, 403, 'ACCESS_EXPIRED', 'Course access has expired');
   }
   const body = (await c.req.json().catch(() => null)) as { body?: string } | null;
   if (!body?.body || body.body.length < 1)
@@ -849,7 +927,16 @@ assess.post('/assignments/:id/submissions', requireAuth(), async (c) => {
   if (prior && (prior.status === 'graded' || !asg.allow_resubmit)) {
     return fail(c, 409, 'RESUBMIT_NOT_ALLOWED', 'Resubmission is not allowed for this assignment');
   }
-  const late = asg.due_at && new Date(asg.due_at).getTime() < Date.now() ? 'late' : 'submitted';
+  const isLate = !!asg.due_at && new Date(asg.due_at).getTime() < Date.now();
+  if (isLate && asg.allow_late === 0) {
+    return fail(
+      c,
+      400,
+      'LATE_NOT_ALLOWED',
+      'Late submissions are not accepted for this assignment'
+    );
+  }
+  const late = isLate ? 'late' : 'submitted';
   const now = nowIso();
   await execute(
     db,
@@ -893,18 +980,68 @@ assess.post('/submissions/:id/grade', requireAuth(), async (c) => {
   if (!asg || !canTeach(user, asg.organization_id))
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const now = nowIso();
+  // Optional rubric scoring: validated per criterion, total must equal score.
+  let breakdown:
+    { criterion_id: string; label: string; points: number; max_points: number }[] | null = null;
+  const rubricScores = (body as { rubric_scores?: { criterion_id?: string; points?: number }[] })
+    ?.rubric_scores;
+  if (rubricScores !== undefined) {
+    if (!Array.isArray(rubricScores) || !rubricScores.length) {
+      return fail(c, 400, 'VALIDATION_ERROR', 'rubric_scores must be a non-empty array');
+    }
+    const criteria = await queryAll<{ id: string; label: string; max_points: number }>(
+      db,
+      'SELECT id, label, max_points FROM rubric_criteria WHERE assignment_id = ?',
+      sub.assignment_id
+    );
+    const byId = new Map(criteria.map((x) => [x.id, x]));
+    let sum = 0;
+    breakdown = [];
+    for (const entry of rubricScores) {
+      const crit =
+        typeof entry.criterion_id === 'string' ? byId.get(entry.criterion_id) : undefined;
+      if (
+        !crit ||
+        typeof entry.points !== 'number' ||
+        entry.points < 0 ||
+        entry.points > crit.max_points
+      ) {
+        return fail(c, 400, 'VALIDATION_ERROR', 'Invalid rubric score entry', {
+          criterion_id: entry.criterion_id,
+        });
+      }
+      sum += entry.points;
+      breakdown.push({
+        criterion_id: crit.id,
+        label: crit.label,
+        points: entry.points,
+        max_points: crit.max_points,
+      });
+    }
+    if (Math.abs(sum - parsed.data.score) > 0.001) {
+      return fail(c, 400, 'VALIDATION_ERROR', 'Rubric total must equal the score', {
+        rubric_total: sum,
+      });
+    }
+  }
   await execute(
     db,
-    'UPDATE submissions SET score = ?, feedback = ?, status = ?, graded_by = ?, graded_at = ?, updated_at = ? WHERE id = ?',
+    'UPDATE submissions SET score = ?, feedback = ?, rubric_breakdown = ?, status = ?, graded_by = ?, graded_at = ?, updated_at = ? WHERE id = ?',
     parsed.data.score,
     parsed.data.feedback ?? null,
+    breakdown ? JSON.stringify(breakdown).slice(0, 10000) : null,
     'graded',
     user.id,
     now,
     now,
     sub.id
   );
-  return ok(c, { graded: true });
+  await audit(c, 'submission.graded', {
+    entity: 'submission',
+    entityId: sub.id,
+    metadata: { score: parsed.data.score },
+  });
+  return ok(c, { graded: true, rubric: breakdown });
 });
 
 // ---- Grades ----
@@ -973,27 +1110,34 @@ assess.get('/grades', requireAuth(), async (c) => {
     );
     return ok(c, rows);
   }
-  // All grades for a student across teacher's org courses: teachers only.
+  // All grades for a student: the authorization decision is made BEFORE
+  // reading any rows, so the endpoint cannot be used as an existence oracle
+  // ("200 empty" vs "403") for other students' grade records.
+  if (studentId !== user.id && !user.isSuperAdmin) {
+    const link = await queryFirst(
+      db,
+      'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+      user.id,
+      studentId
+    );
+    if (!link) {
+      const victimOrgs = await queryAll<{ organization_id: string }>(
+        db,
+        'SELECT organization_id FROM organization_members WHERE user_id = ?',
+        studentId
+      );
+      const allowed = victimOrgs.some((m) => {
+        const r = orgRole(user, m.organization_id);
+        return !!r && r !== 'student' && r !== 'parent';
+      });
+      if (!allowed) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    }
+  }
   const rows = await queryAll(
     db,
     'SELECT * FROM grades WHERE student_id = ? ORDER BY created_at DESC LIMIT 200',
     studentId
   );
-  if (studentId !== user.id) {
-    // Verify requester shares org with at least one of these or is super admin.
-    if (!user.isSuperAdmin && rows.length > 0) {
-      const courseIds = [...new Set(rows.map((r) => (r as { course_id: string }).course_id))];
-      let allowed = false;
-      for (const cid of courseIds) {
-        const oid = await courseOrg(db, cid);
-        if (oid && canAccessOrg(user, oid) && orgRole(user, oid) !== 'student') {
-          allowed = true;
-          break;
-        }
-      }
-      if (!allowed) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-    }
-  }
   return ok(c, rows);
 });
 
@@ -1144,6 +1288,11 @@ assess.post('/quiz-attempts/:attemptId/grade', requireAuth(), async (c) => {
     nowIso(),
     attempt.id
   );
+  await audit(c, 'quiz.manually_graded', {
+    entity: 'quiz_attempt',
+    entityId: attempt.id,
+    metadata: { score: pct },
+  });
   return ok(c, { graded: true, score: pct });
 });
 

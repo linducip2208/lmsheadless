@@ -505,11 +505,16 @@ function catalogPage(): string {
   <h2 class="mt-4">${t.bundlesTitle}</h2><div id="cat-bundles"><p>…</p></div></div>`;
 }
 
+// Prefetched bundle payloads: the page loader already fetched the detail,
+// so the post-render effect reuses it instead of fetching twice.
+const bundleCache = new Map<string, unknown>();
+
 async function bundlePage(id: string): Promise<string> {
   try {
     const res = await fetch(`/api/v1/catalog/bundles/${encodeURIComponent(id)}`);
     if (!res.ok)
       return `<div class="container-xl py-5"><div class="alert alert-warning">${t.bundleNotFound}</div></div>`;
+    bundleCache.set(id, await res.json());
     return `<div class="container-xl py-4" data-bundle="${id}"><p>…</p></div>`;
   } catch {
     return `<div class="container-xl py-5"><div class="alert alert-danger">${t.catalogUnavailable}</div></div>`;
@@ -631,8 +636,12 @@ async function router(): Promise<void> {
   const bundleBox = document.querySelector('[data-bundle]') as HTMLElement | null;
   if (bundleBox) {
     const id = bundleBox.dataset.bundle ?? '';
-    fetch(`/api/v1/catalog/bundles/${id}`)
-      .then((r) => r.json())
+    const cached = bundleCache.get(id);
+    bundleCache.delete(id);
+    (cached
+      ? Promise.resolve(cached)
+      : fetch(`/api/v1/catalog/bundles/${id}`).then((r) => r.json())
+    )
       .then((j) => {
         const det = j as {
           success: boolean;

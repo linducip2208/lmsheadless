@@ -187,14 +187,16 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
       e instanceof Error ? e.message : 'Manifest parse failed'
     );
   }
-  if (manifest.version !== '1.2') {
+  if (manifest.version !== '1.2' && manifest.version !== '2004') {
     return fail(
       c,
       400,
       'UNSUPPORTED_VERSION',
-      `Only SCORM 1.2 is supported (package declares ${manifest.version}). See docs/scorm.md`
+      `Unsupported SCORM version: ${manifest.version}. See docs/scorm.md`
     );
   }
+  // SCORM 2004: import + launch + 1.2-style tracking supported; sequencing/
+  // navigation rules are not interpreted (documented gap in docs/scorm.md).
   const base = manifestName.includes('/')
     ? manifestName.slice(0, manifestName.lastIndexOf('/') + 1)
     : '';
@@ -230,10 +232,14 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
     courseId,
     lessonId,
     manifest.title,
-    '1.2',
+    manifest.version,
     entrySafe,
     `scorm/${pkgId}/${file.name}`,
-    JSON.stringify({ resources: manifest.resourceCount, files: stored }),
+    JSON.stringify({
+      resources: manifest.resourceCount,
+      files: stored,
+      sequencing: manifest.version === '2004' ? 'not-interpreted' : 'n/a',
+    }),
     user.id,
     now,
     now

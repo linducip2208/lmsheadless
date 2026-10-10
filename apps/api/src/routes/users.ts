@@ -21,6 +21,12 @@ users.get('/', requireAuth(), async (c) => {
   const q = (url.searchParams.get('q') ?? '').slice(0, 200);
   const orgId = url.searchParams.get('organization_id');
   const db = c.get('db');
+  // Roster enumeration guard: students/parents have no legitimate need to
+  // list the organization roster (no portal calls this for those roles).
+  if (!user.isSuperAdmin) {
+    const staffLike = user.memberships.some((m) => m.role !== 'student' && m.role !== 'parent');
+    if (!staffLike) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  }
   let where = 'deleted_at IS NULL';
   const params: (string | number)[] = [];
   if (q) {
@@ -127,15 +133,20 @@ users.get('/:id', requireAuth(), async (c) => {
     c.req.param('id')
   );
   if (!row) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
-  if (!user.isSuperAdmin) {
+  if (!user.isSuperAdmin && (row as { id: string }).id !== user.id) {
     const memberOf = await queryAll<{ organization_id: string }>(
       db,
       'SELECT organization_id FROM organization_members WHERE user_id = ?',
       (row as { id: string }).id
     );
-    const shared = memberOf.some((m) => canAccessOrg(user, m.organization_id));
-    if (!shared && (row as { id: string }).id !== user.id)
-      return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+    // Shared membership is not enough: the caller must hold a teaching or
+    // administrative role in a shared org (students/parents cannot pull
+    // other users' profiles).
+    const allowed = memberOf.some((m) => {
+      const r = orgRole(user, m.organization_id);
+      return !!r && r !== 'student' && r !== 'parent';
+    });
+    if (!allowed) return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   }
   return ok(c, row);
 });
@@ -239,10 +250,12 @@ users.get('/:id/linked-students', requireAuth(), async (c) => {
     if (r !== 'organization_admin' && r !== 'super_admin')
       return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   }
+  const url = new URL(c.req.url);
+  const scopedOrg = url.searchParams.get('organization_id');
   const rows = await queryAll(
     c.get('db'),
-    'SELECT u.id, u.name, u.email FROM parent_links pl JOIN users u ON u.id = pl.student_id WHERE pl.parent_id = ?',
-    parentId
+    `SELECT u.id, u.name, u.email FROM parent_links pl JOIN users u ON u.id = pl.student_id WHERE pl.parent_id = ?${scopedOrg ? ' AND pl.organization_id = ?' : ''}`,
+    ...(scopedOrg ? [parentId, scopedOrg] : [parentId])
   );
   return ok(c, rows);
 });

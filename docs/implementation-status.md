@@ -1,6 +1,25 @@
 # Implementation status (October 2026)
 
-## Shipped in 1.7.0 (this release)
+## Shipped in 1.8.0 (this release)
+
+- Full-repo audit (254 endpoints, 21 migrations, 5 portals) with evidence:
+  every public route catalogued; no decorative pages found; thinnest areas
+  are teacher AI-draft display and standalone exercise creation (both labeled).
+- Boot-safety: migration re-runs tolerate applied `ADD COLUMN`s; 021 adds AI
+  conversation indexes; clean-install and upgrade paths tested.
+- Authorization tightened with regression tests: reset revokes sessions,
+  certificate/grade/user-list IDORs closed, attendance membership enforced.
+- Money integrity: minor-unit gates everywhere, dual-write sync (minor wins),
+  atomic coupons, idempotent commissions, cohort-aware refunds — 112 tests green.
+- Lifecycle honesty: AI retention purge endpoint, cert re-issue entropy, xAPI
+  paginated export, key-leak assertions, docs corrected (SCORM 2004, cancel,
+  subscriptions, versioning).
+- Frontend truthfulness: parent cohorts/notifications rescoped, admin search
+  deep-links, single bundle fetch, translated SCORM banner.
+- Quality gates: typecheck, lint, format, 112 unit/integration tests, contract
+  (174 refs), static-audit, audit, production build, Playwright E2E 7/7.
+
+## Shipped in 1.7.0
 
 - Enrollment approval workflow end-to-end (modes enforced, queue UI, decisions
   with notifications); closed mode blocks self-enrollment.

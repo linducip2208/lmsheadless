@@ -35,4 +35,13 @@ export async function renderUsers(el: HTMLElement): Promise<void> {
     ],
     deletable: () => me?.isSuperAdmin ?? false,
   });
+  // Deep link from search: #/users/<query> prefills the roster filter.
+  const deep = location.hash.replace('#/users', '').replace(/^\//, '');
+  if (deep) {
+    const input = el.querySelector('#crud-q') as HTMLInputElement | null;
+    if (input) {
+      input.value = decodeURIComponent(deep).slice(0, 200);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }
 }

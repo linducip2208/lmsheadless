@@ -166,6 +166,85 @@ live.post('/live-sessions/:id/register', requireAuth(), async (c) => {
   return created(c, { registered: true });
 });
 
+live.patch('/live-sessions/:id', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const sess = await queryFirst<{ organization_id: string; status: string }>(
+    db,
+    'SELECT organization_id, status FROM live_sessions WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!sess || !canTeach(user, sess.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (sess.status === 'cancelled')
+    return fail(c, 400, 'VALIDATION_ERROR', 'Cannot reschedule a cancelled session');
+  const body = (await c.req.json().catch(() => null)) as {
+    title?: string;
+    starts_at?: string;
+    ends_at?: string;
+    meeting_url?: string;
+    capacity?: number;
+  } | null;
+  if (!body) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  const sets: string[] = [];
+  const params: (string | number | null)[] = [];
+  if (typeof body.title === 'string' && body.title.length >= 1 && body.title.length <= 200) {
+    sets.push('title = ?');
+    params.push(body.title);
+  }
+  if (typeof body.starts_at === 'string' && body.starts_at) {
+    sets.push('starts_at = ?');
+    params.push(body.starts_at);
+  }
+  if (typeof body.ends_at === 'string' && body.ends_at) {
+    sets.push('ends_at = ?');
+    params.push(body.ends_at);
+  }
+  if (typeof body.meeting_url === 'string' && body.meeting_url.length <= 2000) {
+    sets.push('meeting_url = ?');
+    params.push(body.meeting_url);
+  }
+  if (typeof body.capacity === 'number' && Number.isInteger(body.capacity) && body.capacity >= 1) {
+    sets.push('capacity = ?');
+    params.push(body.capacity);
+  }
+  if (!sets.length) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  const row = await queryFirst<{ starts_at: string; ends_at: string }>(
+    db,
+    'SELECT starts_at, ends_at FROM live_sessions WHERE id = ?',
+    c.req.param('id')
+  );
+  const start = (body.starts_at ?? row?.starts_at ?? '') as string;
+  const end = (body.ends_at ?? row?.ends_at ?? '') as string;
+  if (new Date(end).getTime() <= new Date(start).getTime())
+    return fail(c, 400, 'VALIDATION_ERROR', 'ends_at must be after starts_at');
+  sets.push('updated_at = ?');
+  params.push(nowIso(), c.req.param('id'));
+  await execute(db, `UPDATE live_sessions SET ${sets.join(', ')} WHERE id = ?`, ...params);
+  const regs = await queryAll<{ user_id: string }>(
+    db,
+    'SELECT user_id FROM live_registrations WHERE session_id = ?',
+    c.req.param('id')
+  );
+  for (const reg of regs) {
+    await execute(
+      db,
+      'INSERT INTO notifications (id, user_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)',
+      newId(),
+      reg.user_id,
+      'Live session rescheduled',
+      `New time: ${start}`.slice(0, 1000),
+      nowIso()
+    );
+  }
+  await audit(c, 'live.rescheduled', {
+    entity: 'live_session',
+    entityId: c.req.param('id'),
+    organizationId: sess.organization_id,
+  });
+  return ok(c, { rescheduled: true, notified: regs.length });
+});
+
 live.post('/live-sessions/:id/cancel', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');

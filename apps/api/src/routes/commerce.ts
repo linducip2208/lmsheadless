@@ -12,8 +12,6 @@ import { t } from '../i18n.js';
 
 const commerce = new Hono<{ Variables: AppVars }>();
 
-const round2 = (n: number): number => Math.round(n * 100) / 100;
-
 // ---------- Bundles ----------
 commerce.post('/bundles', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
@@ -37,14 +35,16 @@ commerce.post('/bundles', requireAuth(), async (c) => {
   }
   const nid = newId();
   const now = nowIso();
+  const bundleMinor = parsed.data.price_minor ?? minor(parsed.data.price);
   await execute(
     db,
-    'INSERT INTO bundles (id, organization_id, name, description, price, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO bundles (id, organization_id, name, description, price, price_minor, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     nid,
     parsed.data.organization_id,
     parsed.data.name,
     parsed.data.description ?? null,
-    parsed.data.price,
+    major(bundleMinor),
+    bundleMinor,
     user.id,
     now,
     now
@@ -85,7 +85,7 @@ commerce.get('/bundles/:id', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const courses = await queryAll(
     db,
-    'SELECT co.id, co.title, co.code, co.price FROM bundle_courses bc JOIN courses co ON co.id = bc.course_id WHERE bc.bundle_id = ?',
+    'SELECT co.id, co.title, co.code, co.price, co.price_minor FROM bundle_courses bc JOIN courses co ON co.id = bc.course_id WHERE bc.bundle_id = ?',
     c.req.param('id')
   );
   return ok(c, { courses });
@@ -104,6 +104,7 @@ commerce.patch('/bundles/:id', requireAuth(), async (c) => {
   const body = (await c.req.json().catch(() => null)) as {
     name?: string;
     price?: number;
+    price_minor?: number;
     status?: string;
     description?: string;
   } | null;
@@ -115,8 +116,17 @@ commerce.patch('/bundles/:id', requireAuth(), async (c) => {
     params.push(body.name);
   }
   if (typeof body.price === 'number' && body.price >= 0) {
+    if (
+      body.price_minor !== undefined &&
+      (!Number.isInteger(body.price_minor) || body.price_minor < 0)
+    ) {
+      return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+    }
+    const m = body.price_minor ?? minor(body.price);
     sets.push('price = ?');
-    params.push(body.price);
+    params.push(major(m));
+    sets.push('price_minor = ?');
+    params.push(m);
   }
   if (body.status === 'draft' || body.status === 'published' || body.status === 'archived') {
     sets.push('status = ?');
@@ -149,17 +159,24 @@ commerce.post('/coupons', requireAuth(), async (c) => {
   if (!isPrivileged(user, parsed.data.organization_id))
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const nid = newId();
+  // Percent coupons store a rate in `value`; fixed coupons store minor units
+  // (explicit value_minor wins, legacy major `value` converts).
+  const fixedMinor =
+    parsed.data.kind === 'fixed' ? (parsed.data.value_minor ?? minor(parsed.data.value)) : 0;
+  const minMinor = parsed.data.min_amount_minor ?? minor(parsed.data.min_amount ?? 0);
   try {
     await execute(
       c.get('db'),
-      'INSERT INTO coupons (id, organization_id, code, kind, value, max_uses, min_amount, starts_at, ends_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO coupons (id, organization_id, code, kind, value, value_minor, max_uses, min_amount, min_amount_minor, starts_at, ends_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       nid,
       parsed.data.organization_id,
       parsed.data.code.toUpperCase(),
       parsed.data.kind,
       parsed.data.value,
+      fixedMinor,
       parsed.data.max_uses ?? null,
       parsed.data.min_amount ?? 0,
+      minMinor,
       parsed.data.starts_at ?? null,
       parsed.data.ends_at ?? null,
       nowIso()
@@ -184,11 +201,24 @@ commerce.get('/coupons', requireAuth(), async (c) => {
 });
 
 // ---------- Pricing engine (server-side; client amounts never trusted) ----------
+// Money: integer minor units (cents) are the source of truth. REAL columns
+// stay synced (minor/100) for backward compatibility. Rounding: half-up.
+export const minor = (major: number): number => Math.round(major * 100);
+export const major = (minorUnits: number): number => Math.round(minorUnits) / 100;
+
+// Legacy rows (pre-017) carry price_minor = 0 with a REAL price: fall back to
+// the rounded REAL value. Genuinely free items are 0 in both columns.
+export function pickMinor(minorUnits: number | null, fallbackMajor: number | null): number {
+  if (typeof minorUnits === 'number' && (minorUnits !== 0 || !fallbackMajor)) return minorUnits;
+  return fallbackMajor ? minor(fallbackMajor) : 0;
+}
+
 export interface PricedItem {
   kind: string;
   reference_id: string;
   title: string;
   amount: number;
+  amount_minor: number;
 }
 
 export async function priceReference(
@@ -197,23 +227,42 @@ export async function priceReference(
   referenceId: string,
   orgId: string
 ): Promise<PricedItem | null> {
+  const pick = (
+    id: string,
+    title: string,
+    minorUnits: number | null,
+    fallback: number | null
+  ): PricedItem => {
+    const m = pickMinor(minorUnits, fallback);
+    return { kind, reference_id: id, title, amount: major(m), amount_minor: m };
+  };
   if (kind === 'course') {
-    const row = await queryFirst<{ id: string; title: string; price: number }>(
+    const row = await queryFirst<{
+      id: string;
+      title: string;
+      price: number;
+      price_minor: number | null;
+    }>(
       db,
-      'SELECT id, title, price FROM courses WHERE id = ? AND organization_id = ? AND deleted_at IS NULL',
+      'SELECT id, title, price, price_minor FROM courses WHERE id = ? AND organization_id = ? AND deleted_at IS NULL',
       referenceId,
       orgId
     );
-    return row ? { kind, reference_id: row.id, title: row.title, amount: round2(row.price) } : null;
+    return row ? pick(row.id, row.title, row.price_minor, row.price) : null;
   }
   if (kind === 'bundle') {
-    const row = await queryFirst<{ id: string; name: string; price: number }>(
+    const row = await queryFirst<{
+      id: string;
+      name: string;
+      price: number;
+      price_minor: number | null;
+    }>(
       db,
-      'SELECT id, name, price FROM bundles WHERE id = ? AND organization_id = ?',
+      'SELECT id, name, price, price_minor FROM bundles WHERE id = ? AND organization_id = ?',
       referenceId,
       orgId
     );
-    return row ? { kind, reference_id: row.id, title: row.name, amount: round2(row.price) } : null;
+    return row ? pick(row.id, row.name, row.price_minor, row.price) : null;
   }
   if (kind === 'cohort') {
     const row = await queryFirst<{ id: string; name: string }>(
@@ -224,17 +273,13 @@ export async function priceReference(
     );
     // Cohort price: sum of linked course prices unless org sets cohort pricing (kept simple: sum).
     if (!row) return null;
-    const courses = await queryAll<{ price: number }>(
+    const courses = await queryAll<{ price: number; price_minor: number | null }>(
       db,
-      'SELECT co.price FROM cohort_courses cc JOIN courses co ON co.id = cc.course_id WHERE cc.cohort_id = ?',
+      'SELECT co.price, co.price_minor FROM cohort_courses cc JOIN courses co ON co.id = cc.course_id WHERE cc.cohort_id = ?',
       referenceId
     );
-    return {
-      kind,
-      reference_id: row.id,
-      title: row.name,
-      amount: round2(courses.reduce((s, x) => s + (x.price ?? 0), 0)),
-    };
+    const sum = courses.reduce((s, x) => s + pickMinor(x.price_minor, x.price), 0);
+    return { kind, reference_id: row.id, title: row.name, amount: major(sum), amount_minor: sum };
   }
   return null;
 }
@@ -243,16 +288,18 @@ async function applyCoupon(
   db: D1Like,
   orgId: string,
   code: string | undefined,
-  subtotal: number
-): Promise<{ discount: number; couponId: string | null }> {
-  if (!code) return { discount: 0, couponId: null };
+  subtotalMinor: number
+): Promise<{ discount_minor: number; couponId: string | null }> {
+  if (!code) return { discount_minor: 0, couponId: null };
   const coupon = await queryFirst<{
     id: string;
     kind: string;
     value: number;
+    value_minor: number | null;
     max_uses: number | null;
     used_count: number;
     min_amount: number;
+    min_amount_minor: number | null;
     starts_at: string | null;
     ends_at: string | null;
     is_active: number;
@@ -261,15 +308,16 @@ async function applyCoupon(
   if (!coupon || !coupon.is_active) throw new Error('Invalid coupon');
   if (coupon.max_uses !== null && coupon.used_count >= coupon.max_uses)
     throw new Error('Coupon exhausted');
-  if (subtotal < coupon.min_amount) throw new Error('Coupon minimum not met');
+  const minMinor = coupon.min_amount_minor ?? minor(coupon.min_amount ?? 0);
+  if (subtotalMinor < minMinor) throw new Error('Coupon minimum not met');
   if (coupon.starts_at && new Date(coupon.starts_at).getTime() > now)
     throw new Error('Coupon not started');
   if (coupon.ends_at && new Date(coupon.ends_at).getTime() < now) throw new Error('Coupon expired');
-  const discount =
+  const discountMinor =
     coupon.kind === 'percent'
-      ? round2(Math.min(subtotal, (subtotal * coupon.value) / 100))
-      : round2(Math.min(subtotal, coupon.value));
-  return { discount, couponId: coupon.id };
+      ? Math.min(subtotalMinor, Math.round((subtotalMinor * coupon.value) / 100))
+      : Math.min(subtotalMinor, coupon.value_minor ?? minor(coupon.value));
+  return { discount_minor: discountMinor, couponId: coupon.id };
 }
 
 // ---------- Orders ----------
@@ -322,24 +370,24 @@ commerce.post('/orders', requireAuth(), async (c) => {
       return fail(c, 400, 'SELF_REFERRAL', 'Affiliates cannot refer themselves');
     affiliateId = aff.id;
   }
-  let discount = 0;
+  let discountMinor = 0;
   let couponId: string | null = null;
   try {
     const applied = await applyCoupon(
       db,
       parsed.data.organization_id,
       parsed.data.coupon_code,
-      item.amount
+      item.amount_minor
     );
-    discount = applied.discount;
+    discountMinor = applied.discount_minor;
     couponId = applied.couponId;
   } catch (e) {
     return fail(c, 400, 'INVALID_COUPON', e instanceof Error ? e.message : 'Invalid coupon');
   }
   const taxRate = Number((await orgSetting(db, parsed.data.organization_id, 'tax_rate')) || 0);
-  const taxable = round2(item.amount - discount);
-  const tax = round2((taxable * taxRate) / 100);
-  const total = round2(taxable + tax);
+  const taxableMinor = item.amount_minor - discountMinor;
+  const taxMinor = Math.round((taxableMinor * taxRate) / 100);
+  const totalMinor = taxableMinor + taxMinor;
   const currency = (
     parsed.data.currency ??
     (await orgSetting(db, parsed.data.organization_id, 'currency')) ??
@@ -349,31 +397,36 @@ commerce.post('/orders', requireAuth(), async (c) => {
   const orderId = newId();
   await execute(
     db,
-    'INSERT INTO orders (id, organization_id, buyer_id, kind, reference_id, currency, subtotal, discount, tax, total, coupon_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO orders (id, organization_id, buyer_id, kind, reference_id, currency, subtotal, discount, tax, total, subtotal_minor, discount_minor, tax_minor, total_minor, coupon_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     orderId,
     parsed.data.organization_id,
     user.id,
     item.kind,
     item.reference_id,
     currency,
-    item.amount,
-    discount,
-    tax,
-    total,
+    major(item.amount_minor),
+    major(discountMinor),
+    major(taxMinor),
+    major(totalMinor),
+    item.amount_minor,
+    discountMinor,
+    taxMinor,
+    totalMinor,
     couponId,
-    total === 0 ? 'paid' : 'pending',
+    totalMinor === 0 ? 'paid' : 'pending',
     now,
     now
   );
   await execute(
     db,
-    'INSERT INTO order_items (id, order_id, kind, reference_id, title, amount, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO order_items (id, order_id, kind, reference_id, title, amount, amount_minor, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     newId(),
     orderId,
     item.kind,
     item.reference_id,
     item.title,
-    item.amount,
+    major(item.amount_minor),
+    item.amount_minor,
     now
   );
   if (affiliateId) {
@@ -398,19 +451,42 @@ commerce.post('/orders', requireAuth(), async (c) => {
       now
     );
   }
-  if (couponId)
-    await execute(db, 'UPDATE coupons SET used_count = used_count + 1 WHERE id = ?', couponId);
+  if (couponId) {
+    // Atomic claim: the UPDATE itself enforces the cap, so two concurrent
+    // orders cannot both consume the last use. A lost race voids this order
+    // (it has not been fulfilled yet) instead of honoring a dead coupon.
+    const claimed = await execute(
+      db,
+      'UPDATE coupons SET used_count = used_count + 1 WHERE id = ? AND (max_uses IS NULL OR used_count < max_uses)',
+      couponId
+    );
+    if (!claimed.changes) {
+      await execute(
+        db,
+        "UPDATE orders SET status = 'failed', updated_at = ? WHERE id = ?",
+        nowIso(),
+        orderId
+      );
+      return fail(c, 400, 'INVALID_COUPON', 'Coupon exhausted');
+    }
+  }
   // Free orders fulfill immediately.
-  if (total === 0) {
+  if (totalMinor === 0) {
     await fulfillOrder(db, orderId);
   }
   await audit(c, 'order.created', {
     entity: 'order',
     entityId: orderId,
     organizationId: parsed.data.organization_id,
-    metadata: { total, currency },
+    metadata: { total_minor: totalMinor, currency },
   });
-  return created(c, { id: orderId, total, currency, status: total === 0 ? 'paid' : 'pending' });
+  return created(c, {
+    id: orderId,
+    total: major(totalMinor),
+    total_minor: totalMinor,
+    currency,
+    status: totalMinor === 0 ? 'paid' : 'pending',
+  });
 });
 
 commerce.get('/orders', requireAuth(), async (c) => {
@@ -496,9 +572,10 @@ export async function fulfillOrder(db: D1Like, orderId: string): Promise<void> {
     reference_id: string;
     status: string;
     total: number;
+    total_minor: number | null;
   }>(
     db,
-    'SELECT organization_id, buyer_id, kind, reference_id, status, total FROM orders WHERE id = ?',
+    'SELECT organization_id, buyer_id, kind, reference_id, status, total, total_minor FROM orders WHERE id = ?',
     orderId
   );
   // Idempotent: missing/refunded/cancelled orders are never fulfilled;
@@ -581,29 +658,44 @@ export async function fulfillOrder(db: D1Like, orderId: string): Promise<void> {
       'SELECT name, email FROM users WHERE id = ?',
       order.buyer_id
     );
-    const items = await queryAll<{ title: string; amount: number }>(
+    const items = await queryAll<{ title: string; amount: number; amount_minor: number | null }>(
       db,
-      'SELECT title, amount FROM order_items WHERE order_id = ?',
+      'SELECT title, amount, amount_minor FROM order_items WHERE order_id = ?',
       orderId
     );
+    const lines = items.map((item) => ({
+      title: item.title,
+      amount: item.amount,
+      amount_minor: item.amount_minor ?? minor(item.amount),
+    }));
+    const orderTotalMinor = pickMinor(order.total_minor, order.total);
     await execute(
       db,
-      'INSERT INTO invoices (id, order_id, number, buyer_name, buyer_email, lines, total, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO invoices (id, order_id, number, buyer_name, buyer_email, lines, total, total_minor, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       newId(),
       orderId,
       `INV-${new Date().getUTCFullYear()}-${orderId.slice(0, 8).toUpperCase()}`,
       buyer?.name ?? '',
       buyer?.email ?? '',
-      JSON.stringify(items),
-      order.total,
+      JSON.stringify(lines),
+      major(orderTotalMinor),
+      orderTotalMinor,
       now,
       now
     );
   }
-  // Instructor commissions (refund-aware; organization rate setting).
+  // Instructor commissions in minor units (refund-aware; organization rate setting).
+  // Idempotent per order: a re-run (webhook retry, double confirm) must not
+  // mint a second set of commission rows.
   const rateSetting = await orgSetting(db, order.organization_id, 'commission_rate');
   const rate = rateSetting ? Number(rateSetting) : 70;
-  if (rate > 0) {
+  const orderTotalMinor = pickMinor(order.total_minor, order.total);
+  const commissionsExist = await queryFirst(
+    db,
+    'SELECT id FROM commissions WHERE order_id = ? LIMIT 1',
+    orderId
+  );
+  if (rate > 0 && !commissionsExist) {
     if (order.kind === 'course') {
       const instructors = await queryAll<{ user_id: string }>(
         db,
@@ -612,14 +704,16 @@ export async function fulfillOrder(db: D1Like, orderId: string): Promise<void> {
       );
       const share = instructors.length ? rate / instructors.length : 0;
       for (const ins of instructors) {
+        const amountMinor = Math.round((orderTotalMinor * share) / 100);
         await execute(
           db,
-          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, amount_minor, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           newId(),
           order.organization_id,
           ins.user_id,
           orderId,
-          round2((order.total * share) / 100),
+          major(amountMinor),
+          amountMinor,
           share,
           now,
           now
@@ -641,12 +735,13 @@ export async function fulfillOrder(db: D1Like, orderId: string): Promise<void> {
       if (aff) {
         await execute(
           db,
-          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO commissions (id, organization_id, instructor_id, order_id, amount, amount_minor, rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           newId(),
           order.organization_id,
           aff.user_id,
           orderId,
-          round2((order.total * aff.commission_rate) / 100),
+          major(Math.round((orderTotalMinor * aff.commission_rate) / 100)),
+          Math.round((orderTotalMinor * aff.commission_rate) / 100),
           aff.commission_rate,
           now,
           now
@@ -666,10 +761,11 @@ commerce.post('/orders/:id/payments/manual', requireAuth(), async (c) => {
     buyer_id: string;
     status: string;
     total: number;
+    total_minor: number | null;
     currency: string;
   }>(
     db,
-    'SELECT organization_id, buyer_id, status, total, currency FROM orders WHERE id = ?',
+    'SELECT organization_id, buyer_id, status, total, total_minor, currency FROM orders WHERE id = ?',
     c.req.param('id')
   );
   if (!order) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
@@ -679,14 +775,16 @@ commerce.post('/orders/:id/payments/manual', requireAuth(), async (c) => {
     return fail(c, 400, 'VALIDATION_ERROR', `Order is ${order.status}`);
   const body = (await c.req.json().catch(() => null)) as { reference?: string } | null;
   const now = nowIso();
+  const totalMinor = pickMinor(order.total_minor, order.total);
   await execute(
     db,
-    'INSERT INTO payments (id, order_id, provider, provider_ref, amount, currency, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO payments (id, order_id, provider, provider_ref, amount, amount_minor, currency, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     newId(),
     c.req.param('id'),
     'manual',
     body?.reference?.slice(0, 200) ?? null,
-    order.total,
+    major(totalMinor),
+    totalMinor,
     order.currency,
     'pending',
     now,
@@ -781,9 +879,14 @@ commerce.post('/payments/webhooks/:provider', async (c) => {
   } catch {
     return ok(c, { received: true, duplicate: true });
   }
-  const order = await queryFirst<{ id: string; organization_id: string; total: number }>(
+  const order = await queryFirst<{
+    id: string;
+    organization_id: string;
+    total: number;
+    total_minor: number | null;
+  }>(
     db,
-    'SELECT id, organization_id, total FROM orders WHERE id = ?',
+    'SELECT id, organization_id, total, total_minor FROM orders WHERE id = ?',
     body.order_id ?? ''
   );
   if (!order) {
@@ -809,14 +912,16 @@ commerce.post('/payments/webhooks/:provider', async (c) => {
   const status = body.transaction_status ?? '';
   const paid = ['capture', 'settlement'].includes(status);
   const failed = ['deny', 'cancel', 'expire', 'failure'].includes(status);
+  const webhookTotalMinor = pickMinor(order.total_minor, order.total);
   await execute(
     db,
-    'INSERT INTO payments (id, order_id, provider, provider_ref, amount, currency, status, raw_payload, idempotency_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(idempotency_key) DO NOTHING',
+    'INSERT INTO payments (id, order_id, provider, provider_ref, amount, amount_minor, currency, status, raw_payload, idempotency_key, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(idempotency_key) DO NOTHING',
     newId(),
     order.id,
     provider,
     eventId.slice(0, 200),
-    order.total,
+    major(webhookTotalMinor),
+    webhookTotalMinor,
     'IDR',
     paid ? 'paid' : failed ? 'failed' : 'pending',
     JSON.stringify(body).slice(0, 4000),
@@ -923,6 +1028,42 @@ commerce.post('/orders/:id/refund', requireAuth(), async (c) => {
           order.buyer_id
         );
       }
+    } else if (item.kind === 'cohort') {
+      // Mirror fulfillment: cohort entitlement + membership + granted courses.
+      await execute(
+        db,
+        'DELETE FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?',
+        order.buyer_id,
+        'cohort',
+        item.reference_id
+      );
+      await execute(
+        db,
+        'DELETE FROM cohort_members WHERE cohort_id = ? AND user_id = ?',
+        item.reference_id,
+        order.buyer_id
+      );
+      const courses = await queryAll<{ course_id: string }>(
+        db,
+        'SELECT course_id FROM cohort_courses WHERE cohort_id = ?',
+        item.reference_id
+      );
+      for (const course of courses) {
+        await execute(
+          db,
+          'DELETE FROM entitlements WHERE user_id = ? AND kind = ? AND reference_id = ?',
+          order.buyer_id,
+          'course',
+          course.course_id
+        );
+        await execute(
+          db,
+          "UPDATE enrollments SET status = 'dropped', updated_at = ? WHERE course_id = ? AND student_id = ?",
+          now,
+          course.course_id,
+          order.buyer_id
+        );
+      }
     }
   }
   await audit(c, 'order.refunded', {
@@ -940,7 +1081,7 @@ commerce.get('/subscription-plans', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll(
     c.get('db'),
-    'SELECT id, name, price, interval, trial_days FROM subscription_plans WHERE organization_id = ? AND is_active = 1 ORDER BY price ASC',
+    'SELECT id, name, price, price_minor, interval, trial_days FROM subscription_plans WHERE organization_id = ? AND is_active = 1 ORDER BY price ASC',
     orgId
   );
   return ok(c, rows);
@@ -953,23 +1094,31 @@ commerce.post('/subscription-plans', requireAuth(), async (c) => {
     organization_id?: string;
     name?: string;
     price?: number;
+    price_minor?: number;
     interval?: string;
     trial_days?: number;
   } | null;
   if (!body?.organization_id || !body?.name || typeof body.price !== 'number')
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  if (
+    body.price_minor !== undefined &&
+    (!Number.isInteger(body.price_minor) || body.price_minor < 0)
+  )
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   if (!isPrivileged(user, body.organization_id))
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   if (body.interval && !['monthly', 'yearly'].includes(body.interval))
     return fail(c, 400, 'VALIDATION_ERROR', 'interval must be monthly|yearly');
   const nid = newId();
+  const planMinor = body.price_minor ?? minor(body.price);
   await execute(
     c.get('db'),
-    'INSERT INTO subscription_plans (id, organization_id, name, price, interval, trial_days, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO subscription_plans (id, organization_id, name, price, price_minor, interval, trial_days, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     nid,
     body.organization_id,
     body.name.slice(0, 150),
-    round2(body.price),
+    major(planMinor),
+    planMinor,
     body.interval ?? 'monthly',
     body.trial_days ?? 0,
     nowIso()
@@ -986,11 +1135,12 @@ commerce.post('/subscriptions', requireAuth(), async (c) => {
   const plan = await queryFirst<{
     organization_id: string;
     price: number;
+    price_minor: number | null;
     interval: string;
     trial_days: number;
   }>(
     db,
-    'SELECT organization_id, price, interval, trial_days FROM subscription_plans WHERE id = ? AND is_active = 1',
+    'SELECT organization_id, price, price_minor, interval, trial_days FROM subscription_plans WHERE id = ? AND is_active = 1',
     body.plan_id
   );
   if (!plan) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
@@ -1013,20 +1163,21 @@ commerce.post('/subscriptions', requireAuth(), async (c) => {
   ).toISOString();
   const nid = newId();
   // First period is an order (paid or trial→free); recurring charges are provider-driven.
+  const planMinor = plan.price_minor ?? minor(plan.price);
   await execute(
     db,
     'INSERT INTO subscriptions (id, plan_id, buyer_id, status, current_period_end, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
     nid,
     body.plan_id,
     user.id,
-    plan.price === 0 ? 'active' : 'pending',
+    planMinor === 0 ? 'active' : 'pending',
     periodEnd,
     now,
     now
   );
   return created(c, {
     id: nid,
-    status: plan.price === 0 ? 'active' : 'pending',
+    status: planMinor === 0 ? 'active' : 'pending',
     note: 'Recurring charges are collected by the configured payment provider',
   });
 });
@@ -1056,20 +1207,30 @@ commerce.post('/payouts', requireAuth(), async (c) => {
   const body = (await c.req.json().catch(() => null)) as {
     organization_id?: string;
     amount?: number;
+    amount_minor?: number;
     method?: string;
   } | null;
-  if (!body?.organization_id || typeof body.amount !== 'number' || body.amount <= 0)
+  if (
+    !body?.organization_id ||
+    typeof body.amount !== 'number' ||
+    body.amount <= 0 ||
+    (body.amount_minor !== undefined &&
+      (!Number.isInteger(body.amount_minor) || body.amount_minor <= 0))
+  )
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   if (!canAccessOrg(user, body.organization_id))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const nid = newId();
+  const payoutMinor =
+    typeof body.amount_minor === 'number' ? body.amount_minor : minor(body.amount);
   await execute(
     c.get('db'),
-    'INSERT INTO payouts (id, organization_id, instructor_id, amount, method, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO payouts (id, organization_id, instructor_id, amount, amount_minor, method, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     nid,
     body.organization_id,
     user.id,
-    round2(body.amount),
+    major(payoutMinor),
+    payoutMinor,
     (body.method ?? 'manual').slice(0, 40),
     nowIso(),
     nowIso()
@@ -1305,7 +1466,7 @@ commerce.get('/catalog/courses', async (c) => {
   if (q) params.push(`%${q}%`, `%${q}%`);
   const rows = await queryAll(
     db,
-    `SELECT id, organization_id, code, title, description, price, thumbnail_url FROM courses WHERE ${where} ${scope} ${like} ORDER BY created_at DESC LIMIT 50`,
+    `SELECT id, organization_id, code, title, description, price, price_minor, thumbnail_url FROM courses WHERE ${where} ${scope} ${like} ORDER BY created_at DESC LIMIT 50`,
     ...params
   );
   return ok(c, rows);
@@ -1331,13 +1492,13 @@ commerce.get('/catalog/bundles/:id', async (c) => {
     price: number;
   }>(
     db,
-    "SELECT id, name, description, price FROM bundles WHERE id = ? AND status = 'published'",
+    "SELECT id, name, description, price, price_minor FROM bundles WHERE id = ? AND status = 'published'",
     c.req.param('id')
   );
   if (!bundle) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const courses = await queryAll(
     db,
-    'SELECT co.id, co.title, co.code, co.price FROM bundle_courses bc JOIN courses co ON co.id = bc.course_id WHERE bc.bundle_id = ?',
+    'SELECT co.id, co.title, co.code, co.price, co.price_minor FROM bundle_courses bc JOIN courses co ON co.id = bc.course_id WHERE bc.bundle_id = ?',
     c.req.param('id')
   );
   return ok(c, { bundle, courses });
@@ -1354,7 +1515,7 @@ commerce.get('/catalog/instructors/:id', async (c) => {
   // Public profile: name + published public courses only. No email, no internals.
   const courses = await queryAll(
     db,
-    "SELECT id, title, code, price, organization_id FROM courses WHERE id IN (SELECT course_id FROM course_instructors WHERE user_id = ?) AND status = 'published' AND visibility = 'public' AND deleted_at IS NULL LIMIT 50",
+    "SELECT id, title, code, price, price_minor, organization_id FROM courses WHERE id IN (SELECT course_id FROM course_instructors WHERE user_id = ?) AND status = 'published' AND visibility = 'public' AND deleted_at IS NULL LIMIT 50",
     c.req.param('id')
   );
   return ok(c, { instructor: user, courses });
@@ -1370,16 +1531,21 @@ commerce.get('/commerce/revenue', requireAuth(), async (c) => {
   if (!isPrivileged(user, orgId) && role !== 'staff')
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const db = c.get('db');
-  const byStatus = await queryAll<{ status: string; n: number; total: number }>(
+  const byStatus = await queryAll<{
+    status: string;
+    n: number;
+    total: number;
+    total_minor: number | null;
+  }>(
     db,
-    'SELECT status, COUNT(*) as n, COALESCE(SUM(total),0) as total FROM orders WHERE organization_id = ? GROUP BY status',
+    'SELECT status, COUNT(*) as n, COALESCE(SUM(total),0) as total, COALESCE(SUM(total_minor),0) as total_minor FROM orders WHERE organization_id = ? GROUP BY status',
     orgId
   );
   const discounts =
     (
       await queryFirst<{ v: number | null }>(
         db,
-        'SELECT SUM(discount) as v FROM orders WHERE organization_id = ?',
+        'SELECT SUM(discount_minor) as v FROM orders WHERE organization_id = ?',
         orgId
       )
     )?.v ?? 0;
@@ -1387,14 +1553,16 @@ commerce.get('/commerce/revenue', requireAuth(), async (c) => {
     (
       await queryFirst<{ v: number | null }>(
         db,
-        "SELECT SUM(amount) as v FROM commissions WHERE organization_id = ? AND status = 'pending'",
+        "SELECT SUM(amount_minor) as v FROM commissions WHERE organization_id = ? AND status = 'pending'",
         orgId
       )
     )?.v ?? 0;
   return ok(c, {
-    by_status: byStatus,
-    total_discounts: round2(discounts),
-    pending_commissions: round2(paidCommissions),
+    by_status: byStatus.map((s) => ({ ...s, total_minor: pickMinor(s.total_minor, s.total) })),
+    total_discounts: major(discounts),
+    total_discounts_minor: discounts,
+    pending_commissions: major(paidCommissions),
+    pending_commissions_minor: paidCommissions,
   });
 });
 

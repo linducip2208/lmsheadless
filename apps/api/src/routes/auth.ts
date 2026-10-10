@@ -473,6 +473,14 @@ auth.post('/password/reset', async (c) => {
     row.user_id
   );
   await execute(db, 'UPDATE password_resets SET used_at = ? WHERE id = ?', nowIso(), row.id);
+  // A reset must evict every existing session (mirrors password/change):
+  // otherwise a hijacked refresh token survives the victim's reset.
+  await execute(
+    db,
+    'UPDATE refresh_tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL',
+    nowIso(),
+    row.user_id
+  );
   return ok(c, { reset: true });
 });
 
