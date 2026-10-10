@@ -1,17 +1,18 @@
-# Final scorecard — 1.10.0 (weights unchanged from 1.9.0)
+# Final scorecard — 1.11.0 (weights unchanged)
 
-| Criterion (max)                  | Score | Basis                                                                                                                                                                                                                                                          |
-| -------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functional correctness (20)      | 19    | 258 endpoints, 256 invoked + 2 interpolation-verified; 133/133 API tests with behavior assertions (spot-audit table in feature-inventory.md); autosave, recovery UI, status editing, payout decisions, URL-scheme guards completed. −1 advisory program locks. |
-| Integration completeness (15)    | 14    | 18/22 matrix rows verified-connected (autosave, quota-reset, recovery, decide flows added); prefs/affiliates/payouts wired. −1 push disconnected, cron external, Zoom/Meet stored-only (documented, not passed).                                               |
-| Security & access control (20)   | 18→19 | Webhook amount-match, conditional money transitions, commission unique index, input/rate guards, residual esc sinks, `ignored` reporting. −1 key-at-rest readability + setup-race without distributed lock + no upload quota.                                  |
-| Data integrity & migrations (10) | 9     | 023 index; free-order repair verified; rowid ordering; drill PASS (integrity ok, 0 FK violations); seed guard both paths tested. −1 unreachable CASCADE clauses retained.                                                                                      |
-| Browser E2E & regression (15)    | 13    | 15/15 Playwright (auth, recovery, autosave, commerce, negatives, certs); regression test per fix; 0 skipped. −2 no per-portal SPA CRUD automation.                                                                                                             |
-| Reliability/backup/perf (10)     | 8     | Drill PASS, bench + scale green, N+1 fixed, idempotent fulfillment. −2 R2-restore undrilled, local-only perf.                                                                                                                                                  |
-| Install/docs/commercial (10)     | 9     | Money/migration docs reconciled, scheduler procedures, packaged web docs, honest provider labels, i18n pass. −1 LICENSE unresolved (owner decision, flagged).                                                                                                  |
+| Criterion (max)                  | Score | Basis                                                                                                                                                                                               |
+| -------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Functional correctness (20)      | 19    | 261 endpoints, 259 invoked + 2 interpolation-verified; 134/134 API tests with behavior assertions; instructor assignment, recovery UI, quota reset, autosave completion. −1 advisory program locks. |
+| Integration completeness (15)    | 15    | 18/22 rows verified-connected (assignment, recovery, quota, decide flows added); rest labeled partial/disconnected/external, none passed as verified.                                               |
+| Security & access control (20)   | 19    | Amount-match, conditional transitions, URL-scheme guards, residual esc sinks, `ignored` reporting; IDOR matrix green. −1 key-at-rest + setup-race + no upload quota.                                |
+| Data integrity & migrations (10) | 9     | 023 index; drill PASS (integrity ok, 0 FK violations); seed guard; backup-before-test. −1 unreachable CASCADE clauses.                                                                              |
+| Browser E2E & regression (15)    | 14    | 19/19 Playwright incl. 4 real-browser portal CRUD flows (found + fixed 2 product bugs); regression test per fix; 0 skipped. −1 per-route SPA CRUD not exhaustive.                                   |
+| Reliability/backup/perf (10)     | 8     | Drill PASS, bench + scale green, idempotent fulfillment, serialized navigation. −2 R2-restore undrilled, local-only perf.                                                                           |
+| Install/docs/commercial (10)     | 9     | Money/migration docs reconciled, scheduler procedures, honest provider labels, i18n pass. −1 LICENSE unresolved (owner decision).                                                                   |
 
-**Total: 91/100** (was 88/100: +3 for amount-match/race-guards/autosave-E2E/recovery-UI/i18n; no weight changes, no gap suppression).
+**Total: 93/100** (was 91/100: +1 integration wired, +1 real-browser portal
+CRUD; no weight changes, no gap suppression, no target-driven edits).
 
-Evidence classes kept separate: A implementation, B 133 automated green,
-C 15 browser green (portal CRUD disclosed gap), D live providers all BLOCKED,
+Evidence classes: A implementation, B 134 automated green, C 19 browser
+green (per-route SPA CRUD disclosed gap), D live providers all BLOCKED,
 E production readiness conditional (see release-readiness.md).

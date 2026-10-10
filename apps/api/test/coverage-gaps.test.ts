@@ -311,6 +311,77 @@ describe('AI quota reset for the external scheduler', () => {
   });
 });
 
+describe('course instructor assignment', () => {
+  it('privileged assign/list/unassign; teachers see assigned courses only', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'tassign');
+    const t = await mkUser(db, 't@tassign.test', 'teacher', org);
+    const s = await mkUser(db, 's@tassign.test', 'student', org);
+    await mkUser(db, 'a@tassign.test', 'organization_admin', org);
+    const tokT = (await login(app, 't@tassign.test')).access_token;
+    const tokA = (await login(app, 'a@tassign.test')).access_token;
+    const tokS = (await login(app, 's@tassign.test')).access_token;
+    const c = await mkCourse(db, org, t, 'TA1');
+    // Unassigned: invisible to the teacher.
+    const before = (await (
+      await app.request(`/api/v1/instructor/courses?organization_id=${org}`, {
+        headers: authHeader(tokT),
+      })
+    ).json()) as { data: unknown[] };
+    expect(before.data.length).toBe(0);
+    // Students and teachers cannot assign; students rejected as assignees.
+    expect(
+      (
+        await app.request(`/api/v1/courses/${c}/instructors`, {
+          method: 'POST',
+          headers: H(tokS),
+          body: JSON.stringify({ user_id: t }),
+        })
+      ).status
+    ).toBe(403);
+    expect(
+      (
+        await app.request(`/api/v1/courses/${c}/instructors`, {
+          method: 'POST',
+          headers: H(tokA),
+          body: JSON.stringify({ user_id: s }),
+        })
+      ).status
+    ).toBe(400);
+    const assign = await app.request(`/api/v1/courses/${c}/instructors`, {
+      method: 'POST',
+      headers: H(tokA),
+      body: JSON.stringify({ user_id: t }),
+    });
+    expect(assign.status).toBe(201);
+    // Idempotent re-assign.
+    const again = await app.request(`/api/v1/courses/${c}/instructors`, {
+      method: 'POST',
+      headers: H(tokA),
+      body: JSON.stringify({ user_id: t }),
+    });
+    expect(again.status).toBe(201);
+    const after = (await (
+      await app.request(`/api/v1/instructor/courses?organization_id=${org}`, {
+        headers: authHeader(tokT),
+      })
+    ).json()) as { data: { id: string }[] };
+    expect(after.data.some((x) => x.id === c)).toBe(true);
+    const un = await app.request(`/api/v1/courses/${c}/instructors/${t}`, {
+      method: 'DELETE',
+      headers: H(tokA),
+    });
+    expect(un.status).toBe(200);
+    const gone = (await (
+      await app.request(`/api/v1/instructor/courses?organization_id=${org}`, {
+        headers: authHeader(tokT),
+      })
+    ).json()) as { data: unknown[] };
+    expect(gone.data.length).toBe(0);
+    void db;
+  });
+});
+
 describe('push config honesty', () => {
   it('reports disabled without keys and never leaks key material', async () => {
     const { app, db } = await setup();

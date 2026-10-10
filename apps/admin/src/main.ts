@@ -108,7 +108,7 @@ async function loginPage(root: HTMLElement): Promise<void> {
       location.hash = '#/';
     } catch (err) {
       (root.querySelector('#login-err') as HTMLElement).innerHTML =
-        `<div class="alert alert-danger" role="alert">${err instanceof Error ? err.message : 'Login failed'}</div>`;
+        `<div class="alert alert-danger" role="alert">${esc(err instanceof Error ? err.message : 'Login failed')}</div>`;
     }
   });
 }
@@ -265,5 +265,10 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-window.addEventListener('hashchange', () => void router());
-void router();
+// Serialized navigation: a slow view must never overwrite a newer one.
+let navChain: Promise<void> = Promise.resolve();
+function navigate(): void {
+  navChain = navChain.then(() => router());
+}
+window.addEventListener('hashchange', navigate);
+navigate();

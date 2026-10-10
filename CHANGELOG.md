@@ -1,5 +1,49 @@
 # Changelog
 
+## 1.11.0 — LMS completion release (LMS scope only)
+
+Learning workflows:
+
+- Course instructor assignment API (`GET/POST/DELETE
+/courses/:id/instructors`, privileged, member+role validated, audited) —
+  teacher portal visibility is assignment-scoped as documented
+- Quiz autosave completed end-to-end (API + student debounced save +
+  draft restore; legacy single-item shape accepted; shadow duplicates
+  removed)
+- Public password recovery pages (`#/forgot`, `#/reset/:token`,
+  enumeration-safe messaging)
+- Admin user status editing (server reports `ignored` fields) and payout
+  approve/reject buttons wired to `decide`
+- AI quota reset endpoint (`POST /ai/usage/reset`) + external-scheduler
+  procedure
+
+Reliability & security:
+
+- Hashchange router races fixed (serialized navigation in all 5 portals —
+  found via real-browser CRUD)
+- Stored URLs restricted to `http(s)` at validation (lessons, live
+  sessions) + `esc()` on remaining sinks incl. admin login errors
+- Conditional money transitions, commission unique index (023), rate
+  sanitization, webhook amount-match, cohort-gift grants
+
+UX & i18n:
+
+- 60+ teacher/admin/student strings moved to en/id dicts; quiz reorder
+  labeled; all blocking `prompt()`/`confirm()`/`alert()` replaced with
+  modal/confirm/toast patterns (`#/reports` export, roles editor, shop,
+  discussions, SCORM bookmark, DNS verification)
+
+Evidence:
+
+- 134 API tests green, Playwright 19/19 (4 real-browser portal CRUD flows),
+  bench + scale green, backup/restore drilled PASS, integrity ok / 0 FK
+  violations
+- Source-derived inventory: 261 endpoints (259 invoked), 105 e2e-invoked,
+  5,690 call-sites, 108 tables, 23 migrations
+- Full `reports/audit/` dossier (local-baseline, lms-feature-matrix,
+  browser-workflows, security-results, integration-status, remaining-gaps);
+  score 93/100, CONDITIONALLY READY
+
 ## 1.10.0 — Verified hardening release
 
 Security:

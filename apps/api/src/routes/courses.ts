@@ -293,6 +293,81 @@ courses.patch('/courses/:id', requireAuth(), async (c) => {
   return ok(c, { updated: true });
 });
 
+// Course instructors: who may teach/see the course in the teacher portal.
+// Without an assignment row, teachers see nothing (instructor/courses is
+// assignment-scoped, not created-by scoped).
+courses.get('/courses/:id/instructors', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const orgId = await courseOrg(db, c.req.param('id'));
+  if (!orgId || !canAccessOrg(user, orgId))
+    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  if (!canTeach(user, orgId)) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const rows = await queryAll(
+    db,
+    'SELECT u.id, u.name, u.email, m.role FROM course_instructors ci JOIN users u ON u.id = ci.user_id JOIN organization_members m ON m.user_id = u.id AND m.organization_id = ? WHERE ci.course_id = ? ORDER BY u.name ASC',
+    orgId,
+    c.req.param('id')
+  );
+  return ok(c, rows);
+});
+
+courses.post('/courses/:id/instructors', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const orgId = await courseOrg(db, c.req.param('id'));
+  if (!orgId || !isPrivileged(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as { user_id?: string } | null;
+  if (!body?.user_id)
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  const member = await queryFirst<{ role: string }>(
+    db,
+    'SELECT role FROM organization_members WHERE organization_id = ? AND user_id = ?',
+    orgId,
+    body.user_id
+  );
+  if (!member) return fail(c, 400, 'VALIDATION_ERROR', 'User is not an organization member');
+  if (!['teacher', 'staff', 'organization_admin', 'super_admin'].includes(member.role))
+    return fail(c, 400, 'VALIDATION_ERROR', 'Only teaching roles can be assigned');
+  await execute(
+    db,
+    'INSERT INTO course_instructors (id, course_id, user_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(course_id, user_id) DO NOTHING',
+    newId(),
+    c.req.param('id'),
+    body.user_id,
+    nowIso()
+  );
+  await audit(c, 'course.instructor_assigned', {
+    entity: 'course',
+    entityId: c.req.param('id'),
+    organizationId: orgId,
+    metadata: { user_id: body.user_id },
+  });
+  return created(c, { assigned: true });
+});
+
+courses.delete('/courses/:id/instructors/:userId', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const orgId = await courseOrg(db, c.req.param('id'));
+  if (!orgId || !isPrivileged(user, orgId))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(
+    db,
+    'DELETE FROM course_instructors WHERE course_id = ? AND user_id = ?',
+    c.req.param('id'),
+    c.req.param('userId')
+  );
+  await audit(c, 'course.instructor_unassigned', {
+    entity: 'course',
+    entityId: c.req.param('id'),
+    organizationId: orgId,
+    metadata: { user_id: c.req.param('userId') },
+  });
+  return ok(c, { unassigned: true });
+});
+
 courses.delete('/courses/:id', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');

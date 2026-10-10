@@ -219,5 +219,10 @@ if ('serviceWorker' in navigator) {
     bindSwUpdates();
   });
 }
-window.addEventListener('hashchange', () => void router());
-void router();
+// Serialized navigation: a slow view must never overwrite a newer one.
+let navChain: Promise<void> = Promise.resolve();
+function navigate(): void {
+  navChain = navChain.then(() => router());
+}
+window.addEventListener('hashchange', navigate);
+navigate();

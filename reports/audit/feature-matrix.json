@@ -1,14 +1,14 @@
 {
   "summary": {
-    "generated_at": "2026-10-10T09:25:18.398Z",
+    "generated_at": "2026-10-10T15:30:40.353Z",
     "commit": "ac79226",
     "method": "route registrations parsed from source; auth read from handler; coverage = invocation-confirmed request call-sites (app.request/page.request/fetch) per file, static-prefix matched; assertion depth spot-audited per module (see feature-inventory.md)",
     "counts": {
-      "endpoints": 258,
+      "endpoints": 261,
       "public_endpoints": 16,
-      "invoked_by_tests": 256,
-      "invoked_by_e2e": 101,
-      "total_callsites": 4889,
+      "invoked_by_tests": 259,
+      "invoked_by_e2e": 105,
+      "total_callsites": 5690,
       "frontend_hashes": 57,
       "tables": 108,
       "migrations": 23
@@ -493,9 +493,10 @@
         "release17.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 10,
+      "callsites": 12,
       "status": "VERIFIED_PASS"
     },
     {
@@ -512,9 +513,10 @@
         "platform.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 11,
+      "callsites": 13,
       "status": "VERIFIED_PASS"
     },
     {
@@ -725,6 +727,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -740,9 +743,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -757,6 +761,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -772,9 +777,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -789,6 +795,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -804,9 +811,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -821,6 +829,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -836,9 +845,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -872,6 +882,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -887,9 +898,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -904,6 +916,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -919,9 +932,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -936,6 +950,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -951,9 +966,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1006,6 +1022,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -1021,9 +1038,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1038,6 +1056,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -1053,9 +1072,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1070,6 +1090,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -1085,9 +1106,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1102,6 +1124,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -1117,9 +1140,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1134,6 +1158,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -1149,9 +1174,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1166,6 +1192,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -1181,9 +1208,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1211,6 +1239,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -1226,9 +1255,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2019,10 +2049,11 @@
       "module": "courses",
       "auth": "requireAuth",
       "invoked_by_tests": [
+        "coverage-gaps.test.ts",
         "extended.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 1,
+      "callsites": 4,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2037,6 +2068,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2052,9 +2084,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2069,6 +2102,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2084,9 +2118,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2101,6 +2136,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2116,9 +2152,10 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2133,6 +2170,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2148,13 +2186,116 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-118",
+      "method": "GET",
+      "path": "/api/v1/courses/:id/instructors",
+      "module": "courses",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 113,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-119",
+      "method": "POST",
+      "path": "/api/v1/courses/:id/instructors",
+      "module": "courses",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 113,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-120",
+      "method": "DELETE",
+      "path": "/api/v1/courses/:id/instructors/:userId",
+      "module": "courses",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 113,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-121",
       "method": "DELETE",
       "path": "/api/v1/courses/:id",
       "module": "courses",
@@ -2165,6 +2306,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2180,99 +2322,105 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-119",
-      "method": "GET",
-      "path": "/api/v1/courses/:id/sections",
-      "module": "courses",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "ai-tutor.test.ts",
-        "api.test.ts",
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "enterprise2.test.ts",
-        "extended.test.ts",
-        "governance.test.ts",
-        "growth.test.ts",
-        "hardening.test.ts",
-        "journey.test.ts",
-        "lifecycle-fixes.test.ts",
-        "platform.test.ts",
-        "quiz-autosave.test.ts",
-        "release17.test.ts",
-        "security.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 98,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-120",
-      "method": "POST",
-      "path": "/api/v1/courses/:id/sections",
-      "module": "courses",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "ai-tutor.test.ts",
-        "api.test.ts",
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "enterprise2.test.ts",
-        "extended.test.ts",
-        "governance.test.ts",
-        "growth.test.ts",
-        "hardening.test.ts",
-        "journey.test.ts",
-        "lifecycle-fixes.test.ts",
-        "platform.test.ts",
-        "quiz-autosave.test.ts",
-        "release17.test.ts",
-        "security.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 98,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-121",
-      "method": "GET",
-      "path": "/api/v1/courses/sections/:sectionId/lessons",
-      "module": "courses",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "ai-tutor.test.ts",
-        "api.test.ts",
-        "enterprise.test.ts",
-        "extended.test.ts",
-        "growth.test.ts",
-        "journey.test.ts",
-        "lifecycle-fixes.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 16,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-122",
+      "method": "GET",
+      "path": "/api/v1/courses/:id/sections",
+      "module": "courses",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 113,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-123",
+      "method": "POST",
+      "path": "/api/v1/courses/:id/sections",
+      "module": "courses",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "coverage-gaps.test.ts",
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "growth.test.ts",
+        "hardening.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "platform.test.ts",
+        "quiz-autosave.test.ts",
+        "release17.test.ts",
+        "security.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 113,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-124",
+      "method": "GET",
+      "path": "/api/v1/courses/sections/:sectionId/lessons",
+      "module": "courses",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "ai-tutor.test.ts",
+        "api.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "growth.test.ts",
+        "journey.test.ts",
+        "lifecycle-fixes.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 18,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-125",
       "method": "POST",
       "path": "/api/v1/courses/sections/:sectionId/lessons",
       "module": "courses",
@@ -2288,13 +2436,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 16,
+      "callsites": 18,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-123",
+      "id": "BE-126",
       "method": "POST",
       "path": "/api/v1/enrollments",
       "module": "courses",
@@ -2318,7 +2467,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-124",
+      "id": "BE-127",
       "method": "GET",
       "path": "/api/v1/courses/:id/enrollments",
       "module": "courses",
@@ -2329,6 +2478,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2344,13 +2494,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-125",
+      "id": "BE-128",
       "method": "GET",
       "path": "/api/v1/courses/:id/enrollment-requests",
       "module": "courses",
@@ -2361,6 +2512,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2376,13 +2528,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-126",
+      "id": "BE-129",
       "method": "POST",
       "path": "/api/v1/enrollment-requests/:requestId/approve",
       "module": "courses",
@@ -2395,7 +2548,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-127",
+      "id": "BE-130",
       "method": "POST",
       "path": "/api/v1/enrollment-requests/:requestId/reject",
       "module": "courses",
@@ -2408,7 +2561,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-128",
+      "id": "BE-131",
       "method": "POST",
       "path": "/api/v1/lessons/:lessonId/complete",
       "module": "courses",
@@ -2427,7 +2580,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-129",
+      "id": "BE-132",
       "method": "GET",
       "path": "/api/v1/courses/:id/progress",
       "module": "courses",
@@ -2438,6 +2591,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2453,13 +2607,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-130",
+      "id": "BE-133",
       "method": "PATCH",
       "path": "/api/v1/courses/sections/:sectionId",
       "module": "courses",
@@ -2475,13 +2630,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 16,
+      "callsites": 18,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-131",
+      "id": "BE-134",
       "method": "DELETE",
       "path": "/api/v1/courses/sections/:sectionId",
       "module": "courses",
@@ -2497,13 +2653,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 16,
+      "callsites": 18,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-132",
+      "id": "BE-135",
       "method": "POST",
       "path": "/api/v1/courses/:id/sections/reorder",
       "module": "courses",
@@ -2514,6 +2671,7 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
+        "coverage-gaps.test.ts",
         "enterprise.test.ts",
         "enterprise2.test.ts",
         "extended.test.ts",
@@ -2529,13 +2687,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 98,
+      "callsites": 113,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-133",
+      "id": "BE-136",
       "method": "PATCH",
       "path": "/api/v1/lessons/:lessonId",
       "module": "courses",
@@ -2554,7 +2713,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-134",
+      "id": "BE-137",
       "method": "DELETE",
       "path": "/api/v1/lessons/:lessonId",
       "module": "courses",
@@ -2573,7 +2732,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-135",
+      "id": "BE-138",
       "method": "POST",
       "path": "/api/v1/courses/sections/:sectionId/lessons/reorder",
       "module": "courses",
@@ -2589,13 +2748,14 @@
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 16,
+      "callsites": 18,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-136",
+      "id": "BE-139",
       "method": "GET",
       "path": "/api/v1/ai/config",
       "module": "growth",
@@ -2611,7 +2771,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-137",
+      "id": "BE-140",
       "method": "PUT",
       "path": "/api/v1/ai/config",
       "module": "growth",
@@ -2627,7 +2787,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-138",
+      "id": "BE-141",
       "method": "POST",
       "path": "/api/v1/ai/jobs",
       "module": "growth",
@@ -2641,7 +2801,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-139",
+      "id": "BE-142",
       "method": "POST",
       "path": "/api/v1/ai/jobs/:id/review",
       "module": "growth",
@@ -2655,7 +2815,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-140",
+      "id": "BE-143",
       "method": "GET",
       "path": "/api/v1/ai/jobs",
       "module": "growth",
@@ -2669,48 +2829,9 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-141",
-      "method": "POST",
-      "path": "/api/v1/exercises",
-      "module": "growth",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "growth.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 4,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-142",
-      "method": "GET",
-      "path": "/api/v1/exercises",
-      "module": "growth",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "growth.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 4,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-143",
-      "method": "POST",
-      "path": "/api/v1/exercises/:id/submissions",
-      "module": "growth",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "growth.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 4,
-      "status": "VERIFIED_PASS"
-    },
-    {
       "id": "BE-144",
-      "method": "GET",
-      "path": "/api/v1/exercises/:id/submissions",
+      "method": "POST",
+      "path": "/api/v1/exercises",
       "module": "growth",
       "auth": "requireAuth",
       "invoked_by_tests": [
@@ -2722,6 +2843,45 @@
     },
     {
       "id": "BE-145",
+      "method": "GET",
+      "path": "/api/v1/exercises",
+      "module": "growth",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-146",
+      "method": "POST",
+      "path": "/api/v1/exercises/:id/submissions",
+      "module": "growth",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-147",
+      "method": "GET",
+      "path": "/api/v1/exercises/:id/submissions",
+      "module": "growth",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "growth.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 4,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-148",
       "method": "POST",
       "path": "/api/v1/exercise-submissions/:id/feedback",
       "module": "growth",
@@ -2734,7 +2894,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-146",
+      "id": "BE-149",
       "method": "POST",
       "path": "/api/v1/ai/index/rebuild",
       "module": "growth",
@@ -2747,7 +2907,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-147",
+      "id": "BE-150",
       "method": "POST",
       "path": "/api/v1/ai/ask",
       "module": "growth",
@@ -2760,7 +2920,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-148",
+      "id": "BE-151",
       "method": "GET",
       "path": "/api/v1/ai/conversations",
       "module": "growth",
@@ -2773,7 +2933,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-149",
+      "id": "BE-152",
       "method": "GET",
       "path": "/api/v1/ai/conversations/:id/messages",
       "module": "growth",
@@ -2786,7 +2946,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-150",
+      "id": "BE-153",
       "method": "POST",
       "path": "/api/v1/ai/retention/purge",
       "module": "growth",
@@ -2799,7 +2959,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-151",
+      "id": "BE-154",
       "method": "POST",
       "path": "/api/v1/ai/usage/reset",
       "module": "growth",
@@ -2812,7 +2972,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-152",
+      "id": "BE-155",
       "method": "POST",
       "path": "/api/v1/ai/jobs/:id/apply",
       "module": "growth",
@@ -2826,7 +2986,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-153",
+      "id": "BE-156",
       "method": "POST",
       "path": "/api/v1/email/queue",
       "module": "growth",
@@ -2839,7 +2999,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-154",
+      "id": "BE-157",
       "method": "GET",
       "path": "/api/v1/email/queue",
       "module": "growth",
@@ -2852,7 +3012,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-155",
+      "id": "BE-158",
       "method": "POST",
       "path": "/api/v1/email/queue/:id/send",
       "module": "growth",
@@ -2865,7 +3025,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-156",
+      "id": "BE-159",
       "method": "POST",
       "path": "/api/v1/invitations",
       "module": "growth",
@@ -2879,7 +3039,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-157",
+      "id": "BE-160",
       "method": "POST",
       "path": "/api/v1/invitations/accept",
       "module": "growth",
@@ -2893,7 +3053,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-158",
+      "id": "BE-161",
       "method": "POST",
       "path": "/api/v1/org-units",
       "module": "growth",
@@ -2906,7 +3066,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-159",
+      "id": "BE-162",
       "method": "GET",
       "path": "/api/v1/org-units",
       "module": "growth",
@@ -2919,7 +3079,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-160",
+      "id": "BE-163",
       "method": "POST",
       "path": "/api/v1/org-units/:id/members",
       "module": "growth",
@@ -2932,7 +3092,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-161",
+      "id": "BE-164",
       "method": "GET",
       "path": "/api/v1/alerts/rules",
       "module": "growth",
@@ -2945,7 +3105,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-162",
+      "id": "BE-165",
       "method": "GET",
       "path": "/api/v1/alerts",
       "module": "growth",
@@ -2958,7 +3118,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-163",
+      "id": "BE-166",
       "method": "POST",
       "path": "/api/v1/alerts/:id/dismiss",
       "module": "growth",
@@ -2971,7 +3131,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-164",
+      "id": "BE-167",
       "method": "GET",
       "path": "/api/v1/reports/compliance",
       "module": "growth",
@@ -2984,7 +3144,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-165",
+      "id": "BE-168",
       "method": "POST",
       "path": "/api/v1/reports/compliance/remind",
       "module": "growth",
@@ -2997,7 +3157,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-166",
+      "id": "BE-169",
       "method": "GET",
       "path": "/api/v1/exports/organization",
       "module": "growth",
@@ -3010,7 +3170,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-167",
+      "id": "BE-170",
       "method": "POST",
       "path": "/api/v1/imports",
       "module": "growth",
@@ -3024,7 +3184,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-168",
+      "id": "BE-171",
       "method": "GET",
       "path": "/api/v1/imports",
       "module": "growth",
@@ -3038,7 +3198,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-169",
+      "id": "BE-172",
       "method": "GET",
       "path": "/api/v1/imports/:id",
       "module": "growth",
@@ -3052,7 +3212,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-170",
+      "id": "BE-173",
       "method": "GET",
       "path": "/api/v1/reports/engagement",
       "module": "growth",
@@ -3065,7 +3225,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-171",
+      "id": "BE-174",
       "method": "GET",
       "path": "/api/v1/reports/export",
       "module": "growth",
@@ -3078,54 +3238,9 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-172",
-      "method": "POST",
-      "path": "/api/v1/live-sessions",
-      "module": "live",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "enterprise.test.ts",
-        "enterprise2.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 16,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-173",
-      "method": "GET",
-      "path": "/api/v1/live-sessions",
-      "module": "live",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "enterprise.test.ts",
-        "enterprise2.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 16,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-174",
-      "method": "POST",
-      "path": "/api/v1/live-sessions/:id/register",
-      "module": "live",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "enterprise.test.ts",
-        "enterprise2.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 16,
-      "status": "VERIFIED_PASS"
-    },
-    {
       "id": "BE-175",
-      "method": "PATCH",
-      "path": "/api/v1/live-sessions/:id",
+      "method": "POST",
+      "path": "/api/v1/live-sessions",
       "module": "live",
       "auth": "requireAuth",
       "invoked_by_tests": [
@@ -3139,8 +3254,8 @@
     },
     {
       "id": "BE-176",
-      "method": "POST",
-      "path": "/api/v1/live-sessions/:id/cancel",
+      "method": "GET",
+      "path": "/api/v1/live-sessions",
       "module": "live",
       "auth": "requireAuth",
       "invoked_by_tests": [
@@ -3155,7 +3270,7 @@
     {
       "id": "BE-177",
       "method": "POST",
-      "path": "/api/v1/live-sessions/:id/attendance",
+      "path": "/api/v1/live-sessions/:id/register",
       "module": "live",
       "auth": "requireAuth",
       "invoked_by_tests": [
@@ -3169,6 +3284,51 @@
     },
     {
       "id": "BE-178",
+      "method": "PATCH",
+      "path": "/api/v1/live-sessions/:id",
+      "module": "live",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-179",
+      "method": "POST",
+      "path": "/api/v1/live-sessions/:id/cancel",
+      "module": "live",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-180",
+      "method": "POST",
+      "path": "/api/v1/live-sessions/:id/attendance",
+      "module": "live",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "enterprise.test.ts",
+        "enterprise2.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 16,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-181",
       "method": "GET",
       "path": "/api/v1/live-sessions.ics",
       "module": "live",
@@ -3181,7 +3341,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-179",
+      "id": "BE-182",
       "method": "POST",
       "path": "/api/v1/attendance/sessions",
       "module": "ops",
@@ -3196,7 +3356,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-180",
+      "id": "BE-183",
       "method": "POST",
       "path": "/api/v1/attendance/records",
       "module": "ops",
@@ -3211,7 +3371,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-181",
+      "id": "BE-184",
       "method": "GET",
       "path": "/api/v1/attendance/sessions",
       "module": "ops",
@@ -3226,7 +3386,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-182",
+      "id": "BE-185",
       "method": "GET",
       "path": "/api/v1/certificates/verify/:number",
       "module": "ops",
@@ -3242,7 +3402,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-183",
+      "id": "BE-186",
       "method": "GET",
       "path": "/api/v1/certificates",
       "module": "ops",
@@ -3262,7 +3422,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-184",
+      "id": "BE-187",
       "method": "POST",
       "path": "/api/v1/certificates/issue",
       "module": "ops",
@@ -3278,7 +3438,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-185",
+      "id": "BE-188",
       "method": "POST",
       "path": "/api/v1/certificates/bulk-issue",
       "module": "ops",
@@ -3291,7 +3451,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-186",
+      "id": "BE-189",
       "method": "POST",
       "path": "/api/v1/certificates/:id/revoke",
       "module": "ops",
@@ -3311,7 +3471,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-187",
+      "id": "BE-190",
       "method": "GET",
       "path": "/api/v1/certificates/:id/pdf",
       "module": "ops",
@@ -3331,7 +3491,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-188",
+      "id": "BE-191",
       "method": "GET",
       "path": "/api/v1/announcements",
       "module": "ops",
@@ -3346,7 +3506,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-189",
+      "id": "BE-192",
       "method": "POST",
       "path": "/api/v1/announcements",
       "module": "ops",
@@ -3361,7 +3521,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-190",
+      "id": "BE-193",
       "method": "GET",
       "path": "/api/v1/notifications",
       "module": "ops",
@@ -3378,7 +3538,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-191",
+      "id": "BE-194",
       "method": "POST",
       "path": "/api/v1/notifications/:id/read",
       "module": "ops",
@@ -3395,51 +3555,9 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-192",
-      "method": "GET",
-      "path": "/api/v1/discussions",
-      "module": "ops",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "extended.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 7,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-193",
-      "method": "POST",
-      "path": "/api/v1/discussions",
-      "module": "ops",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "extended.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 7,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-194",
-      "method": "GET",
-      "path": "/api/v1/discussions/:threadId/replies",
-      "module": "ops",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "extended.test.ts",
-        "xss-escape.test.ts"
-      ],
-      "invoked_by_e2e": [],
-      "callsites": 7,
-      "status": "VERIFIED_PASS"
-    },
-    {
       "id": "BE-195",
-      "method": "POST",
-      "path": "/api/v1/discussions/:threadId/replies",
+      "method": "GET",
+      "path": "/api/v1/discussions",
       "module": "ops",
       "auth": "requireAuth",
       "invoked_by_tests": [
@@ -3452,6 +3570,48 @@
     },
     {
       "id": "BE-196",
+      "method": "POST",
+      "path": "/api/v1/discussions",
+      "module": "ops",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-197",
+      "method": "GET",
+      "path": "/api/v1/discussions/:threadId/replies",
+      "module": "ops",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-198",
+      "method": "POST",
+      "path": "/api/v1/discussions/:threadId/replies",
+      "module": "ops",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "extended.test.ts",
+        "xss-escape.test.ts"
+      ],
+      "invoked_by_e2e": [],
+      "callsites": 7,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-199",
       "method": "GET",
       "path": "/api/v1/reports/organization-summary",
       "module": "ops",
@@ -3464,7 +3624,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-197",
+      "id": "BE-200",
       "method": "GET",
       "path": "/api/v1/reports/student-progress",
       "module": "ops",
@@ -3473,12 +3633,14 @@
         "journey.test.ts",
         "release17.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 2,
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts"
+      ],
+      "callsites": 3,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-198",
+      "id": "BE-201",
       "method": "POST",
       "path": "/api/v1/uploads",
       "module": "ops",
@@ -3494,7 +3656,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-199",
+      "id": "BE-202",
       "method": "GET",
       "path": "/api/v1/reports/completion",
       "module": "ops",
@@ -3505,7 +3667,7 @@
       "status": "IMPLEMENTED_TEST_GAP"
     },
     {
-      "id": "BE-200",
+      "id": "BE-203",
       "method": "GET",
       "path": "/api/v1/reports/quiz-performance",
       "module": "ops",
@@ -3518,7 +3680,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-201",
+      "id": "BE-204",
       "method": "GET",
       "path": "/api/v1/reports/attendance",
       "module": "ops",
@@ -3529,7 +3691,7 @@
       "status": "IMPLEMENTED_TEST_GAP"
     },
     {
-      "id": "BE-202",
+      "id": "BE-205",
       "method": "GET",
       "path": "/api/v1/reports/teacher-activity",
       "module": "ops",
@@ -3542,7 +3704,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-203",
+      "id": "BE-206",
       "method": "GET",
       "path": "/api/v1/attendance/student",
       "module": "ops",
@@ -3555,7 +3717,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-204",
+      "id": "BE-207",
       "method": "GET",
       "path": "/api/v1/organizations/",
       "module": "orgs",
@@ -3570,13 +3732,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-205",
+      "id": "BE-208",
       "method": "POST",
       "path": "/api/v1/organizations/",
       "module": "orgs",
@@ -3591,13 +3754,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-206",
+      "id": "BE-209",
       "method": "GET",
       "path": "/api/v1/organizations/:id",
       "module": "orgs",
@@ -3612,76 +3776,80 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-207",
-      "method": "GET",
-      "path": "/api/v1/organizations/:id/members",
-      "module": "orgs",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "extended.test.ts",
-        "platform.test.ts",
-        "security.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 24,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-208",
-      "method": "POST",
-      "path": "/api/v1/organizations/:id/members",
-      "module": "orgs",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "extended.test.ts",
-        "platform.test.ts",
-        "security.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 24,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-209",
-      "method": "GET",
-      "path": "/api/v1/organizations/:id/academic-years",
-      "module": "orgs",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "extended.test.ts",
-        "platform.test.ts",
-        "security.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-210",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/members",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 27,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-211",
+      "method": "POST",
+      "path": "/api/v1/organizations/:id/members",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 27,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-212",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/academic-years",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 27,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-213",
       "method": "POST",
       "path": "/api/v1/organizations/:id/academic-years",
       "module": "orgs",
@@ -3696,76 +3864,80 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-211",
-      "method": "GET",
-      "path": "/api/v1/organizations/:id/terms",
-      "module": "orgs",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "extended.test.ts",
-        "platform.test.ts",
-        "security.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 24,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-212",
-      "method": "POST",
-      "path": "/api/v1/organizations/:id/terms",
-      "module": "orgs",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "extended.test.ts",
-        "platform.test.ts",
-        "security.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 24,
-      "status": "VERIFIED_PASS"
-    },
-    {
-      "id": "BE-213",
-      "method": "GET",
-      "path": "/api/v1/organizations/:id/classes",
-      "module": "orgs",
-      "auth": "requireAuth",
-      "invoked_by_tests": [
-        "commerce-edges.test.ts",
-        "commerce-fixes.test.ts",
-        "commerce.test.ts",
-        "enterprise.test.ts",
-        "extended.test.ts",
-        "platform.test.ts",
-        "security.test.ts"
-      ],
-      "invoked_by_e2e": [
-        "roles.spec.ts"
-      ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-214",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/terms",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 27,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-215",
+      "method": "POST",
+      "path": "/api/v1/organizations/:id/terms",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 27,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-216",
+      "method": "GET",
+      "path": "/api/v1/organizations/:id/classes",
+      "module": "orgs",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "commerce-edges.test.ts",
+        "commerce-fixes.test.ts",
+        "commerce.test.ts",
+        "enterprise.test.ts",
+        "extended.test.ts",
+        "platform.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "portal-crud.spec.ts",
+        "roles.spec.ts"
+      ],
+      "callsites": 27,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-217",
       "method": "POST",
       "path": "/api/v1/organizations/:id/classes",
       "module": "orgs",
@@ -3780,13 +3952,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-215",
+      "id": "BE-218",
       "method": "POST",
       "path": "/api/v1/organizations/classes/:classId/members",
       "module": "orgs",
@@ -3799,7 +3972,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-216",
+      "id": "BE-219",
       "method": "GET",
       "path": "/api/v1/organizations/:id/subjects",
       "module": "orgs",
@@ -3814,13 +3987,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-217",
+      "id": "BE-220",
       "method": "POST",
       "path": "/api/v1/organizations/:id/subjects",
       "module": "orgs",
@@ -3835,13 +4009,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-218",
+      "id": "BE-221",
       "method": "GET",
       "path": "/api/v1/system/health",
       "module": "platform",
@@ -3854,7 +4029,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-219",
+      "id": "BE-222",
       "method": "GET",
       "path": "/api/v1/system/status",
       "module": "platform",
@@ -3867,7 +4042,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-220",
+      "id": "BE-223",
       "method": "GET",
       "path": "/api/v1/setup/status",
       "module": "platform",
@@ -3880,7 +4055,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-221",
+      "id": "BE-224",
       "method": "POST",
       "path": "/api/v1/setup",
       "module": "platform",
@@ -3894,7 +4069,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-222",
+      "id": "BE-225",
       "method": "GET",
       "path": "/api/v1/settings",
       "module": "platform",
@@ -3908,7 +4083,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-223",
+      "id": "BE-226",
       "method": "PUT",
       "path": "/api/v1/settings",
       "module": "platform",
@@ -3922,7 +4097,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-224",
+      "id": "BE-227",
       "method": "GET",
       "path": "/api/v1/organizations/:id/branding",
       "module": "platform",
@@ -3937,13 +4112,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-225",
+      "id": "BE-228",
       "method": "PUT",
       "path": "/api/v1/organizations/:id",
       "module": "platform",
@@ -3958,13 +4134,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-226",
+      "id": "BE-229",
       "method": "POST",
       "path": "/api/v1/organizations/:id/domain",
       "module": "platform",
@@ -3979,13 +4156,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 24,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-227",
+      "id": "BE-230",
       "method": "GET",
       "path": "/api/v1/permissions",
       "module": "platform",
@@ -3998,7 +4176,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-228",
+      "id": "BE-231",
       "method": "PUT",
       "path": "/api/v1/roles/:role/permissions",
       "module": "platform",
@@ -4012,7 +4190,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-229",
+      "id": "BE-232",
       "method": "GET",
       "path": "/api/v1/roles",
       "module": "platform",
@@ -4026,7 +4204,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-230",
+      "id": "BE-233",
       "method": "GET",
       "path": "/api/v1/users/me/permissions",
       "module": "platform",
@@ -4040,7 +4218,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-231",
+      "id": "BE-234",
       "method": "GET",
       "path": "/api/v1/audit-logs",
       "module": "platform",
@@ -4054,7 +4232,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-232",
+      "id": "BE-235",
       "method": "GET",
       "path": "/api/v1/files",
       "module": "platform",
@@ -4068,7 +4246,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-233",
+      "id": "BE-236",
       "method": "GET",
       "path": "/api/v1/files/:id/download",
       "module": "platform",
@@ -4082,7 +4260,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-234",
+      "id": "BE-237",
       "method": "GET",
       "path": "/api/v1/search",
       "module": "platform",
@@ -4096,7 +4274,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-235",
+      "id": "BE-238",
       "method": "GET",
       "path": "/api/v1/notifications/unread-count",
       "module": "platform",
@@ -4109,7 +4287,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-236",
+      "id": "BE-239",
       "method": "POST",
       "path": "/api/v1/notifications/read-all",
       "module": "platform",
@@ -4122,7 +4300,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-237",
+      "id": "BE-240",
       "method": "GET",
       "path": "/api/v1/notification-preferences",
       "module": "platform",
@@ -4136,7 +4314,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-238",
+      "id": "BE-241",
       "method": "PUT",
       "path": "/api/v1/notification-preferences",
       "module": "platform",
@@ -4150,7 +4328,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-239",
+      "id": "BE-242",
       "method": "GET",
       "path": "/api/v1/push/config",
       "module": "platform",
@@ -4163,7 +4341,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-240",
+      "id": "BE-243",
       "method": "POST",
       "path": "/api/v1/push/subscriptions",
       "module": "platform",
@@ -4176,7 +4354,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-241",
+      "id": "BE-244",
       "method": "GET",
       "path": "/api/v1/push/subscriptions",
       "module": "platform",
@@ -4189,7 +4367,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-242",
+      "id": "BE-245",
       "method": "POST",
       "path": "/api/v1/scorm/upload",
       "module": "scorm",
@@ -4202,7 +4380,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-243",
+      "id": "BE-246",
       "method": "GET",
       "path": "/api/v1/scorm/packages",
       "module": "scorm",
@@ -4215,7 +4393,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-244",
+      "id": "BE-247",
       "method": "GET",
       "path": "/api/v1/scorm/content/:pkgId/*",
       "module": "scorm",
@@ -4228,7 +4406,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-245",
+      "id": "BE-248",
       "method": "POST",
       "path": "/api/v1/scorm/attempts",
       "module": "scorm",
@@ -4241,7 +4419,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-246",
+      "id": "BE-249",
       "method": "POST",
       "path": "/api/v1/scorm/attempts/:id/commit",
       "module": "scorm",
@@ -4254,7 +4432,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-247",
+      "id": "BE-250",
       "method": "GET",
       "path": "/api/v1/scorm/packages/:id/attempts",
       "module": "scorm",
@@ -4267,7 +4445,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-248",
+      "id": "BE-251",
       "method": "GET",
       "path": "/api/v1/users/",
       "module": "users",
@@ -4281,13 +4459,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 20,
+      "callsites": 23,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-249",
+      "id": "BE-252",
       "method": "POST",
       "path": "/api/v1/users/",
       "module": "users",
@@ -4301,13 +4480,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 20,
+      "callsites": 23,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-250",
+      "id": "BE-253",
       "method": "GET",
       "path": "/api/v1/users/:id",
       "module": "users",
@@ -4321,13 +4501,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 20,
+      "callsites": 23,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-251",
+      "id": "BE-254",
       "method": "PATCH",
       "path": "/api/v1/users/:id",
       "module": "users",
@@ -4341,13 +4522,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 20,
+      "callsites": 23,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-252",
+      "id": "BE-255",
       "method": "DELETE",
       "path": "/api/v1/users/:id",
       "module": "users",
@@ -4361,13 +4543,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 20,
+      "callsites": 23,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-253",
+      "id": "BE-256",
       "method": "POST",
       "path": "/api/v1/users/:id/parent-links",
       "module": "users",
@@ -4381,13 +4564,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 20,
+      "callsites": 23,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-254",
+      "id": "BE-257",
       "method": "GET",
       "path": "/api/v1/users/:id/linked-students",
       "module": "users",
@@ -4401,13 +4585,14 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-crud.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 20,
+      "callsites": 23,
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-255",
+      "id": "BE-258",
       "method": "POST",
       "path": "/api/v1/xapi/statements",
       "module": "xapi",
@@ -4421,7 +4606,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-256",
+      "id": "BE-259",
       "method": "GET",
       "path": "/api/v1/xapi/statements",
       "module": "xapi",
@@ -4435,7 +4620,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-257",
+      "id": "BE-260",
       "method": "DELETE",
       "path": "/api/v1/xapi/statements",
       "module": "xapi",
@@ -4449,7 +4634,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-258",
+      "id": "BE-261",
       "method": "GET",
       "path": "/api/v1/xapi/export",
       "module": "xapi",

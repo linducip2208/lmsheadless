@@ -1,18 +1,18 @@
-# Feature inventory (generated 2026-10-10T09:25:18.398Z, commit ac79226)
+# Feature inventory (generated 2026-10-10T15:30:40.353Z, commit ac79226)
 
 Source: parsed route registrations in `apps/api/src/routes/*.ts`, hash routes in `apps/*/src/main.ts`, `CREATE TABLE` in `migrations/*.sql`. Coverage = invocation-confirmed call-sites (`app.request`/`page.request`/`fetch` URL arguments, static-prefix matched, query stripped). VERIFIED_PASS additionally requires the spot-audited meaningful assertions below — invocation alone is not a pass.
 
 ## Counts
 
-- Endpoints: 258 (public: 16)
-- Invoked by API tests: 256 (4889 call-sites)
-- Invoked by E2E: 101
+- Endpoints: 261 (public: 16)
+- Invoked by API tests: 259 (5690 call-sites)
+- Invoked by E2E: 105
 - Frontend hashes: 57
 - Tables: 108 across 23 migrations
 
 ## Status histogram
 
-- VERIFIED_PASS: 256
+- VERIFIED_PASS: 259
 - IMPLEMENTED_TEST_GAP: 2
 
 ## Assertion spot-audit (module → what tests assert beyond status)

@@ -1,6 +1,16 @@
 # Implementation status (October 2026)
 
-## Shipped in 1.10.0 (this release)
+## Shipped in 1.11.0 (this release, LMS scope only)
+
+- Instructor assignment API + assignment-scoped teacher visibility.
+- Public forgot/reset pages; admin status editing with `ignored`
+  reporting; payout decide buttons; AI quota-reset endpoint + procedure.
+- Serialized portal navigation (router race fix); `http(s)` URL guards.
+- i18n pass and removal of all blocking native dialogs.
+- Evidence: 134 API tests, 19/19 E2E (4 portal CRUD), bench/scale green,
+  drill PASS, audit dossier. Score 93/100, CONDITIONALLY READY.
+
+## Shipped in 1.10.0
 
 - Webhook amount matching, conditional money transitions, commission unique
   index (023), rate sanitization, cohort-gift grants — all regression-tested.
