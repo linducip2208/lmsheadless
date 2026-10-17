@@ -29,6 +29,14 @@
   re-verified (payment → `paid`, order → `paid`, enrollment active). The
   button was previously API-verified only.
 
+Evidence (round 3, re-verified end-to-end):
+
+- 159/159 API tests green (149 + 10 new), Playwright 21/21 chromium,
+  typecheck/lint/format:check/contract/static-audit/audit green, build green,
+  `npm audit --omit=dev` 0 vulns
+- Source-derived inventory: 262 endpoints (260 invoked), 105 e2e-invoked,
+  6,379 call-sites, 108 tables
+
 ### Round 2 (2026-10-16; each with a regression test in `test/release2-fixes.test.ts`)
 
 - Quiz pool draws are now per-attempt (`attempt_id`-scoped copies): concurrent

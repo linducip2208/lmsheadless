@@ -1,8 +1,10 @@
-# Browser workflows (Playwright chromium, 20/20 this session 2026-10-16, HEAD d73c6b9 + tree)
+# Browser workflows (Playwright chromium, 21/21 this session 2026-10-17, HEAD 5ca54fb)
 
-Single clean run (no flakes): 19 prior specs + new
-`e2e/student-multiselect.spec.ts` (real-click multi-select submit, score 100
-rendered + server re-verified, fixture student cleaned up).
+Single clean run (21/21): 20 prior specs + new
+`e2e/admin-payment-confirm.spec.ts` (real browser click on the admin
+manual-payment Confirm button; one cold-load `waitForURL` retry on the
+parent spec in the same run — documented flake class, pass on retry;
+standalone re-runs green).
 
 Config: `apps/web/playwright.config.ts` — API + 5 portal dev servers,
 `workers: 1` (shared SQLite + cold vite transforms flake under parallel
@@ -42,11 +44,21 @@ UI: login → course → quiz tab → start attempt → check the exact correct
 checkboxes → submit → rendered score 100 → attempts API re-read (score 100,
 `graded`). Zero page errors / 5xx.
 
+## Admin payment confirm (`e2e/admin-payment-confirm.spec.ts`, 1/1)
+
+API fixtures (paid course + buyer + pending order + manual payment claim),
+then real UI: admin login → `#/commerce` → Orders tab → the exact
+`data-confirm` button for the seeded payment → in-app dialog (`[data-ok]`,
+no native confirm) → button disappears → server re-read: payment `paid`,
+order `paid`, active enrollment granted. Zero page errors / 5xx. Cleanup:
+course deleted via API; buyer user deleted (RBAC 403 path asserted, then
+super_admin fallback) so order/payments cascade away.
+
 ## Not browser-covered (disclosed)
 
 Per-route CRUD of every admin tab (cohorts/quizzes/assignments/attendance/
-live/scorm/commerce incl. the new payment-confirm button/data/grades/reports/
-settings), teacher banks/grading/attendance-save clicks, student
-discussion/shop-buy clicks, parent revoked-link UI. All are covered at
-API-integration level (6,151 call-sites, 105 e2e-invoked endpoints);
-portal-CRUD expansion remains the top E2E backlog item.
+live/scorm/other commerce tabs/data/grades/reports/settings), teacher
+banks/grading/attendance-save clicks, student discussion/shop-buy clicks,
+parent revoked-link UI. All are covered at API-integration level
+(6,379 call-sites, 105 e2e-invoked endpoints); portal-CRUD expansion
+remains the top E2E backlog item.

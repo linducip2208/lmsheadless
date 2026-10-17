@@ -1,5 +1,15 @@
 # Implementation status (October 2026)
 
+## Round 3 audit additions (in-repo, 2026-10-17)
+
+- Native Workers cron scheduler (`scheduled` handler + `[triggers]`):
+  AI retention purge, due-dated publishing, monthly quota reset — replaces
+  the "external scheduler required" procedure; docs updated to match.
+- Opt-in attempt-copy purge policy + audited manual endpoint.
+- Program locks enforced on enrollment (`PROGRAM_LOCKED`).
+- Admin payment-confirm button now has real-browser E2E proof.
+- Evidence: 159 API tests, 21/21 E2E, toolchain green, scorecard 94/100.
+
 ## Shipped in 1.11.0 (this release, LMS scope only)
 
 - Instructor assignment API + assignment-scoped teacher visibility.
