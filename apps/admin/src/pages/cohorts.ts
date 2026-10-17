@@ -1,4 +1,14 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
+import {
+  call,
+  loadingHtml,
+  errorHtml,
+  toast,
+  modalForm,
+  confirmDialog,
+  currentOrgId,
+  t,
+  esc,
+} from '../lib.js';
 
 export async function renderCohorts(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -51,7 +61,8 @@ async function renderCohortList(el: HTMLElement, orgId: string): Promise<void> {
         <div class="d-flex gap-1 flex-wrap"><button class="btn btn-sm btn-outline-primary" data-mem="${co.id}">${d.members}</button>
         <button class="btn btn-sm btn-outline-primary" data-add="${co.id}">${d.create}</button>
         <button class="btn btn-sm btn-outline-primary" data-course="${co.id}">${d.courses}</button>
-        <button class="btn btn-sm btn-outline-green" data-prog="${co.id}">${d.view}</button></div>
+        <button class="btn btn-sm btn-outline-green" data-prog="${co.id}">${d.view}</button>
+        <button class="btn btn-sm btn-outline-danger" data-cdel="${co.id}">${d.delete}</button></div>
         <div data-out="${co.id}" class="mt-2"></div></div></div>`
             )
             .join('')
@@ -85,7 +96,13 @@ async function renderCohortList(el: HTMLElement, orgId: string): Promise<void> {
     const ds = btn.dataset;
     const out = (id: string) => el.querySelector(`[data-out="${id}"]`) as HTMLElement;
     try {
-      if (ds.mem) {
+      if (ds.cdel) {
+        if (!(await confirmDialog(d.confirmDelete, d.confirmDeleteBody, d.delete, d.cancel)))
+          return;
+        await call(`/api/v1/cohorts/${ds.cdel}`, { method: 'DELETE' });
+        toast(d.saved, 'success');
+        await load();
+      } else if (ds.mem) {
         const members = (await call<{ name: string; role: string }[]>(
           `/api/v1/cohorts/${ds.mem}/members`
         )) as { name: string; role: string }[];
@@ -150,7 +167,8 @@ async function renderPrograms(el: HTMLElement, orgId: string): Promise<void> {
               (p) => `<div class="card mb-2"><div class="card-body">
         <h3 class="card-title">${esc(p.name)}</h3>
         <div class="d-flex gap-1"><button class="btn btn-sm btn-outline-primary" data-view="${p.id}">${d.view}</button>
-        <button class="btn btn-sm btn-outline-green" data-add="${p.id}">${d.create}</button></div>
+        <button class="btn btn-sm btn-outline-green" data-add="${p.id}">${d.create}</button>
+        <button class="btn btn-sm btn-outline-danger" data-pdel="${p.id}">${d.delete}</button></div>
         <div data-p="${p.id}" class="mt-2"></div></div></div>`
             )
             .join('')
@@ -176,7 +194,13 @@ async function renderPrograms(el: HTMLElement, orgId: string): Promise<void> {
     const btn = (e.target as HTMLElement).closest('button') as HTMLButtonElement | null;
     if (!btn) return;
     try {
-      if (btn.dataset.view) {
+      if (btn.dataset.pdel) {
+        if (!(await confirmDialog(d.confirmDelete, d.confirmDeleteBody, d.delete, d.cancel)))
+          return;
+        await call(`/api/v1/programs/${btn.dataset.pdel}`, { method: 'DELETE' });
+        toast(d.saved, 'success');
+        await load();
+      } else if (btn.dataset.view) {
         const det = (await call<{ courses: { course_title: string; is_required: number }[] }>(
           `/api/v1/programs/${btn.dataset.view}`
         )) as {

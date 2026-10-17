@@ -5,6 +5,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, requireAuth } from '../middleware/common.js';
 import { quizOrg, canTeach } from '../access.js';
+import { audit } from '../auditlog.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { t } from '../i18n.js';
 
@@ -52,6 +53,29 @@ banks.get('/question-banks', requireAuth(), async (c) => {
     orgId
   );
   return ok(c, rows);
+});
+
+banks.delete('/question-banks/:id', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const bank = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM question_banks WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!bank) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  // bank_questions/bank_options cascade; attempt copy snapshots live in the
+  // separately-scoped questions table (attempt_id rows), so finished attempts
+  // keep grading/answer integrity.
+  if (!canTeach(user, bank.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(db, 'DELETE FROM question_banks WHERE id = ?', c.req.param('id'));
+  await audit(c, 'bank.delete', {
+    entity: 'question_bank',
+    entityId: c.req.param('id'),
+    organizationId: bank.organization_id,
+  });
+  return ok(c, { deleted: true });
 });
 
 banks.post('/question-banks/:id/questions', requireAuth(), async (c) => {

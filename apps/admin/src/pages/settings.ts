@@ -11,6 +11,8 @@ import {
 } from '../lib.js';
 import { subscribePush } from '@lms/ui';
 
+let orgSettingsGen = 0;
+
 export async function renderSettings(el: HTMLElement): Promise<void> {
   const me = getMe();
   const d = t();
@@ -129,11 +131,16 @@ async function renderOrgSettings(el: HTMLElement): Promise<void> {
     el.innerHTML = `<div class="alert alert-warning">${d.selectOrg}</div>`;
     return;
   }
+  // Generation guard: overlapping renders (e.g. a save followed by an
+  // immediate re-render) must never let the STALE fetch paint last and
+  // clobber fresher data. Only the latest started render may write DOM.
+  const gen = ++orgSettingsGen;
   el.innerHTML = loadingHtml();
   try {
     const branding = (await call<Record<string, string>>(
       `/api/v1/organizations/${orgId}/branding`
     )) as Record<string, string>;
+    if (gen !== orgSettingsGen) return;
     el.innerHTML = `<div class="card"><div class="card-header"><h3 class="card-title">${d.organizations} ${d.branding}</h3></div>
       <div class="card-body"><dl class="row">${Object.entries(branding)
         .map(([k, v]) => `<dt class="col-sm-4">${k}</dt><dd class="col-sm-8">${v || '—'}</dd>`)

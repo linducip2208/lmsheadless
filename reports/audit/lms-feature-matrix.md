@@ -1,11 +1,11 @@
-# LMS domain inventory (commit d73c6b9 + tree; regenerated 2026-10-16)
+# LMS domain inventory (round 4, 2026-10-18)
 
 Method: route registrations parsed from `apps/api/src/routes/*.ts` with
 mount prefixes resolved from `app.ts`; coverage = invocation-confirmed
-call-sites (`app.request`/`page.request`, static-prefix matched, 6,151 total).
+call-sites (`app.request`/`page.request`, static-prefix matched, 7,325 total).
 VERIFIED_PASS additionally requires the assertion behavior named per row —
 invocation alone is not a pass. Machine detail: `feature-matrix.json`
-(261 endpoints, 16 public, 57 frontend hashes, 108 tables, 24 migrations).
+(267 endpoints, 16 public, 57 frontend hashes, 108 tables, 24 migrations).
 
 ## Auth, sessions, recovery, roles
 
@@ -22,12 +22,14 @@ invocation alone is not a pass. Machine detail: `feature-matrix.json`
 
 ## Organization & academic structure
 
-| Feature                               | Chain                                                                                                                           | Status        |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Orgs, members, branding, domain       | admin `#/organizations` → orgs routes → organizations/members                                                                   | VERIFIED_PASS |
-| Academic years/terms/classes/subjects | org-scoped CRUD + member assignment                                                                                             | VERIFIED_PASS |
-| Instructor assignment to courses      | NEW `GET/POST/DELETE /courses/:id/instructors` (privileged, member+role validated) → `course_instructors` → coverage-gaps suite | VERIFIED_PASS |
-| Parent-child links                    | `POST /users/:id/parent-links`, org-scoped reads                                                                                | VERIFIED_PASS |
+| Feature                               | Chain                                                                                                                                                                                                                         | Status        |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Orgs, members, branding, domain       | admin `#/organizations` → orgs routes → organizations/members                                                                                                                                                                 | VERIFIED_PASS |
+| Org branding edit (merge + reload)    | settings → org tab modal → `PUT /organizations/:id` merges (sentinel key survives) → public branding re-read → reload persistence → portal-admin-tabs E2E; stale-render generation guard                                      | VERIFIED_PASS |
+| Cohorts/programs lifecycle + delete   | admin `#/cohorts` create/member/roster/delete, programs create/attach/view/delete → audited `DELETE /cohorts/:id` + `/programs/:id` (admin-only, cascades, 404 on re-delete) → resource-deletes suite + portal-admin-tabs E2E | VERIFIED_PASS |
+| Academic years/terms/classes/subjects | org-scoped CRUD + member assignment                                                                                                                                                                                           | VERIFIED_PASS |
+| Instructor assignment to courses      | NEW `GET/POST/DELETE /courses/:id/instructors` (privileged, member+role validated) → `course_instructors` → coverage-gaps suite                                                                                               | VERIFIED_PASS |
+| Parent-child links                    | `POST /users/:id/parent-links`, org-scoped reads                                                                                                                                                                              | VERIFIED_PASS |
 
 ## Courses, content, delivery
 
@@ -45,40 +47,40 @@ invocation alone is not a pass. Machine detail: `feature-matrix.json`
 
 ## Assessment & assignments
 
-| Feature                                       | Chain                                                                                                                                                                  | Status        |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Question banks/pools/difficulty               | teacher `#/banks`, admin quizzes → banks routes; draws snapshotted per attempt (`attempt_id`), template reusable                                                       | VERIFIED_PASS |
-| 7 question types + scoring                    | exact-score fixtures incl. partial/negative floors; multi-select via `option_ids[]` exact-set; whole-quiz denominator (skips score zero) → release-fixes suite         | VERIFIED_PASS |
-| Attempt limits/cooldown/expiry/answer release | server-enforced, resume-single-active                                                                                                                                  | VERIFIED_PASS |
-| Autosave + recovery                           | NEW `PUT/GET /quiz-attempts/:id/autosave` (canonical in assessment; shadow duplicates removed) + student debounced save + restore → quiz-autosave suite + roles E2E §8 | VERIFIED_PASS |
-| Manual grading + rubrics                      | per-answer grading, whole-quiz recompute, audit trail                                                                                                                  | VERIFIED_PASS |
-| Question reads (student/parent parity)        | both unprivileged: label-only options, no `is_correct`; teachers keep keys → release-fixes suite                                                                       | VERIFIED_PASS |
-| Assignments/submissions/feedback/late policy  | teacher review, student resubmit rules                                                                                                                                 | VERIFIED_PASS |
+| Feature                                       | Chain                                                                                                                                                                                                                                                                                 | Status        |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Question banks/pools/difficulty               | teacher `#/banks`, admin quizzes → banks routes; draws snapshotted per attempt (`attempt_id`), template reusable; audited `DELETE /question-banks/:id` (teaching actors, questions/options cascade, snapshots untouched) + UI delete → resource-deletes suite + teacher-workflows E2E | VERIFIED_PASS |
+| 7 question types + scoring                    | exact-score fixtures incl. partial/negative floors; multi-select via `option_ids[]` exact-set; whole-quiz denominator (skips score zero) → release-fixes suite                                                                                                                        | VERIFIED_PASS |
+| Attempt limits/cooldown/expiry/answer release | server-enforced, resume-single-active                                                                                                                                                                                                                                                 | VERIFIED_PASS |
+| Autosave + recovery                           | NEW `PUT/GET /quiz-attempts/:id/autosave` (canonical in assessment; shadow duplicates removed) + student debounced save + restore → quiz-autosave suite + roles E2E §8                                                                                                                | VERIFIED_PASS |
+| Manual grading + rubrics                      | per-answer grading, whole-quiz recompute, audit trail; teacher grading queue → grade modal → row leaves queue → teacher-workflows E2E (`graded`/90 server-verified)                                                                                                                   | VERIFIED_PASS |
+| Question reads (student/parent parity)        | both unprivileged: label-only options, no `is_correct`; teachers keep keys → release-fixes suite                                                                                                                                                                                      | VERIFIED_PASS |
+| Assignments/submissions/feedback/late policy  | teacher review, student resubmit rules                                                                                                                                                                                                                                                | VERIFIED_PASS |
 
 ## Attendance, grades, certs, discussion
 
-| Feature                                              | Chain                                                                                   | Status        |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------- |
-| Attendance sessions/records                          | membership-validated writes, batched reads                                              | VERIFIED_PASS |
-| Gradebook + progress reports                         | course-scoped, role-gated reads                                                         | VERIFIED_PASS |
-| Certificates (issue/bulk/revoke/re-issue/PDF/verify) | eligibility, unique numbers, entropy on re-issue, public verifier honors revoke/expired | VERIFIED_PASS |
-| Announcements/discussions                            | modal-based posting (no more `prompt()`), prefs-gated fan-out                           | VERIFIED_PASS |
-| Notifications + preferences                          | center, unread, read-all, enforced opt-out                                              | VERIFIED_PASS |
+| Feature                                              | Chain                                                                                                                                                                                                                                         | Status        |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Attendance sessions/records                          | membership-validated writes, batched reads; audited `DELETE /attendance/sessions/:id` (teaching actors, records cascade) + teacher UI create/take/save/delete → resource-deletes suite + teacher-workflows E2E (report 1 record / 100%)       | VERIFIED_PASS |
+| Gradebook + progress reports                         | course-scoped, role-gated reads                                                                                                                                                                                                               | VERIFIED_PASS |
+| Certificates (issue/bulk/revoke/re-issue/PDF/verify) | eligibility, unique numbers, entropy on re-issue, public verifier honors revoke/expired                                                                                                                                                       | VERIFIED_PASS |
+| Announcements/discussions                            | modal-based posting (no more `prompt()`), prefs-gated fan-out; teaching-actor moderation `DELETE /discussions/:threadId` (replies cascade, student authors 403) → resource-deletes suite + student-workflows E2E (thread + reply + 403 proof) | VERIFIED_PASS |
+| Notifications + preferences                          | center, unread, read-all, enforced opt-out                                                                                                                                                                                                    | VERIFIED_PASS |
 
 ## Commerce (LMS purchase flows only)
 
-| Feature                                              | Chain                                                                        | Status        |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------- | ------------- |
-| Orders → manual/webhook pay → entitlements → invoice | server-side totals, HMAC, replay table, idempotent fulfill                   | VERIFIED_PASS |
-| Amount matching                                      | `gross_amount` vs order total, 402 on mismatch                               | VERIFIED_PASS |
-| Refunds + commission reversal + cohort revocation    | conditional transitions, unique payee index                                  | VERIFIED_PASS |
-| Coupons/gifts/affiliates/payouts/subscriptions       | atomic claims, cohort-gift grants, listings wired, no auto-renewal (labeled) | VERIFIED_PASS |
+| Feature                                              | Chain                                                                                                                                               | Status        |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Orders → manual/webhook pay → entitlements → invoice | server-side totals, HMAC, replay table, idempotent fulfill; student shop-buy E2E (pending order + pending claim, no enrollment until admin confirm) | VERIFIED_PASS |
+| Amount matching                                      | `gross_amount` vs order total, 402 on mismatch                                                                                                      | VERIFIED_PASS |
+| Refunds + commission reversal + cohort revocation    | conditional transitions, unique payee index                                                                                                         | VERIFIED_PASS |
+| Coupons/gifts/affiliates/payouts/subscriptions       | atomic claims, cohort-gift grants, listings wired, no auto-renewal (labeled)                                                                        | VERIFIED_PASS |
 
 ## Platform: API, i18n, a11y, install
 
 | Feature                                              | Chain                                                                                  | Status        |
 | ---------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------- |
-| REST `/api/v1` + OpenAPI + envelope + pagination     | 179 frontend refs resolve; new routes registered in openapi                            | VERIFIED_PASS |
+| REST `/api/v1` + OpenAPI + envelope + pagination     | 181 frontend refs resolve; new routes registered in openapi                            | VERIFIED_PASS |
 | EN/ID dictionaries                                   | teacher/student/admin passes this session; quiz reorder labeled; remaining gaps listed | PARTIAL       |
 | Keyboard/focus/responsive/loading/empty/error states | tab roles, aria labels, per-view states; router race fixed (serialized navigation)     | VERIFIED_PASS |
 | Install/migrate/seed/setup                           | disposable-DB verified; seed custom-path guard; docs reconciled 001→024                | VERIFIED_PASS |

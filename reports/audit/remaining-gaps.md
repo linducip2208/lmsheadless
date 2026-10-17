@@ -7,6 +7,24 @@ decide buttons, AI quota-reset endpoint + scheduler procedure, instructor
 assignment API + UI wiring path, blocking native dialogs, teacher i18n
 worst-offenders, router navigation races, `javascript:` URL storage.
 
+Closed 2026-10-18 (round 4; `test/resource-deletes.test.ts` 5/5,
+`e2e/portal-admin-tabs.spec.ts` 3/3, `e2e/teacher-workflows.spec.ts` 3/3,
+`e2e/student-workflows.spec.ts` 2/2, Playwright 29/29 total):
+
+- Resource lifecycle teardown (new): audited `DELETE /cohorts/:id`,
+  `DELETE /programs/:id`, `DELETE /question-banks/:id`,
+  `DELETE /attendance/sessions/:id`, `DELETE /discussions/:threadId`
+  with per-resource RBAC (cohort/program admin-only; bank/session teaching
+  actors; thread teaching-actor moderation — student authors 403), FK
+  cascades verified row-count, honest 404 on re-delete, OpenAPI
+  registered; admin cohorts tab + teacher banks/attendance gained matching
+  in-app-confirm delete buttons.
+- Stale-render race in admin settings (real bug, trace-proven): overlapping
+  branding renders could paint stale data last after a save. Fixed with a
+  generation guard in `renderOrgSettings` (latest started render wins; no
+  business-behavior change); spec syncs on the PUT response and proves
+  persistence after reload.
+
 Closed 2026-10-17 (branch `feat/finalization-audit`, HEAD 5ca54fb, round 3;
 `test/cron-maintenance.test.ts` 5/5, `test/quiz-copy-purge.test.ts` 3/3,
 `test/program-lock.test.ts` 2/2, `e2e/admin-payment-confirm.spec.ts` green):
@@ -58,10 +76,12 @@ Closed 2026-10-11 (HEAD d73c6b9 + tree, `test/release-fixes.test.ts` green):
 
 ## Still open (with reason + next action)
 
-1. Per-route browser CRUD for all admin tabs and teacher/student actions —
-   API-covered; needs Playwright expansion (top E2E backlog). The admin
-   payment-confirm button is now browser-covered (round 3); other routes
-   remain API-verified only.
+1. Per-route browser CRUD for the remaining admin tabs
+   (quizzes/assignments/attendance-create/live/scorm/data/grades/reports/
+   community/files/certificates) and teacher/student/parent actions listed
+   in browser-workflows.md — API-covered (164 tests); needs further
+   Playwright expansion (top E2E backlog). Round 4 closed cohorts/programs/
+   settings-org, banks/grading/attendance, discussion/shop-buy (8 specs).
 2. Live-provider credentials (Midtrans-live, SMTP, VAPID-send, OpenAI key,
    Zoom/Meet OAuth, R2/KV bindings, sandbox) — owner-supplied; adapters +
    mock tests ship. The cron's production execution needs a real

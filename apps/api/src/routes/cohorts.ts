@@ -217,6 +217,28 @@ cohorts.get('/cohorts/:id/progress', requireAuth(), async (c) => {
   return ok(c, { courses: courseCount, students: out });
 });
 
+cohorts.delete('/cohorts/:id', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const cohort = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM cohorts WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!cohort) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  // Deleting cascades cohort_members + cohort_courses (FK), live_sessions
+  // detach (SET NULL) — so only org admins may do it.
+  if (!isPrivileged(user, cohort.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(db, 'DELETE FROM cohorts WHERE id = ?', c.req.param('id'));
+  await audit(c, 'cohort.delete', {
+    entity: 'cohort',
+    entityId: c.req.param('id'),
+    organizationId: cohort.organization_id,
+  });
+  return ok(c, { deleted: true });
+});
+
 // ---------- Programs / learning paths ----------
 cohorts.post('/programs', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
@@ -351,6 +373,29 @@ cohorts.get('/programs/:id', requireAuth(), async (c) => {
       : false,
   }));
   return ok(c, { program, courses: annotated });
+});
+
+cohorts.delete('/programs/:id', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const program = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM programs WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!program) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  // program_courses rows cascade with the program; enrollment blocker locks
+  // look them up opportunistically (missing rows simply unlock), so delete is
+  // admin-only like cohorts.
+  if (!isPrivileged(user, program.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(db, 'DELETE FROM programs WHERE id = ?', c.req.param('id'));
+  await audit(c, 'program.delete', {
+    entity: 'program',
+    entityId: c.req.param('id'),
+    organizationId: program.organization_id,
+  });
+  return ok(c, { deleted: true });
 });
 
 // ---------- Competencies ----------

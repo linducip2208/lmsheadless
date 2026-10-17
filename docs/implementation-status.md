@@ -1,5 +1,20 @@
 # Implementation status (October 2026)
 
+## Round 4 audit additions (in-repo, 2026-10-18)
+
+- Resource lifecycle teardown: audited `DELETE /cohorts/:id`,
+  `DELETE /programs/:id`, `DELETE /question-banks/:id`,
+  `DELETE /attendance/sessions/:id`, `DELETE /discussions/:threadId`
+  (RBAC per resource, FK cascades verified, honest 404 on re-delete) +
+  matching UI delete affordances (admin cohorts tab, teacher banks +
+  attendance) with in-app confirms.
+- Real bug fixed: stale branding re-render could clobber fresh settings
+  (generation guard in `renderOrgSettings`; trace-proven).
+- 8 new real-browser specs (admin tabs, teacher workflows, student
+  discussion + paid shop-buy with pending-gate honesty).
+- Evidence: 164 API tests, 29/29 E2E (2 known-class flakes, retry-green),
+  toolchain green, scorecard 94/100.
+
 ## Round 3 audit additions (in-repo, 2026-10-17)
 
 - Native Workers cron scheduler (`scheduled` handler + `[triggers]`):

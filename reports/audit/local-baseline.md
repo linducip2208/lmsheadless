@@ -1,4 +1,4 @@
-# Local baseline — 2026-10-17 (round 3, branch `feat/finalization-audit`)
+# Local baseline — 2026-10-18 (round 4, branch `feat/finalization-audit`)
 
 History: round-1/round-2 work was committed as checkpoint `5b3efdf`; round-3
 work (cron scheduler, copy purge, program locks, payment-confirm E2E) as
@@ -9,21 +9,25 @@ away, courses deleted via API when deletable).
 
 ## Independently rerun this session (exit codes observed)
 
-| Command                            | Result                                                                        |
-| ---------------------------------- | ----------------------------------------------------------------------------- |
-| `npm test` (apps/api, pre-round-3) | 149/149 PASS, 25 files, exit 0                                                |
-| `npm run typecheck`                | PASS, exit 0 (all workspaces)                                                 |
-| `npm run lint`                     | PASS, exit 0 (after fixing 5 new-file lint findings + 1 warning)              |
-| `npm run contract`                 | PASS, 178 refs, exit 0                                                        |
-| `npm run static-audit`             | PASS, exit 0                                                                  |
-| `npm run build`                    | PASS, exit 0 (5/5 bundles)                                                    |
-| `npm run audit`                    | PASS, exit 0 (re-run after route add: PASS)                                   |
-| `npm audit --omit=dev`             | 0 vulnerabilities                                                             |
-| `npm run test:e2e` (pre-round-3)   | 20/20 PASS (1 cold-load retry on admin login; re-ran standalone = green)      |
-| `npm test` (post-round-3)          | 159/159 PASS, 28 files, exit 0 (149 + 5 cron + 3 copy-purge + 2 program-lock) |
-| targeted vitest runs               | cron 5/5, copy-purge 3/3 + cron 5/5, program-lock 2/2 PASS                    |
-| `npm run test:e2e` (post-round-3)  | 21/21 PASS (1 cold-load retry on parent portal; pass on retry)                |
-| `node scripts/gen-inventory.mjs`   | 262 endpoints, 260 invoked, 105 e2e, 6,379 call-sites, 108 tables             |
+| Command                                         | Result                                                                                                                                                                                 |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm test` (apps/api, pre-round-3)              | 149/149 PASS, 25 files, exit 0                                                                                                                                                         |
+| `npm run typecheck`                             | PASS, exit 0 (all workspaces)                                                                                                                                                          |
+| `npm run lint`                                  | PASS, exit 0 (after fixing 5 new-file lint findings + 1 warning)                                                                                                                       |
+| `npm run contract`                              | PASS, 178 refs, exit 0                                                                                                                                                                 |
+| `npm run static-audit`                          | PASS, exit 0                                                                                                                                                                           |
+| `npm run build`                                 | PASS, exit 0 (5/5 bundles)                                                                                                                                                             |
+| `npm run audit`                                 | PASS, exit 0 (re-run after route add: PASS)                                                                                                                                            |
+| `npm audit --omit=dev`                          | 0 vulnerabilities                                                                                                                                                                      |
+| `npm run test:e2e` (pre-round-3)                | 20/20 PASS (1 cold-load retry on admin login; re-ran standalone = green)                                                                                                               |
+| `npm test` (post-round-3)                       | 159/159 PASS, 28 files, exit 0 (149 + 5 cron + 3 copy-purge + 2 program-lock)                                                                                                          |
+| targeted vitest runs                            | cron 5/5, copy-purge 3/3 + cron 5/5, program-lock 2/2 PASS                                                                                                                             |
+| `npm run test:e2e` (post-round-3)               | 21/21 PASS (1 cold-load retry on parent portal; pass on retry)                                                                                                                         |
+| `node scripts/gen-inventory.mjs`                | 262 endpoints, 260 invoked, 105 e2e, 6,379 call-sites, 108 tables                                                                                                                      |
+| `npm test` (post-round-4)                       | 164/164 PASS, 29 files, exit 0 (159 + 5 resource-deletes); one transient single-test failure in an intermediate run (name not captured), then 4 consecutive 164/164 greens � disclosed |
+| `npm run test:e2e` (post-round-4)               | 29/29 PASS (27 + 2 flaky-once: portal-crud teacher section, student-multiselect; both pass on retry + standalone 5/5 green — cold-load class, untouched routes)                        |
+| `npm run contract` (post-round-4)               | PASS, 181 refs, exit 0 (all new UI delete calls resolve; thread-delete has no student-UI button by design)                                                                             |
+| `node scripts/gen-inventory.mjs` (post-round-4) | 267 endpoints, 265 invoked, 132 e2e, 7,325 call-sites, 108 tables; sole zero-invocation endpoint is the pre-existing `GET /reports/completion`                                         |
 
 ## Round-3 code changes (committed `5ca54fb`)
 

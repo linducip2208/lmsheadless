@@ -10,7 +10,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { orgSetting, orgStorageExceeded, wantsNotification } from '../access.js';
+import { orgSetting, orgStorageExceeded, wantsNotification, canTeach } from '../access.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { objectKey, putObject, validateUpload } from '../storage.js';
 import { t } from '../i18n.js';
@@ -54,6 +54,28 @@ ops.post('/api/v1/attendance/sessions', requireAuth(), async (c) => {
     now
   );
   return created(c, { id: nid });
+});
+
+ops.delete('/api/v1/attendance/sessions/:id', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const sess = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM attendance_sessions WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!sess) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  // Same teaching-actor set the create/record handlers accept; attendance
+  // records cascade with the session (single destructive unit).
+  if (!canTeach(user, sess.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(db, 'DELETE FROM attendance_sessions WHERE id = ?', c.req.param('id'));
+  await audit(c, 'attendance.session_delete', {
+    entity: 'attendance_session',
+    entityId: c.req.param('id'),
+    organizationId: sess.organization_id,
+  });
+  return ok(c, { deleted: true });
 });
 
 ops.post('/api/v1/attendance/records', requireAuth(), async (c) => {
@@ -641,6 +663,34 @@ ops.post('/api/v1/discussions', requireAuth(), async (c) => {
     now
   );
   return created(c, { id: nid });
+});
+
+ops.delete('/api/v1/discussions/:threadId', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const thread = await queryFirst<{ course_id: string }>(
+    db,
+    'SELECT course_id FROM discussion_threads WHERE id = ?',
+    c.req.param('threadId')
+  );
+  if (!thread) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const course = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM courses WHERE id = ?',
+    thread.course_id
+  );
+  if (!course) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  // Moderation action: teaching actors of the owning org only (students and
+  // parents never remove peer threads; course soft-deletes do that by FK).
+  if (!canTeach(user, course.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(db, 'DELETE FROM discussion_threads WHERE id = ?', c.req.param('threadId'));
+  await audit(c, 'discussion.thread_delete', {
+    entity: 'discussion_thread',
+    entityId: c.req.param('threadId'),
+    organizationId: course.organization_id,
+  });
+  return ok(c, { deleted: true });
 });
 
 ops.get('/api/v1/discussions/:threadId/replies', requireAuth(), async (c) => {

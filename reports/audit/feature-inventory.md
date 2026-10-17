@@ -1,19 +1,19 @@
-# Feature inventory (generated 2026-10-17T18:13:57.983Z, commit ac79226)
+# Feature inventory (generated 2026-10-17T19:40:11.410Z, commit ac79226)
 
 Source: parsed route registrations in `apps/api/src/routes/*.ts`, hash routes in `apps/*/src/main.ts`, `CREATE TABLE` in `migrations/*.sql`. Coverage = invocation-confirmed call-sites (`app.request`/`page.request`/`fetch` URL arguments, static-prefix matched, query stripped). VERIFIED_PASS additionally requires the spot-audited meaningful assertions below — invocation alone is not a pass.
 
 ## Counts
 
-- Endpoints: 262 (public: 16)
-- Invoked by API tests: 260 (6379 call-sites)
-- Invoked by E2E: 105
+- Endpoints: 267 (public: 16)
+- Invoked by API tests: 265 (7325 call-sites)
+- Invoked by E2E: 132
 - Frontend hashes: 57
 - Tables: 108 across 24 migrations
 
 ## Status histogram
 
-- VERIFIED_PASS: 260
-- IMPLEMENTED_TEST_GAP: 2
+- VERIFIED_PASS: 266
+- IMPLEMENTED_TEST_GAP: 1
 
 ## Assertion spot-audit (module → what tests assert beyond status)
 
@@ -47,6 +47,5 @@ Source: parsed route registrations in `apps/api/src/routes/*.ts`, hash routes in
 ## Endpoints with zero invocations (IMPLEMENTED_TEST_GAP)
 
 - GET /api/v1/reports/completion (ops)
-- GET /api/v1/reports/attendance (ops)
 
 Known matcher blind spot (manually verified, not a gap): `GET /api/v1/reports/completion` and `GET /api/v1/reports/attendance` are invoked via the interpolated loop `for (const path of ['completion','attendance','teacher-activity'])` in `platform.test.ts:419-425` with status + real-data assertions.

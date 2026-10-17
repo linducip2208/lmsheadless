@@ -20,7 +20,7 @@ Legend: ✅ implemented+tested · 🟡 implemented, thin tests · 🟠 partial �
 
 ## Assessment
 
-| Question banks/pools/difficulty | ✅ | 009 + pool draw at attempt start + tests |
+| Question banks/pools/difficulty | ✅ | 009 + pool draw at attempt start + tests + audited bank delete (round 4) |
 | Essay + manual grading | ✅ | short_answer/essay + grade endpoint + queue |
 | Matching/ordering | ✅ | match_value options + grading + tests |
 | Explanations / answer release | ✅ | explanation + answer_release policy enforced |
@@ -31,7 +31,7 @@ Legend: ✅ implemented+tested · 🟡 implemented, thin tests · 🟠 partial �
 
 ## Delivery & business
 
-| Cohorts/programs/paths/competencies | ✅ | 010 + APIs + UI + tests |
+| Cohorts/programs/paths/competencies | ✅ | 010 + APIs + UI + tests + audited deletes (round 4) |
 | Live classes (providers) | ✅ | 011 + ICS export + registration/attendance + tests |
 | Commerce (orders/coupons/invoices) | ✅ | 012 + totals engine + tests |
 | Manual payments + provider adapter | ✅ | Midtrans-style signed adapter, signature unit tests; live creds pending |

@@ -10,6 +10,7 @@ import {
   toast,
   modalForm,
   esc,
+  confirmDialog,
   type ApiClient,
 } from '@lms/ui';
 import { getDict } from './i18n.js';
@@ -603,7 +604,8 @@ async function attendanceView(el: HTMLElement): Promise<void> {
               s
             ) => `<div class="card mb-2"><div class="card-body d-flex gap-2 align-items-center flex-wrap">
         <div><strong>${esc(s.title)}</strong><div class="text-muted small">${esc(s.session_date)}</div></div>
-        <button class="btn btn-sm btn-primary ms-auto" data-take="${s.id}">${d.takeAttendance}</button></div>
+        <button class="btn btn-sm btn-primary ms-auto" data-take="${s.id}">${d.takeAttendance}</button>
+        <button class="btn btn-sm btn-outline-danger" data-sdel="${s.id}" aria-label="${d.delete} ${esc(s.title)}">${d.delete}</button></div>
         <div data-rec="${s.id}"></div></div>`
           )
           .join('') || `<div class="alert alert-info">${d.noSessions}</div>`;
@@ -631,6 +633,19 @@ async function attendanceView(el: HTMLElement): Promise<void> {
       () => void load()
     );
     el.querySelector('#at-list')?.addEventListener('click', async (e) => {
+      const del = (e.target as HTMLElement).closest('[data-sdel]') as HTMLElement | null;
+      if (del?.dataset.sdel) {
+        try {
+          if (!(await confirmDialog(d.confirmDelete, d.confirmDeleteBody, d.delete, d.cancel)))
+            return;
+          await call(`/api/v1/attendance/sessions/${del.dataset.sdel}`, { method: 'DELETE' });
+          toast(d.saved, 'success');
+          await load();
+        } catch (err) {
+          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        }
+        return;
+      }
       const b = (e.target as HTMLElement).closest('[data-take]') as HTMLElement | null;
       if (!b?.dataset.take) return;
       try {

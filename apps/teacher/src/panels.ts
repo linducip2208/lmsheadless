@@ -1,9 +1,8 @@
-import { toast, modalForm, esc } from '@lms/ui';
+import { toast, modalForm, esc, confirmDialog } from '@lms/ui';
 import type { ApiClient } from '@lms/ui';
 import { getDict } from './i18n.js';
 
 const t = () => getDict(localStorage.getItem('teacher-locale') ?? 'en');
-
 export async function banksView(
   el: HTMLElement,
   client: ApiClient,
@@ -31,7 +30,8 @@ export async function banksView(
                 b
               ) => `<div class="card mb-2"><div class="card-body"><h3 class="card-title">${esc(b.name)}</h3>
         <div class="d-flex gap-1"><button class="btn btn-sm btn-outline-primary" data-bq="${b.id}">${d.questions}</button>
-        <button class="btn btn-sm btn-outline-green" data-badd="${b.id}">${d.newQuestion}</button></div><div data-bd="${b.id}" class="mt-2"></div></div></div>`
+        <button class="btn btn-sm btn-outline-green" data-badd="${b.id}">${d.newQuestion}</button>
+        <button class="btn btn-sm btn-outline-danger" data-bdel="${b.id}">${d.delete}</button></div><div data-bd="${b.id}" class="mt-2"></div></div></div>`
             )
             .join('')
         : `<p class="text-muted">${d.empty}</p>`;
@@ -57,7 +57,13 @@ export async function banksView(
     const btn = (e.target as HTMLElement).closest('button') as HTMLButtonElement | null;
     if (!btn) return;
     try {
-      if (btn.dataset.bq) {
+      if (btn.dataset.bdel) {
+        if (!(await confirmDialog(d.confirmDelete, d.confirmDeleteBody, d.delete, d.cancel)))
+          return;
+        await call(`/api/v1/question-banks/${btn.dataset.bdel}`, { method: 'DELETE' });
+        toast(d.saved, 'success');
+        await load();
+      } else if (btn.dataset.bq) {
         const qs = (await call<{ id: string; type: string; prompt: string }[]>(
           `/api/v1/question-banks/${btn.dataset.bq}/questions`
         )) as { id: string; type: string; prompt: string }[];

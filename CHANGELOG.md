@@ -2,6 +2,45 @@
 
 ## Unreleased — finalization audit fixes (HEAD d73c6b9 + tree)
 
+### Round 4 (2026-10-18; regression tests: `test/resource-deletes.test.ts`,
+
+`e2e/portal-admin-tabs.spec.ts`, `e2e/teacher-workflows.spec.ts`,
+`e2e/student-workflows.spec.ts`)
+
+- Resource lifecycle teardown: five new audited DELETE endpoints —
+  `DELETE /cohorts/:id` + `DELETE /programs/:id` (org_admin/super_admin;
+  members/course links cascade), `DELETE /question-banks/:id` (teaching
+  actors; bank questions/options cascade, per-attempt snapshots untouched),
+  `DELETE /attendance/sessions/:id` (teaching actors; records cascade),
+  `DELETE /discussions/:threadId` (teaching-actor moderation; replies
+  cascade; students/parents — even thread authors — get 404/403). All
+  registered in OpenAPI; second delete returns honest 404.
+- Matching UI affordances (in-app confirm dialogs, no native confirm):
+  admin cohorts tab (cohort + program delete), teacher banks (bank delete)
+  and attendance (session delete). Student discussion deliberately has no
+  delete button (server RBAC proven by the 403 assertion instead).
+- Real bug found by the new E2E and fixed: overlapping settings renders
+  could let a STALE branding fetch paint last and clobber fresher data
+  (trace-proven: PUT 200, fresh GET with footer, DOM still old). Fix:
+  generation guard in `renderOrgSettings` (only the latest started render
+  may paint) + the spec now syncs on the PUT response and proves
+  persistence after reload.
+- New real-browser specs (8 tests): admin cohorts/programs/branding-merge,
+  teacher banks/grading-queue/attendance, student discussion/shop-buy with
+  manual-payment claim (order stays `pending`, no enrollment until admin
+  confirm — the paid gate stays honest).
+
+Evidence (round 4, re-verified end-to-end):
+
+- 164/164 API tests green (159 + 5 new), Playwright 29/29 chromium
+  (21 + 8 new; 2 pre-existing specs flaky once under full-suite load, pass
+  on retry + standalone green — documented cold-load class, not a
+  regression), typecheck/lint/format:check/contract (181 refs)/static-audit/
+  audit green, build green, `npm audit --omit=dev` 0 vulns
+- Source-derived inventory: 267 endpoints (265 invoked), 132 e2e-invoked,
+  7,325 call-sites, 108 tables; only zero-invocation endpoint remains the
+  pre-existing `GET /reports/completion`
+
 ### Round 3 (2026-10-17; regression tests: `test/cron-maintenance.test.ts`,
 
 `test/quiz-copy-purge.test.ts`, `test/program-lock.test.ts`,
