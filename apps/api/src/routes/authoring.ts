@@ -503,7 +503,9 @@ authoring.get('/courses/:id/versions', requireAuth(), async (c) => {
 export async function snapshotCourse(
   db: Parameters<typeof queryFirst>[0],
   courseId: string,
-  actorId: string
+  // `null` is used by the scheduled (cron) publisher when the course has no
+  // known creator; course_versions.created_by is nullable by design.
+  actorId: string | null
 ): Promise<number> {
   const course = await queryFirst<Record<string, unknown>>(
     db,

@@ -27,3 +27,15 @@ COOKIE_SECURE = "1"
 
 [dev]
 port = 8787
+
+# Native maintenance scheduler (Worker `scheduled` handler in src/index.ts):
+# - `0 17 * * *`  daily 00:00 Asia/Jakarta → AI retention purge + publishes
+#   courses whose publish_at has arrived (audit: sys.cron.*)
+# - `0 17 1 * *`  1st of month 00:00 Asia/Jakarta → additionally resets AI
+#   monthly quota used_count
+# Kill switch: set CRON_DISABLED = "1" in [vars] to skip logic without
+# removing the triggers. HTTP endpoints (/ai/retention/purge,
+# /ai/usage/reset, /courses/publish-due) stay available for manual runs.
+[triggers]
+crons = ["0 17 * * *", "0 17 1 * *"]
+

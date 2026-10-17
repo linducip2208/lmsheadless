@@ -11,7 +11,8 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { hasEntitlement } from '../access.js';
+import { hasEntitlement, orgSetting } from '../access.js';
+import { purgeQuizCopiesForOrg } from '../maintenance.js';
 import { logActivity } from './growth.js';
 import { pickMinor } from './commerce.js';
 import type { AppVars, AuthUser } from '../types.js';
@@ -1409,6 +1410,41 @@ assess.post('/quizzes/:id/questions/reorder', requireAuth(), async (c) => {
     );
   }
   return ok(c, { reordered: ordered.length });
+});
+
+// ---- Attempt copy purge (storage hygiene; anti-accumulation release2 #13) ----
+// Removes attempt-scoped question copies + their answer rows for finished
+// attempts of one org. Window falls back to the opt-in org setting
+// `quiz_copy_retention_days`. Privileged-only, bounded window, audited.
+assess.post('/quizzes/copies/purge', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const body = (await c.req.json().catch(() => null)) as {
+    organization_id?: string;
+    days?: number;
+  } | null;
+  const orgId = body?.organization_id;
+  if (!orgId || !canAccessOrg(user, orgId))
+    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  const role = orgRole(user, orgId);
+  if (!user.isSuperAdmin && role !== 'organization_admin')
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const rawDays =
+    body?.days ?? Number(await orgSetting(c.get('db'), orgId, 'quiz_copy_retention_days'));
+  const days = Number(rawDays);
+  if (!Number.isFinite(rawDays) || !Number.isFinite(days) || days < 1 || days > 3650) {
+    return fail(
+      c,
+      400,
+      'VALIDATION_ERROR',
+      'days (1..3650) is required, or set organizations.settings.quiz_copy_retention_days'
+    );
+  }
+  const res = await purgeQuizCopiesForOrg(c.get('db'), orgId, days);
+  await audit(c, 'quiz.copy_purge', {
+    organizationId: orgId,
+    metadata: { copies: res.copies, answers: res.answers, days },
+  });
+  return ok(c, { ...res, days });
 });
 
 // ---- Manual grading (short answer / review) ----

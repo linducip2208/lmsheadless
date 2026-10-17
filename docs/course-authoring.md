@@ -10,8 +10,10 @@ prerequisites gate enrollment (course) and completion (lesson).
 `draft → published → archived`. Optional approval: set organization setting
 `require_approval=true`; teacher publish actions become approval requests
 (`POST /courses/:id/request-approval`), decided at `POST /publish-approvals/:id/approve|reject`.
-`publish_at` + `POST /courses/publish-due` enables scheduled publishing
-(call it from Workers Cron or an admin action — documented, not automatic).
+`publish_at` enables scheduled publishing, now **automatic**: the Worker's
+cron handler publishes due drafts daily at 00:00 Asia/Jakarta (approval
+workflow takes precedence; audit `sys.cron.publish_due`). The manual
+`POST /courses/publish-due` endpoint stays available for admin-triggered runs.
 
 ## Access control
 
@@ -28,7 +30,11 @@ prerequisites gate enrollment (course) and completion (lesson).
 - `drip_rules`: `days_after_enrollment` or fixed `unlock_at` per lesson,
   enforced in `POST /lessons/:id/complete`.
 - Lesson completion also enforces `lesson_prerequisites`; enrollment enforces
-  `course_prerequisites` (required course must be `completed`).
+  `course_prerequisites` (required course must be `completed`) **and program
+  locks**: enrolling into a program-placed course whose
+  `prerequisite_program_course_id` is unfinished fails with
+  `PROGRAM_LOCKED` (manual placement via direct inserts by cohort/commerce/
+  import flows remains documented as privileged bypass).
 
 ## Reuse & history
 

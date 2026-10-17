@@ -2,6 +2,33 @@
 
 ## Unreleased — finalization audit fixes (HEAD d73c6b9 + tree)
 
+### Round 3 (2026-10-17; regression tests: `test/cron-maintenance.test.ts`,
+
+`test/quiz-copy-purge.test.ts`, `test/program-lock.test.ts`,
+`e2e/admin-payment-confirm.spec.ts`)
+
+- Native Workers Cron scheduler ships in the Worker (`scheduled` handler +
+  `[triggers]` in `wrangler.toml`): daily 00:00 Asia/Jakarta runs AI retention
+  purge (per-org `retention_days`, default 30) and publishes draft courses
+  whose `publish_at` arrived (approval workflow takes precedence); the 1st of
+  the month additionally resets AI monthly quotas. Every run writes
+  `sys.cron.*` audit rows (NULL actor) and one structured log line; failures
+  throw so the Dashboard shows failed cron events; `CRON_DISABLED=1` is a
+  documented kill switch. External scheduler procedures remain as fallback.
+- Attempt question-copy purge closes the storage-accumulation P2: opt-in org
+  policy `organizations.settings.quiz_copy_retention_days` (default off),
+  enforced daily by the cron and on demand via the new privileged, audited
+  `POST /quizzes/copies/purge` (window 1..3650 days). Templates and active
+  attempts are never touched; orgs without the setting never purge.
+- Program locks are now enforced on `POST /enrollments`: enrolling into a
+  program-placed course whose prior program course is unfinished fails with
+  `PROGRAM_LOCKED` (previously advisory-only). Privileged direct inserts
+  (cohort, commerce fulfillment, imports) stay documented bypasses.
+- New real-browser spec: admin trades the manual-payment Confirm button in
+  `#/commerce` (dialog, no native confirm) and the server state is
+  re-verified (payment → `paid`, order → `paid`, enrollment active). The
+  button was previously API-verified only.
+
 ### Round 2 (2026-10-16; each with a regression test in `test/release2-fixes.test.ts`)
 
 - Quiz pool draws are now per-attempt (`attempt_id`-scoped copies): concurrent

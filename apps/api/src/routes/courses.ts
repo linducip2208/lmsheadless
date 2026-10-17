@@ -628,6 +628,35 @@ courses.post('/enrollments', requireAuth(), async (c) => {
       });
     }
   }
+  // Program locks: a course placed inside a program may require an earlier
+  // program course to be completed first. Enforced like course prerequisites
+  // (same completion semantics, same endpoint contract). Direct inserts from
+  // cohort membership, commerce fulfillment, or import jobs are explicit
+  // privileged actions and are documented as bypassing the gate.
+  const locks = await queryAll<{ lock_pcid: string; prereq_course_id: string }>(
+    db,
+    `SELECT pcr.id as lock_pcid, pcr.course_id as prereq_course_id
+     FROM program_courses pc
+     JOIN program_courses pcr ON pcr.id = pc.prerequisite_program_course_id
+     WHERE pc.course_id = ? AND pc.prerequisite_program_course_id IS NOT NULL
+       AND pcr.course_id NOT IN (SELECT course_id FROM course_prerequisites WHERE course_id = ?)`,
+    parsed.data.course_id,
+    parsed.data.course_id
+  );
+  for (const lock of locks) {
+    const done = await queryFirst(
+      db,
+      "SELECT id FROM enrollments WHERE course_id = ? AND student_id = ? AND status = 'completed'",
+      lock.prereq_course_id,
+      studentId
+    );
+    if (!done) {
+      return fail(c, 400, 'PROGRAM_LOCKED', 'Complete the prior program course first', {
+        program_course_id: lock.lock_pcid,
+        requires_course_id: lock.prereq_course_id,
+      });
+    }
+  }
   // Paid gate reads integer minor units (falls back to legacy REAL rows).
   if (pickMinor(course?.price_minor ?? null, course?.price ?? null) > 0) {
     const ent = await queryFirst<{ expires_at: string | null }>(

@@ -123,6 +123,12 @@ export function openApiDocument() {
     ['/ai/conversations', 'get', 'AI conversations (owner-scoped)', ['ai']],
     ['/ai/retention/purge', 'post', 'Purge AI history past retention window', ['ai']],
     ['/ai/usage/reset', 'post', 'Reset monthly AI quota (external scheduler)', ['ai']],
+    [
+      '/quizzes/copies/purge',
+      'post',
+      'Purge attempt question copies (opt-in retention policy)',
+      ['assessment'],
+    ],
     ['/xapi/export', 'get', 'Export xAPI statements (paginated)', ['xapi']],
     ['/alerts', 'get', 'Early-warning alerts', ['reports']],
     ['/exercises', 'get', 'Coding exercises', ['exercises']],

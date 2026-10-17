@@ -1,6 +1,13 @@
 import { createApp } from './app.js';
 import type { D1Like } from './db.js';
 import type { AppEnv } from './types.js';
+import {
+  CRON_MONTHLY,
+  runAiQuotaReset,
+  runAiRetentionPurge,
+  runQuizCopyPurge,
+  runScheduledPublishing,
+} from './maintenance.js';
 
 // Cloudflare Workers entry. `DB`, `STORAGE` (R2), `KV` bindings come from wrangler.toml.
 interface WorkerBindings {
@@ -14,6 +21,9 @@ interface WorkerBindings {
   R2_PUBLIC_BASE_URL?: string;
   ALLOWED_ORIGINS?: string;
   COOKIE_SECURE?: string;
+  // Set to "1" (env var or [vars]) to disable the native maintenance cron
+  // without undeploying the Worker. Unset = scheduler enabled.
+  CRON_DISABLED?: string;
 }
 
 function buildEnv(platformEnv: WorkerBindings, db: D1Like): AppEnv {
@@ -51,5 +61,31 @@ export default {
     const appEnv = buildEnv(env, db);
     const app = createApp(appEnv, db);
     return app.fetch(request, env);
+  },
+
+  // Native maintenance scheduler ( Workers Cron Triggers, `crons` in
+  // wrangler.toml ): daily 00:00 WIB runs AI retention purge + due-dated
+  // course publishing; the 1st of the month additionally resets AI monthly
+  // quotas. Failures throw so the Cron event surfaces as failed in the
+  // Cloudflare dashboard (monitoring), never silently dropped.
+  async scheduled(
+    event: { cron?: string; scheduledTime?: number },
+    env: WorkerBindings
+  ): Promise<void> {
+    const db = env.DB as D1Like | undefined;
+    if (!db) throw new Error('maintenance cron: DB binding missing');
+    if (env.CRON_DISABLED === '1') return; // documented kill switch
+    const summary: Record<string, unknown> = {
+      cron: event.cron ?? 'default',
+      at: new Date().toISOString(),
+    };
+    if (!event.cron || event.cron === CRON_MONTHLY) {
+      summary.quota = await runAiQuotaReset(db);
+    }
+    summary.retention = await runAiRetentionPurge(db);
+    summary.publish = await runScheduledPublishing(db);
+    summary.copies = await runQuizCopyPurge(db);
+    // eslint-disable-next-line no-console -- Cloudflare Workers structured logging: console.log is the info/tail channel
+    console.log(JSON.stringify({ level: 'info', scope: 'cron', event: 'maintenance', ...summary }));
   },
 };

@@ -12,6 +12,13 @@ autosave, and re-grade accept shared rows plus the caller's own drawn copies.
 Per-question analytics (`quiz-performance`) cover shared items only; drawn
 copies are attempt history.
 
+Copy accumulation is bounded by an explicit opt-in policy: set
+`organizations.settings.quiz_copy_retention_days` (1..3650) and copies
+attached to **finished** attempts older than that window are deleted (with
+their answer rows) — by the daily cron (`sys.cron.quiz_copy_purge`) or via
+the privileged, audited `POST /quizzes/copies/purge`. Templates and active
+attempts are never touched; orgs without the setting never purge.
+
 ## Types & grading
 
 `multiple_choice | single_choice | true_false | short_answer | essay |

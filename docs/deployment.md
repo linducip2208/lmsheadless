@@ -31,6 +31,33 @@ npm run dev:admin    # :5173 · dev:teacher :5175 · dev:student :5174 · dev:pa
    runtime via the `localStorage.portal-urls` override
    (`{admin,teacher,student,parent}`) — otherwise portal links are dead.
 
+## Native maintenance scheduler (cron)
+
+`apps/api/wrangler.toml` declares
+
+```toml
+[triggers]
+crons = ["0 17 * * *", "0 17 1 * *"]
+```
+
+`wrangler deploy` registers both after deploy; the Worker's `scheduled`
+handler (src/index.ts) then runs automatically — no external scheduler:
+
+- **Daily at 00:00 Asia/Jakarta** (`0 17 * * *`): AI retention purge per
+  `ai_configs.retention_days`, publishes draft courses whose `publish_at`
+  arrived (approval workflow takes precedence), and purges attempt question
+  copies **only** for orgs that opted in via
+  `organizations.settings.quiz_copy_retention_days`.
+- **Monthly (1st, 00:00 WIB)** additionally zeroes configured AI quotas.
+- Every run writes `sys.cron.*` audit rows with a NULL actor and one
+  structured JSON log line per run.
+- Kill switch: `CRON_DISABLED = "1"` (var/secret) skips all cron logic
+  without undeploying; the manual HTTP endpoints
+  (`/ai/retention/purge`, `/ai/usage/reset`, `/courses/publish-due`,
+  `/quizzes/copies/purge`) stay available.
+- Cron failures throw, so failed executions surface in the Cloudflare
+  dashboard (monitoring), never silently dropped.
+
 ## Environment
 
 See `.env.example`. `JWT_SECRET`, `COOKIE_SECURE=1` in production,
