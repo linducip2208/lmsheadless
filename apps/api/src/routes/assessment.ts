@@ -180,6 +180,18 @@ assess.post('/quizzes/:id/questions', requireAuth(), async (c) => {
   }
   const qid = newId();
   const now = nowIso();
+  // Append at the end when the caller omits position: defaulting to 0 would
+  // collide every new question onto the same slot (order then falls back to
+  // rowid). Mirrors the pool-draw MAX+1 logic below.
+  const atPos =
+    parsed.data.position ??
+    ((
+      await queryFirst<{ v: number | null }>(
+        db,
+        'SELECT MAX(position) as v FROM questions WHERE quiz_id = ? AND attempt_id IS NULL',
+        c.req.param('id')
+      )
+    )?.v ?? -1) + 1;
   await execute(
     db,
     'INSERT INTO questions (id, quiz_id, type, prompt, points, position, correct_answer, difficulty, explanation, negative_points, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -188,7 +200,7 @@ assess.post('/quizzes/:id/questions', requireAuth(), async (c) => {
     parsed.data.type,
     parsed.data.prompt,
     parsed.data.points,
-    parsed.data.position ?? 0,
+    atPos,
     parsed.data.correct_answer ?? null,
     parsed.data.difficulty ?? 'medium',
     parsed.data.explanation ?? null,
@@ -1253,12 +1265,24 @@ assess.get('/grades', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const url = new URL(c.req.url);
   const courseId = url.searchParams.get('course_id');
-  const studentId = url.searchParams.get('student_id') ?? user.id;
+  const studentParam = url.searchParams.get('student_id');
+  const studentId = studentParam ?? user.id;
   const db = c.get('db');
   if (courseId) {
     const orgId = await courseOrg(db, courseId);
     if (!orgId || !canAccessOrg(user, orgId))
       return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+    // Gradebook view: teaching/admin actors with no explicit student filter
+    // see the whole course roster's grades. Students/parents keep the
+    // self-or-linked default below (privacy unchanged).
+    if (!studentParam && canTeach(user, orgId)) {
+      const rows = await queryAll(
+        db,
+        'SELECT * FROM grades WHERE course_id = ? ORDER BY created_at DESC, id DESC LIMIT 500',
+        courseId
+      );
+      return ok(c, rows);
+    }
     if (studentId !== user.id) {
       const role = orgRole(user, orgId);
       if (role === 'student') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));

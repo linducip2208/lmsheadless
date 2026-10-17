@@ -317,4 +317,78 @@ describe('resource deletes (cohorts/programs/banks/sessions/threads)', () => {
       ).status
     ).toBe(404);
   });
+
+  it('parent link: admin revokes, parent sees empty; parent/teacher denied, 404 on repeat', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'del-p');
+    await mkUser(db, 'a@dpl.com', 'organization_admin', org);
+    await mkUser(db, 't@dpl.com', 'teacher', org);
+    await mkUser(db, 'p@dpl.com', 'parent', org);
+    await mkUser(db, 'k@dpl.com', 'student', org);
+    const tokA = (await login(app, 'a@dpl.com')).access_token;
+    const tokT = (await login(app, 't@dpl.com')).access_token;
+    const tokP = (await login(app, 'p@dpl.com')).access_token;
+    const parent = await queryFirst<{ id: string }>(
+      db,
+      'SELECT id FROM users WHERE email = ?',
+      'p@dpl.com'
+    );
+    const kid = await queryFirst<{ id: string }>(
+      db,
+      'SELECT id FROM users WHERE email = ?',
+      'k@dpl.com'
+    );
+    const link = await app.request(`/api/v1/users/${parent?.id}/parent-links`, {
+      method: 'POST',
+      headers: HJ(tokA),
+      body: JSON.stringify({ student_id: kid?.id, organization_id: org }),
+    });
+    expect(link.status).toBe(201);
+    const seen = await app.request(
+      `/api/v1/users/${parent?.id}/linked-students?organization_id=${org}`,
+      { headers: authHeader(tokP) }
+    );
+    expect(seen.status).toBe(200);
+    expect(((await seen.json()) as { data: { id: string }[] }).data.map((x) => x.id)).toContain(
+      kid?.id
+    );
+    // Neither the linked parent nor a teacher may revoke.
+    expect(
+      (
+        await app.request(`/api/v1/users/${parent?.id}/parent-links/${kid?.id}`, {
+          method: 'DELETE',
+          headers: authHeader(tokP),
+        })
+      ).status
+    ).toBe(403);
+    expect(
+      (
+        await app.request(`/api/v1/users/${parent?.id}/parent-links/${kid?.id}`, {
+          method: 'DELETE',
+          headers: authHeader(tokT),
+        })
+      ).status
+    ).toBe(403);
+    expect(
+      (
+        await app.request(`/api/v1/users/${parent?.id}/parent-links/${kid?.id}`, {
+          method: 'DELETE',
+          headers: authHeader(tokA),
+        })
+      ).status
+    ).toBe(200);
+    const gone = await app.request(
+      `/api/v1/users/${parent?.id}/linked-students?organization_id=${org}`,
+      { headers: authHeader(tokP) }
+    );
+    expect(((await gone.json()) as { data: unknown[] }).data.length).toBe(0);
+    expect(
+      (
+        await app.request(`/api/v1/users/${parent?.id}/parent-links/${kid?.id}`, {
+          method: 'DELETE',
+          headers: authHeader(tokA),
+        })
+      ).status
+    ).toBe(404);
+  });
 });

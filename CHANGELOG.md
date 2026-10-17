@@ -2,6 +2,49 @@
 
 ## Unreleased — finalization audit fixes (HEAD d73c6b9 + tree)
 
+### Round 5 (2026-10-18; regression tests: `test/roster-defaults.test.ts`,
+
+`e2e/portal-admin-assess.spec.ts`, `e2e/teacher-more.spec.ts`,
+`e2e/portal-family.spec.ts`, `e2e/portal-admin-ops.spec.ts`)
+
+- New audited teardown endpoint `DELETE /users/:id/parent-links/:studentId`
+  (org/organization_admin only; linked parent and teachers get 403; honest
+  404 on repeat) — closes the parent revoked-link gap end to end.
+- Three real product bugs found by the new browser specs and fixed:
+  1. New quiz questions all defaulted to `position: 0` (colliding slots);
+     creates now append at MAX(position)+1 when the caller omits it
+     (explicit positions still honored).
+  2. Admin gradebook list defaulted to the viewer's own grades, so an admin
+     saw an empty roster after recording a grade; unfiltered
+     `GET /grades?course_id=` now returns the roster for teaching/admin
+     actors (student/parent self-or-linked semantics unchanged).
+  3. Same self-default in `GET /certificates`: org-filtered roster for
+     teaching/admin actors; students/parents unchanged.
+- One real auth bug: admin multipart uploads (files, SCORM, imports) read
+  only the `lms-token-fallback` localStorage key, which is empty in normal
+  sessions → every upload 401'd. All three pages now use the memory-first
+  `getAccessToken()` (exported via admin lib).
+- One real runtime bug: SCORM upload was 100% broken outside vitest —
+  `await import('jszip')` exposes `loadAsync` on `.default` under tsx-style
+  loaders (vitest flattens it onto the namespace), so every real upload
+  failed as "Unrecognized ZIP archive" while unit tests stayed green.
+  `loadZip` is now interop-tolerant; proven by a real hand-built 1.2 package
+  import through the browser (plus honest rejection of a non-zip).
+- 13 new real-browser specs: admin quizzes/assignments/gradebook/certs,
+  teacher students/live/exercises, student grades+certs, parent
+  link→revoke→empty-state, admin announcements/files/global-settings/audit,
+  SCORM import.
+
+Evidence (round 5, re-verified end-to-end):
+
+- 168/168 API tests green (164 + 1 parent-link revoke + 3 roster/append
+  pins), Playwright 42/42 chromium (29 + 13 new, zero flakes this run),
+  typecheck/lint/format:check/contract (181 refs)/static-audit/audit green,
+  build green, `npm audit --omit=dev` 0 vulns
+- Source-derived inventory: 268 endpoints (266 invoked), 151 e2e-invoked,
+  8,328 call-sites, 108 tables; sole zero-invocation endpoint remains the
+  pre-existing `GET /reports/completion` (documented matcher blind spot)
+
 ### Round 4 (2026-10-18; regression tests: `test/resource-deletes.test.ts`,
 
 `e2e/portal-admin-tabs.spec.ts`, `e2e/teacher-workflows.spec.ts`,

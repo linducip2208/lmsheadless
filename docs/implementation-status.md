@@ -1,5 +1,15 @@
 # Implementation status (October 2026)
 
+## Round 5 audit additions (in-repo, 2026-10-18)
+
+- Parent-link revoke endpoint (audited, admin-only) + family E2E loop.
+- Three roster/append product fixes (question MAX+1, grades roster,
+  certificates roster) with API regression pins.
+- Multipart upload auth fix (memory-first token on 3 admin pages).
+- SCORM jszip interop fix (uploads worked only under vitest before).
+- 13 new real-browser specs (assess/teacher-more/family/admin-ops).
+- Evidence: 168 API tests, 42/42 E2E, toolchain green, scorecard 94/100.
+
 ## Round 4 audit additions (in-repo, 2026-10-18)
 
 - Resource lifecycle teardown: audited `DELETE /cohorts/:id`,

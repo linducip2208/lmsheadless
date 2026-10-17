@@ -7,6 +7,25 @@ decide buttons, AI quota-reset endpoint + scheduler procedure, instructor
 assignment API + UI wiring path, blocking native dialogs, teacher i18n
 worst-offenders, router navigation races, `javascript:` URL storage.
 
+Closed 2026-10-18 (round 5; `test/roster-defaults.test.ts` 3/3,
+`test/resource-deletes.test.ts` 6/6, `e2e/portal-admin-assess.spec.ts`
+4/4, `e2e/teacher-more.spec.ts` 3/3, `e2e/portal-family.spec.ts` 2/2,
+`e2e/portal-admin-ops.spec.ts` 4/4, Playwright 42/42 total):
+
+- Parent-link revoke (new): audited `DELETE
+/users/:id/parent-links/:studentId` (admin-only; parent/teacher 403;
+  404 on repeat) + family E2E (link → visible → revoke → empty state).
+- Question position collision (real bug): creates omitted-position now
+  append at MAX+1 (explicit positions honored).
+- Grades/certificates self-default rosters (real UX bugs): unfiltered
+  reads return the roster for teaching/admin actors; student/parent
+  semantics unchanged (API-pinned).
+- Admin multipart upload 401s (real auth bug): files/SCORM/imports pages
+  use the memory-first token.
+- SCORM jszip interop (real runtime bug): uploads failed everywhere
+  except under vitest; loader now interop-tolerant, proven by a real 1.2
+  package import through the browser.
+
 Closed 2026-10-18 (round 4; `test/resource-deletes.test.ts` 5/5,
 `e2e/portal-admin-tabs.spec.ts` 3/3, `e2e/teacher-workflows.spec.ts` 3/3,
 `e2e/student-workflows.spec.ts` 2/2, Playwright 29/29 total):
@@ -76,12 +95,14 @@ Closed 2026-10-11 (HEAD d73c6b9 + tree, `test/release-fixes.test.ts` green):
 
 ## Still open (with reason + next action)
 
-1. Per-route browser CRUD for the remaining admin tabs
-   (quizzes/assignments/attendance-create/live/scorm/data/grades/reports/
-   community/files/certificates) and teacher/student/parent actions listed
-   in browser-workflows.md — API-covered (164 tests); needs further
-   Playwright expansion (top E2E backlog). Round 4 closed cohorts/programs/
-   settings-org, banks/grading/attendance, discussion/shop-buy (8 specs).
+1. Per-route browser CRUD for the residue: admin live tab and data/imports
+   UI, teacher cohorts and AI-draft views, student
+   live/programs/tutor/SCORM-player views (see browser-workflows.md) —
+   API-covered (168 tests); needs final Playwright expansion. Rounds 4–5
+   closed cohorts/programs/settings-org/global/audit, banks/grading/
+   attendance, discussion/shop-buy, quizzes/assignments/gradebook/certs,
+   community/files/SCORM, teacher students/live/exercises, student grades,
+   parent revoke (21 specs).
 2. Live-provider credentials (Midtrans-live, SMTP, VAPID-send, OpenAI key,
    Zoom/Meet OAuth, R2/KV bindings, sandbox) — owner-supplied; adapters +
    mock tests ship. The cron's production execution needs a real

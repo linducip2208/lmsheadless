@@ -1,14 +1,14 @@
 {
   "summary": {
-    "generated_at": "2026-10-17T19:40:11.410Z",
+    "generated_at": "2026-10-17T20:19:27.886Z",
     "commit": "ac79226",
     "method": "route registrations parsed from source; auth read from handler; coverage = invocation-confirmed request call-sites (app.request/page.request/fetch) per file, static-prefix matched; assertion depth spot-audited per module (see feature-inventory.md)",
     "counts": {
-      "endpoints": 267,
+      "endpoints": 268,
       "public_endpoints": 16,
-      "invoked_by_tests": 265,
-      "invoked_by_e2e": 132,
-      "total_callsites": 7325,
+      "invoked_by_tests": 266,
+      "invoked_by_e2e": 151,
+      "total_callsites": 8328,
       "frontend_hashes": 57,
       "tables": 108,
       "migrations": 24
@@ -45,13 +45,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -70,13 +72,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -95,13 +99,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -120,13 +126,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -145,13 +153,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -170,13 +180,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -283,10 +295,11 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 30,
+      "callsites": 35,
       "status": "VERIFIED_PASS"
     },
     {
@@ -305,10 +318,11 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 30,
+      "callsites": 35,
       "status": "VERIFIED_PASS"
     },
     {
@@ -327,10 +341,11 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 30,
+      "callsites": 35,
       "status": "VERIFIED_PASS"
     },
     {
@@ -349,10 +364,11 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 30,
+      "callsites": 35,
       "status": "VERIFIED_PASS"
     },
     {
@@ -371,10 +387,11 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 30,
+      "callsites": 35,
       "status": "VERIFIED_PASS"
     },
     {
@@ -393,10 +410,11 @@
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 30,
+      "callsites": 35,
       "status": "VERIFIED_PASS"
     },
     {
@@ -425,13 +443,16 @@
       "auth": "requireAuth",
       "invoked_by_tests": [
         "api.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 11,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -442,13 +463,16 @@
       "auth": "requireAuth",
       "invoked_by_tests": [
         "api.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 11,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -493,13 +517,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -551,14 +577,17 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 19,
+      "callsites": 26,
       "status": "VERIFIED_PASS"
     },
     {
@@ -577,14 +606,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 27,
       "status": "VERIFIED_PASS"
     },
     {
@@ -815,14 +848,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -855,14 +892,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -895,14 +936,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -935,14 +980,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -994,14 +1043,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1034,14 +1087,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1074,14 +1131,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1152,14 +1213,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1192,14 +1257,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1232,14 +1301,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1272,14 +1345,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1312,14 +1389,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1352,14 +1433,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1405,14 +1490,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1585,13 +1674,15 @@
         "quiz-copy-purge.test.ts",
         "release-fixes.test.ts",
         "release17.test.ts",
-        "release2-fixes.test.ts"
+        "release2-fixes.test.ts",
+        "roster-defaults.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts"
       ],
-      "callsites": 67,
+      "callsites": 76,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2369,14 +2460,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2409,14 +2504,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2449,14 +2548,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2489,14 +2592,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2529,14 +2636,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2569,14 +2680,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2609,14 +2724,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2649,14 +2768,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2689,14 +2812,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2729,14 +2856,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2806,12 +2937,14 @@
         "release17.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 45,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2844,14 +2977,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2884,14 +3021,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2969,14 +3110,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3055,14 +3200,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 135,
+      "callsites": 152,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3209,8 +3358,10 @@
       "invoked_by_tests": [
         "growth.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 4,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 5,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3222,8 +3373,10 @@
       "invoked_by_tests": [
         "growth.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 4,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 5,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3235,8 +3388,10 @@
       "invoked_by_tests": [
         "growth.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 4,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 5,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3248,8 +3403,10 @@
       "invoked_by_tests": [
         "growth.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 4,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 5,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3623,8 +3780,10 @@
         "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 17,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 19,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3639,8 +3798,10 @@
         "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 17,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 19,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3655,8 +3816,10 @@
         "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 17,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 19,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3671,8 +3834,10 @@
         "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 17,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 19,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3687,8 +3852,10 @@
         "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 17,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 19,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3703,8 +3870,10 @@
         "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 17,
+      "invoked_by_e2e": [
+        "teacher-more.spec.ts"
+      ],
+      "callsites": 19,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3802,9 +3971,10 @@
         "journey.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 4,
+      "callsites": 5,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3819,12 +3989,15 @@
         "extended.test.ts",
         "journey.test.ts",
         "lifecycle-fixes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 26,
+      "callsites": 32,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3835,12 +4008,14 @@
       "auth": "requireAuth",
       "invoked_by_tests": [
         "extended.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-family.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 4,
+      "callsites": 6,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3868,12 +4043,15 @@
         "extended.test.ts",
         "journey.test.ts",
         "lifecycle-fixes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 26,
+      "callsites": 32,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3888,12 +4066,15 @@
         "extended.test.ts",
         "journey.test.ts",
         "lifecycle-fixes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts"
       ],
       "invoked_by_e2e": [
+        "portal-admin-assess.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts"
       ],
-      "callsites": 26,
+      "callsites": 32,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3907,8 +4088,10 @@
         "extended.test.ts",
         "platform.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 3,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 4,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3922,8 +4105,10 @@
         "extended.test.ts",
         "platform.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 3,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 4,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4171,14 +4356,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4198,14 +4387,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4225,14 +4418,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4252,14 +4449,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4279,14 +4480,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4306,14 +4511,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4333,14 +4542,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4360,14 +4573,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4387,14 +4604,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4414,14 +4635,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4441,14 +4666,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4481,14 +4710,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4508,14 +4741,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4582,8 +4819,10 @@
         "governance.test.ts",
         "platform.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 6,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 8,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4596,8 +4835,10 @@
         "governance.test.ts",
         "platform.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 6,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 8,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4617,14 +4858,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4644,14 +4889,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4671,14 +4920,18 @@
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-ops.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 54,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4761,8 +5014,10 @@
         "platform.test.ts",
         "release2-fixes.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 11,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 12,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4776,8 +5031,10 @@
         "platform.test.ts",
         "release2-fixes.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 11,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 12,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4910,8 +5167,10 @@
       "invoked_by_tests": [
         "growth.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 1,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 2,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4962,8 +5221,10 @@
       "invoked_by_tests": [
         "growth.test.ts"
       ],
-      "invoked_by_e2e": [],
-      "callsites": 1,
+      "invoked_by_e2e": [
+        "portal-admin-ops.spec.ts"
+      ],
+      "callsites": 2,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4977,19 +5238,24 @@
         "extended.test.ts",
         "governance.test.ts",
         "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 33,
+      "callsites": 51,
       "status": "VERIFIED_PASS"
     },
     {
@@ -5003,19 +5269,24 @@
         "extended.test.ts",
         "governance.test.ts",
         "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 33,
+      "callsites": 51,
       "status": "VERIFIED_PASS"
     },
     {
@@ -5029,19 +5300,24 @@
         "extended.test.ts",
         "governance.test.ts",
         "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 33,
+      "callsites": 51,
       "status": "VERIFIED_PASS"
     },
     {
@@ -5055,19 +5331,24 @@
         "extended.test.ts",
         "governance.test.ts",
         "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 33,
+      "callsites": 51,
       "status": "VERIFIED_PASS"
     },
     {
@@ -5081,19 +5362,24 @@
         "extended.test.ts",
         "governance.test.ts",
         "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 33,
+      "callsites": 51,
       "status": "VERIFIED_PASS"
     },
     {
@@ -5107,19 +5393,24 @@
         "extended.test.ts",
         "governance.test.ts",
         "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 33,
+      "callsites": 51,
       "status": "VERIFIED_PASS"
     },
     {
@@ -5133,23 +5424,59 @@
         "extended.test.ts",
         "governance.test.ts",
         "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
         "security-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [
         "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
         "portal-admin-tabs.spec.ts",
         "portal-crud.spec.ts",
+        "portal-family.spec.ts",
         "roles.spec.ts",
         "student-multiselect.spec.ts",
         "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
         "teacher-workflows.spec.ts"
       ],
-      "callsites": 33,
+      "callsites": 51,
       "status": "VERIFIED_PASS"
     },
     {
       "id": "BE-264",
+      "method": "DELETE",
+      "path": "/api/v1/users/:id/parent-links/:studentId",
+      "module": "users",
+      "auth": "requireAuth",
+      "invoked_by_tests": [
+        "api.test.ts",
+        "extended.test.ts",
+        "governance.test.ts",
+        "platform.test.ts",
+        "resource-deletes.test.ts",
+        "roster-defaults.test.ts",
+        "security-fixes.test.ts",
+        "security.test.ts"
+      ],
+      "invoked_by_e2e": [
+        "admin-payment-confirm.spec.ts",
+        "portal-admin-assess.spec.ts",
+        "portal-admin-tabs.spec.ts",
+        "portal-crud.spec.ts",
+        "portal-family.spec.ts",
+        "roles.spec.ts",
+        "student-multiselect.spec.ts",
+        "student-workflows.spec.ts",
+        "teacher-more.spec.ts",
+        "teacher-workflows.spec.ts"
+      ],
+      "callsites": 51,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "id": "BE-265",
       "method": "POST",
       "path": "/api/v1/xapi/statements",
       "module": "xapi",
@@ -5163,7 +5490,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-265",
+      "id": "BE-266",
       "method": "GET",
       "path": "/api/v1/xapi/statements",
       "module": "xapi",
@@ -5177,7 +5504,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-266",
+      "id": "BE-267",
       "method": "DELETE",
       "path": "/api/v1/xapi/statements",
       "module": "xapi",
@@ -5191,7 +5518,7 @@
       "status": "VERIFIED_PASS"
     },
     {
-      "id": "BE-267",
+      "id": "BE-268",
       "method": "GET",
       "path": "/api/v1/xapi/export",
       "module": "xapi",

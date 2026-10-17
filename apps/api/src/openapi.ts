@@ -31,6 +31,7 @@ export function openApiDocument() {
     ['/auth/password/change', 'post', 'Change password', ['auth']],
     ['/users', 'get', 'List users', ['users']],
     ['/users', 'post', 'Create user', ['users']],
+    ['/users/{id}/parent-links/{studentId}', 'delete', 'Revoke parent link', ['users']],
     ['/users/me/permissions', 'get', 'My permissions for an organization', ['users']],
     ['/organizations', 'get', 'List organizations', ['organizations']],
     ['/organizations', 'post', 'Create organization', ['organizations']],

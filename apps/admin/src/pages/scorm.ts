@@ -1,4 +1,13 @@
-import { call, loadingHtml, errorHtml, toast, currentOrgId, t, esc } from '../lib.js';
+import {
+  call,
+  loadingHtml,
+  errorHtml,
+  toast,
+  currentOrgId,
+  getAccessToken,
+  t,
+  esc,
+} from '../lib.js';
 
 export async function renderScorm(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -48,7 +57,7 @@ export async function renderScorm(el: HTMLElement): Promise<void> {
     const course = (el.querySelector('#sc-course') as HTMLInputElement).value.trim();
     if (course) form.append('course_id', course);
     try {
-      const token = localStorage.getItem('lms-token-fallback');
+      const token = getAccessToken();
       const res = await fetch('/api/v1/scorm/upload', {
         method: 'POST',
         headers: token ? { authorization: `Bearer ${token}` } : {},

@@ -28,6 +28,9 @@ away, courses deleted via API when deletable).
 | `npm run test:e2e` (post-round-4)               | 29/29 PASS (27 + 2 flaky-once: portal-crud teacher section, student-multiselect; both pass on retry + standalone 5/5 green — cold-load class, untouched routes)                        |
 | `npm run contract` (post-round-4)               | PASS, 181 refs, exit 0 (all new UI delete calls resolve; thread-delete has no student-UI button by design)                                                                             |
 | `node scripts/gen-inventory.mjs` (post-round-4) | 267 endpoints, 265 invoked, 132 e2e, 7,325 call-sites, 108 tables; sole zero-invocation endpoint is the pre-existing `GET /reports/completion`                                         |
+| `npm test` (post-round-5)                       | 168/168 PASS, 30 files, exit 0 (164 + 1 parent-link revoke + 3 roster/append pins)                                                                                                     |
+| `npm run test:e2e` (post-round-5)               | 42/42 PASS, zero flakes (29 + 13 new across 4 spec files)                                                                                                                              |
+| `node scripts/gen-inventory.mjs` (post-round-5) | 268 endpoints, 266 invoked, 151 e2e, 8,328 call-sites, 108 tables; sole zero-invocation endpoint still the pre-existing `GET /reports/completion`                                      |
 
 ## Round-3 code changes (committed `5ca54fb`)
 
@@ -64,6 +67,18 @@ away, courses deleted via API when deletable).
    super_admin login; test now also ROLLS the 403 into its assertions.
 4. Prettier/helpful formatting applied to all new files;
    `format:check` green at the end.
+5. Round 5: admin branding re-render race (two concurrent branding GETs,
+   stale painted last) → generation guard + PUT-sync + reload proof.
+6. Round 5: quiz `position ?? 0` collision, grades/certs self-default
+   rosters, multipart upload 401s (localStorage-only token), SCORM jszip
+   namespace interop under tsx (green under vitest, broken everywhere
+   else) — each proven via trace/API/curl, then fixed with regression
+   pins. Hand-built stored-zip needed two spec-side fixes (central-dir
+   offsets) before jszip accepted it — test-fixture bugs, not product.
+7. Round 5: `format:check` flagged the whole tree (CRLF working files vs
+   LF-prettier, via Laragon git `autocrlf=true`); normalized with the
+   repo's own `npm run format` — verified content-identical file by file,
+   commit carries only the 10 real content files + new specs.
 
 ## Not re-tested live
 

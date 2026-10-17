@@ -1,12 +1,13 @@
-# Browser workflows (Playwright chromium, 29/29 this session 2026-10-18, round 4)
+# Browser workflows (Playwright chromium, 42/42 this session 2026-10-18, round 5)
 
-Full-suite run 29/29: 21 prior specs + 8 new round-4 specs
-(`e2e/portal-admin-tabs.spec.ts` 3/3, `e2e/teacher-workflows.spec.ts` 3/3,
-`e2e/student-workflows.spec.ts` 2/2). Two pre-existing specs
-(portal-crud teacher section, student-multiselect) flaked once under
-full-suite load and passed on retry; both pass standalone (5/5) —
-documented cold-load flake class, not a regression from round-4 changes
-(untouched routes).
+Full-suite run 42/42 with zero flakes: 29 prior specs + 13 new round-5
+specs (`e2e/portal-admin-assess.spec.ts` 4/4, `e2e/teacher-more.spec.ts`
+3/3, `e2e/portal-family.spec.ts` 2/2, `e2e/portal-admin-ops.spec.ts`
+4/4). The new specs found four real product bugs (question position
+collision, grades/certs self-default rosters, multipart upload 401s,
+SCORM jszip interop) — all fixed with API regression pins, all green on
+re-run. Prior cold-load flake class (round 4: portal-crud teacher,
+student-multiselect, retry-green) did not recur in this run.
 
 Config: `apps/web/playwright.config.ts` — API + 5 portal dev servers,
 `workers: 1` (shared SQLite + cold vite transforms flake under parallel
@@ -99,13 +100,52 @@ enrollment (paid gate honest until admin confirm). Buyer + course
 fixtures cleaned (user delete cascades orders/payments). Zero page
 errors / 5xx.
 
-## Not browser-covered (disclosed, narrowed by round 4)
+## Admin assessment tabs (`e2e/portal-admin-assess.spec.ts`, 4/4 — round 5)
 
-Round 4 closed the cohorts/programs/settings-org, banks/grading/
-attendance, discussion/shop-buy gaps. Still API-verified only: admin
-quizzes/assignments/attendance-create/live/scorm/data/grades/reports/
-community/files/certificates tabs and global/audit settings tabs;
-teacher live/cohorts/AI/exercises/students-detail; student
-grades/live/programs/tutor/scorm; parent revoked-link UI. All are covered
-at API-integration level (7,325 call-sites, 132 e2e-invoked endpoints);
-the remaining per-route expansion is still the top E2E backlog item.
+Quizzes: create quiz via modal → two true_false questions (two-step
+modal) → edit prompt → reorder down (positions swap server-verified) →
+in-app confirm delete → one remains → performance card renders honest
+zeros. Assignments: create → student submits via API → review table →
+two-criterion rubric modal → grade with rubric JSON → `graded`/80
+server-verified. Gradebook: record via modal → unfiltered list shows the
+row (roster-default fix) → student filter → feedback persists.
+Certificates: issue form → verify form shows Valid → in-app confirm
+revoke → REVOKED → public verify `valid:false`. Zero page errors / 5xx.
+
+## Teacher second wave (`e2e/teacher-more.spec.ts`, 3/3 — round 5)
+
+Students roster shows the enrollee; progress detail expands (server
+progress backing it). Live: Jitsi session scheduled via modal (no
+external creds), listed with join link, `scheduled` server-side, cleaned
+via cancel state machine. Exercises: static-mode create via form (form
+resets on success), `execution_mode: static` server-verified. Zero page
+errors / 5xx.
+
+## Family loop (`e2e/portal-family.spec.ts`, 2/2 — round 5)
+
+Student `#/grades` renders the teacher-posted grade (category + score)
+and the issued certificate number. Parent: fresh linked child visible
+with detail; after admin revoke through the new endpoint, reload shows
+the honest empty state. Zero page errors / 5xx.
+
+## Admin ops tabs (`e2e/portal-admin-ops.spec.ts`, 4/4 — round 5)
+
+Community: course-scoped announcement via modal, listed + org-served
+(no delete endpoint ships — published notices are history; fixture row
+documented). Files: real file-input upload (exercising the token fix),
+listed with working download href, size verified. Global settings as
+super_admin: footer merge with PUT-sync + reload persistence + restore;
+audit tab renders real rows. SCORM: non-zip rejected with a clear
+package error; a hand-built valid 1.2 package (stored-zip builder,
+CRC-correct) imports and lists with `version: 1.2` — proving the jszip
+interop fix. Zero page errors / 5xx.
+
+## Not browser-covered (disclosed, narrowed by round 5)
+
+Round 5 closed quizzes/assignments/gradebook/certificates, community,
+files, global-settings/audit, SCORM import, teacher
+students/live/exercises, student grades, and parent revoke. Still
+API-verified only: admin live tab and data/imports UI, teacher cohorts
+and AI-draft views, student live/programs/tutor/SCORM-player views. All
+are covered at API-integration level (8,328 call-sites, 151 e2e-invoked
+endpoints); the residue is the remaining E2E backlog.

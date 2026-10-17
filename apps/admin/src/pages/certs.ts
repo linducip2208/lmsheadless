@@ -5,6 +5,7 @@ import {
   toast,
   confirmDialog,
   currentOrgId,
+  getAccessToken,
   t,
   esc,
 } from '../lib.js';
@@ -173,8 +174,9 @@ export async function renderFilesPage(el: HTMLElement): Promise<void> {
     form.append('file', input.files[0]);
     if (orgId) form.append('organization_id', orgId);
     try {
-      // Multipart: bypass JSON client.
-      const token = localStorage.getItem('lms-token-fallback');
+      // Multipart: bypass JSON client, but reuse its memory-first token
+      // (localStorage fallback alone is empty in normal sessions → 401).
+      const token = getAccessToken();
       const res = await fetch('/api/v1/uploads', {
         method: 'POST',
         headers: token ? { authorization: `Bearer ${token}` } : {},

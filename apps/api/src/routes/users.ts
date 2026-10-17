@@ -265,4 +265,28 @@ users.get('/:id/linked-students', requireAuth(), async (c) => {
   return ok(c, rows);
 });
 
+users.delete('/:id/parent-links/:studentId', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const link = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+    c.req.param('id'),
+    c.req.param('studentId')
+  );
+  if (!link) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  // Revoking a family link changes whose data a parent can see: only org
+  // admins (or super_admins) may do it, same bar as creating the link.
+  const role = orgRole(user, link.organization_id);
+  if (role !== 'super_admin' && role !== 'organization_admin')
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  await execute(
+    db,
+    'DELETE FROM parent_links WHERE parent_id = ? AND student_id = ?',
+    c.req.param('id'),
+    c.req.param('studentId')
+  );
+  return ok(c, { revoked: true });
+});
+
 export default users;

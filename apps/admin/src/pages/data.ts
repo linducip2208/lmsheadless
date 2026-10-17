@@ -1,4 +1,14 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
+import {
+  call,
+  loadingHtml,
+  errorHtml,
+  toast,
+  modalForm,
+  currentOrgId,
+  getAccessToken,
+  t,
+  esc,
+} from '../lib.js';
 
 export async function renderData(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -79,7 +89,7 @@ async function renderImports(el: HTMLElement, orgId: string): Promise<void> {
     const out = el.querySelector('#im-out') as HTMLElement;
     out.innerHTML = loadingHtml();
     try {
-      const token = localStorage.getItem('lms-token-fallback');
+      const token = getAccessToken();
       const res = await fetch('/api/v1/imports', {
         method: 'POST',
         headers: token ? { authorization: `Bearer ${token}` } : {},

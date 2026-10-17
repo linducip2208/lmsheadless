@@ -107,11 +107,21 @@ async function loadZip(buf: ArrayBuffer): Promise<{
   fileNames: string[];
 }> {
   const JSZip = (await import('jszip')) as unknown as {
-    loadAsync: (data: ArrayBuffer) => Promise<{
+    loadAsync?: (data: ArrayBuffer) => Promise<{
       files: Record<string, { dir: boolean; async: (kind: 'uint8array') => Promise<Uint8Array> }>;
     }>;
+    default?: {
+      loadAsync: (data: ArrayBuffer) => Promise<{
+        files: Record<string, { dir: boolean; async: (kind: 'uint8array') => Promise<Uint8Array> }>;
+      }>;
+    };
   };
-  const zip = await JSZip.loadAsync(buf);
+  // CJS/ESM interop differs per runtime: vitest exposes named statics on the
+  // namespace, tsx/workerd-style loaders put them on `.default`. Without
+  // this, loadAsync is undefined and EVERY upload fails as "Unrecognized".
+  const loadAsync = JSZip.loadAsync ?? JSZip.default?.loadAsync;
+  if (!loadAsync) throw new Error('zip engine unavailable');
+  const zip = await loadAsync(buf);
   const names = Object.keys(zip.files).filter((n) => !zip.files[n].dir);
   return {
     fileNames: names,

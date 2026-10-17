@@ -193,8 +193,26 @@ ops.get('/api/v1/certificates/verify/:number', async (c) => {
 ops.get('/api/v1/certificates', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const url = new URL(c.req.url);
-  const studentId = url.searchParams.get('student_id') ?? user.id;
+  const studentParam = url.searchParams.get('student_id');
+  const studentId = studentParam ?? user.id;
   const db = c.get('db');
+  // Admin roster view: teaching/admin actors asking without a student filter
+  // (but with an org they belong to) get the org's certificates.
+  // Students/parents keep the self-or-linked default below (privacy unchanged).
+  if (!studentParam) {
+    const orgId = url.searchParams.get('organization_id');
+    if (orgId && canAccessOrg(user, orgId)) {
+      const role = orgRole(user, orgId);
+      if (role && role !== 'student' && role !== 'parent') {
+        const rows = await queryAll(
+          db,
+          'SELECT * FROM certificates WHERE organization_id = ? ORDER BY issued_at DESC, id DESC LIMIT 200',
+          orgId
+        );
+        return ok(c, rows);
+      }
+    }
+  }
   if (studentId !== user.id && !user.isSuperAdmin) {
     // The org context is mandatory: without it a same-org student could
     // omit organization_id and bypass the role check entirely.

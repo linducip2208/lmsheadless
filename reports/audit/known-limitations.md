@@ -5,8 +5,10 @@ forgot/reset UI, admin status editing, payout decide buttons, AI quota-reset
 mechanism + procedure, blocking native dialogs (all replaced), teacher i18n
 worst-offenders.
 
-1. Per-portal browser CRUD (admin/teacher/student/parent SPAs) is covered at
-   API-contract level, not by per-route browser tests.
+1. Per-portal browser CRUD: 21 real-browser specs cover the LMS core flows
+   (rounds 1–5: 42/42 Playwright); residue per-route gaps are API-covered
+   (see remaining-gaps.md §1: admin live + data/imports UI, teacher
+   cohorts + AI views, student live/programs/tutor/SCORM-player).
 2. Live provider verification pending: Midtrans merchant, SMTP/HTTP email
    delivery, web-push send, openai-compatible key, Zoom/Meet OAuth, code
    sandbox (refused by design until configured).
