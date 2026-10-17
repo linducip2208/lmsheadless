@@ -4,7 +4,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { courseOrg, canTeach } from '../access.js';
+import { courseOrg, canTeach, orgStorageExceeded } from '../access.js';
 import { putObject, getObject } from '../storage.js';
 import type { AppVars, AuthUser } from '../types.js';
 import type { D1Like } from '../db.js';
@@ -155,6 +155,8 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
   if (!file.name.toLowerCase().endsWith('.zip'))
     return fail(c, 400, 'INVALID_PACKAGE', 'SCORM package must be a .zip file');
   if (file.size > MAX_TOTAL) return fail(c, 400, 'INVALID_PACKAGE', 'Package exceeds 100MB');
+  if (await orgStorageExceeded(c.get('db'), orgId, file.size))
+    return fail(c, 413, 'QUOTA_EXCEEDED', 'Organization storage quota exceeded');
   if (courseId && (await courseOrg(c.get('db'), courseId)) !== orgId)
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const buf = await file.arrayBuffer();
@@ -223,6 +225,10 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
   }
   const entrySafe = cleanEntryPath(manifest.entry);
   if (!entrySafe) return fail(c, 400, 'INVALID_PACKAGE', 'Manifest entry path is unsafe');
+  // Persist the original archive too: file_key/files rows must resolve to a
+  // real object (re-export, re-download, storage audits).
+  const zipKey = `scorm/${pkgId}/${file.name.replace(/[^\w.\-]+/g, '_').slice(0, 120) || 'package.zip'}`;
+  await putObject(c.get('env'), zipKey, buf, 'application/zip');
   const db: D1Like = c.get('db');
   await execute(
     db,
@@ -234,7 +240,7 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
     manifest.title,
     manifest.version,
     entrySafe,
-    `scorm/${pkgId}/${file.name}`,
+    zipKey,
     JSON.stringify({
       resources: manifest.resourceCount,
       files: stored,
@@ -250,7 +256,7 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
     newId(),
     orgId,
     user.id,
-    `scorm/${pkgId}/${file.name}`,
+    zipKey,
     file.name.slice(0, 255),
     'application/zip',
     file.size,

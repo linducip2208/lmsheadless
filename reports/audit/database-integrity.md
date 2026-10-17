@@ -1,4 +1,4 @@
-# Database integrity (SQLite/D1, migrations 001–022)
+# Database integrity (SQLite/D1, migrations 001–024)
 
 - Ordering deterministic (`readdirSync().sort()`); clean-install tested on
   every suite run (`:memory:` + `runMigrations`); double-boot tested
@@ -18,12 +18,13 @@
 - New this session: `GET/POST/DELETE /courses/:id/instructors` backed by
   `course_instructors(course_id, user_id)` UNIQUE (existing table, 003);
   FK-enforced, member+role validated, audited.
-- Re-verified 2026-10-10 on disposable copy: 001→023 clean, re-run clean,
+- New 024: `questions.attempt_id` + `idx_questions_attempt`
+  (per-attempt pool snapshots), `users.failed_login_count` /
+  `users.locked_until` (login lockout). Additive only; mirrored in
+  `COLUMN_PATCHES` for tolerant local re-runs.
+- Re-verified 2026-10-16 on disposable copy: 001→024 clean, re-run clean,
   `integrity_check ok`, `foreign_key_check` 0 violations, 108 tables,
-  237 indexes. Local `lms.db` backed up before any test.
-- New 023: `idx_comm_order_payee` UNIQUE `(order_id, instructor_id)` makes
-  commission double-mint structurally impossible; inserts use
-  `ON CONFLICT DO NOTHING`.
+  238 indexes. Local `lms.db` backed up before any test.
 - Money canonical: minor-unit source of truth, dual-write, legacy fallback
   (`pickMinor`); 017 backfill + 022 free-order repair; no REAL-only writes in
   prod routes; subscription-plan ordering moved to `price_minor`.

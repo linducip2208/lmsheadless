@@ -192,7 +192,7 @@ banks.post('/question-banks/:bankId/questions/:qId/copy-to/:quizId', requireAuth
     (
       await queryFirst<{ v: number | null }>(
         db,
-        'SELECT MAX(position) as v FROM questions WHERE quiz_id = ?',
+        'SELECT MAX(position) as v FROM questions WHERE quiz_id = ? AND attempt_id IS NULL',
         c.req.param('quizId')
       )
     )?.v ?? -1;

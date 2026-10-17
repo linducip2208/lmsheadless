@@ -5,9 +5,14 @@
 - Versioned REST API with envelopes, pagination, idempotency, request IDs.
 - Auth: PBKDF2, 15-min JWT, rotating refresh with **reuse detection**
   (reuse of a rotated token revokes the whole session family), session
-  revocation, password reset throttling, audit logging.
+  revocation, password reset throttling, per-account login lockout (5 failures
+  → 15-min 423, resets on success), audit logging.
 - Tenant isolation tested across orgs/users/roles/files/certs/payments.
-- Uploads validated; SCORM zips sandboxed (opaque-origin iframe).
+  Org file browsing/download is role-scoped (teaching/admin roles see all;
+  students/parents see only their own uploads; owners always).
+- Uploads validated; org storage quota enforced when
+  `organizations.settings.storage_quota_bytes` is set (unset = unlimited);
+  SCORM zips sandboxed (opaque-origin iframe).
 - Webhooks signature-verified + idempotent; money stored and computed in
   integer minor units (`*_minor` columns are the source of truth, half-up
   rounding; legacy REAL columns stay synced for compatibility and pre-017
@@ -24,10 +29,12 @@
 ## Before first production deploy (owner checklist)
 
 1. `JWT_SECRET` (≥32 chars), `COOKIE_SECURE=1`, `ALLOWED_ORIGINS` exact.
-2. D1 migrations applied in order 001→023; verify `PRAGMA foreign_keys`
+2. D1 migrations applied in order 001→024; verify `PRAGMA foreign_keys`
    (the API also asserts it per request; D1 enforces by default).
 3. R2 bucket + KV namespace bound; uncomment wrangler blocks.
-4. Run `POST /setup` once, then confirm `setup/status.locked`.
+4. Run `POST /setup` once, then confirm `setup/status.locked`. Setup is
+   single-winner under concurrency (atomic claim; stale claims recoverable
+   after 5 minutes).
 5. Configure email HTTP webhook (`email_api_url` + `email_api_key` — there is
    no SMTP driver), VAPID/payment provider keys to activate those paths
    (features report “not configured” until then — by design).

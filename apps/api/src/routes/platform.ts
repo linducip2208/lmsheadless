@@ -4,6 +4,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { hashPassword, randomToken } from '../crypto.js';
 import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
+import { canTeach, isPrivileged } from '../access.js';
 import { PERMISSIONS, ROLE_PERMISSIONS } from '../permissions.js';
 import type { D1Like } from '../db.js';
 import { audit } from '../auditlog.js';
@@ -100,11 +101,8 @@ platform.get('/api/v1/setup/status', async (c) => {
 
 platform.post('/api/v1/setup', async (c) => {
   const db = c.get('db');
-  const done = await queryFirst<{ value: string }>(
-    db,
-    "SELECT value FROM settings WHERE key = 'setup_completed'"
-  );
-  if (done?.value === 'true') return fail(c, 403, 'SETUP_LOCKED', 'Setup is already completed');
+  const now = nowIso();
+  // Validate BEFORE claiming: rejected input must never hold the setup lock.
   const body = (await c.req.json().catch(() => null)) as {
     app_name?: string;
     org_name?: string;
@@ -120,6 +118,7 @@ platform.post('/api/v1/setup', async (c) => {
     !body?.admin_email ||
     !body?.admin_password ||
     body.admin_password.length < 8 ||
+    body.admin_password.length > 128 ||
     !body?.admin_name
   ) {
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
@@ -129,7 +128,39 @@ platform.post('/api/v1/setup', async (c) => {
     return fail(c, 400, 'VALIDATION_ERROR', 'Invalid email');
   const existing = await queryFirst(db, 'SELECT id FROM users WHERE email = ?', email);
   if (existing) return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
-  const now = nowIso();
+  // Atomic claim against concurrent fresh-DB setups: a single statement wins;
+  // losers observe the winner's marker instead of double-provisioning.
+  const claimed = await execute(
+    db,
+    "INSERT INTO settings (key, value, updated_at) VALUES ('setup_completed', 'in_progress', ?) ON CONFLICT(key) DO NOTHING",
+    now
+  );
+  if (!claimed.changes) {
+    const cur = await queryFirst<{ value: string }>(
+      db,
+      "SELECT value FROM settings WHERE key = 'setup_completed'"
+    );
+    if (cur?.value === 'true') return fail(c, 403, 'SETUP_LOCKED', 'Setup is already completed');
+    if (cur?.value === 'in_progress') {
+      const started = await queryFirst<{ updated_at: string }>(
+        db,
+        "SELECT updated_at FROM settings WHERE key = 'setup_completed'"
+      );
+      const ageMs = Date.now() - new Date(started?.updated_at ?? 0).getTime();
+      // A crashed setup releases the claim after 5 minutes (stale-steal is
+      // itself atomic: only one stealer's UPDATE matches).
+      if (ageMs < 5 * 60000)
+        return fail(c, 409, 'SETUP_IN_PROGRESS', 'Setup is already in progress');
+      const stolen = await execute(
+        db,
+        "UPDATE settings SET updated_at = ? WHERE key = 'setup_completed' AND value = 'in_progress'",
+        nowIso()
+      );
+      if (!stolen.changes) return fail(c, 409, 'SETUP_IN_PROGRESS', 'Setup is already in progress');
+    } else if (cur) {
+      return fail(c, 403, 'SETUP_LOCKED', 'Setup is already completed');
+    }
+  }
   const orgId = newId();
   const slug =
     (body.org_slug ?? body.org_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')).slice(0, 80) ||
@@ -530,6 +561,17 @@ platform.get('/api/v1/files', requireAuth(), async (c) => {
   if (orgId) {
     if (!canAccessOrg(user, orgId))
       return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+    // Students/parents see only their own uploads; teaching and admin roles
+    // keep the full org listing (course materials, imports, SCORM archives).
+    if (!canTeach(user, orgId) && !isPrivileged(user, orgId) && !user.isSuperAdmin) {
+      const rows = await queryAll(
+        db,
+        'SELECT id, object_key, file_name, mime_type, size_bytes, purpose, created_at FROM files WHERE organization_id = ? AND owner_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
+        orgId,
+        user.id
+      );
+      return ok(c, rows);
+    }
     const rows = await queryAll(
       db,
       'SELECT id, object_key, file_name, mime_type, size_bytes, purpose, created_at FROM files WHERE organization_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
@@ -575,10 +617,14 @@ platform.get('/api/v1/files/:id/download', requireAuth(), async (c) => {
     c.req.param('id')
   );
   if (!row) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  // Owners always; staff scopes to teaching/admin roles in the file's org
+  // (students/parents fetch only their own uploads — course materials reach
+  // learners through lessons, not the file browser).
   const allowed =
     row.owner_id === user.id ||
     user.isSuperAdmin ||
-    (row.organization_id && canAccessOrg(user, row.organization_id));
+    (row.organization_id &&
+      (canTeach(user, row.organization_id) || isPrivileged(user, row.organization_id)));
   if (!allowed) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const obj = await getObject(c.get('env'), row.object_key);
   if (!obj) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));

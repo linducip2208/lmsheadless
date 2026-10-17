@@ -1,4 +1,8 @@
-# Browser workflows (Playwright chromium, 19/19 ×2 consecutive runs)
+# Browser workflows (Playwright chromium, 20/20 this session 2026-10-16, HEAD d73c6b9 + tree)
+
+Single clean run (no flakes): 19 prior specs + new
+`e2e/student-multiselect.spec.ts` (real-click multi-select submit, score 100
+rendered + server re-verified, fixture student cleaned up).
 
 Config: `apps/web/playwright.config.ts` — API + 5 portal dev servers,
 `workers: 1` (shared SQLite + cold vite transforms flake under parallel
@@ -31,11 +35,18 @@ autosave save→reload→submit→cleared.
 Home + ID toggle, live catalog, unknown-cert honesty, docs reachability,
 offline shell, no-private-cache, named controls.
 
+## Student multi-select (`e2e/student-multiselect.spec.ts`, 1/1)
+
+API fixtures (course + pooled multi-select quiz + enrolled student), then real
+UI: login → course → quiz tab → start attempt → check the exact correct
+checkboxes → submit → rendered score 100 → attempts API re-read (score 100,
+`graded`). Zero page errors / 5xx.
+
 ## Not browser-covered (disclosed)
 
 Per-route CRUD of every admin tab (cohorts/quizzes/assignments/attendance/
-live/scorm/commerce/data/grades/reports/settings), teacher banks/grading/
-attendance-save clicks, student quiz submit/discussion/shop-buy clicks,
-parent revoked-link UI. All are covered at API-integration level (5,690
-call-sites, 105 e2e-invoked endpoints); portal-CRUD expansion remains the
-top E2E backlog item.
+live/scorm/commerce incl. the new payment-confirm button/data/grades/reports/
+settings), teacher banks/grading/attendance-save clicks, student
+discussion/shop-buy clicks, parent revoked-link UI. All are covered at
+API-integration level (6,151 call-sites, 105 e2e-invoked endpoints);
+portal-CRUD expansion remains the top E2E backlog item.

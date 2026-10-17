@@ -70,6 +70,10 @@ const COLUMN_PATCHES: [string, string, string][] = [
   ['lessons', 'audio_url', 'TEXT'],
   ['orders', 'affiliate_id', 'TEXT'],
   ['submissions', 'rubric_breakdown', 'TEXT'],
+  // 024 mirrors (D1 applies the file; local re-runs use these guards).
+  ['questions', 'attempt_id', 'TEXT'],
+  ['users', 'failed_login_count', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'locked_until', 'TEXT'],
 ];
 
 async function applyColumnPatches(db: D1Like): Promise<void> {

@@ -355,6 +355,9 @@ export function modalForm(
 }
 
 // ---- Offline / sync queue ----
+// Actions are tagged with the enqueuing user's id so a shared device can
+// never replay one user's queued writes under another user's session.
+// Legacy entries without an owner still flush (backward compatible).
 export interface PendingAction {
   id: string;
   method: string;
@@ -363,6 +366,7 @@ export interface PendingAction {
   idempotencyKey: string;
   createdAt: number;
   attempts: number;
+  owner: string | null;
 }
 
 const QUEUE_KEY = 'lms-pending-queue';
@@ -379,7 +383,12 @@ function saveQueue(q: PendingAction[]): void {
   localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
 }
 
-export function enqueueOffline(method: string, path: string, body: unknown): PendingAction {
+export function enqueueOffline(
+  method: string,
+  path: string,
+  body: unknown,
+  owner: string | null = null
+): PendingAction {
   const q = getQueue();
   const action: PendingAction = {
     id: crypto.randomUUID(),
@@ -389,6 +398,7 @@ export function enqueueOffline(method: string, path: string, body: unknown): Pen
     idempotencyKey: crypto.randomUUID(),
     createdAt: Date.now(),
     attempts: 0,
+    owner,
   };
   q.push(action);
   saveQueue(q);
@@ -396,13 +406,18 @@ export function enqueueOffline(method: string, path: string, body: unknown): Pen
 }
 
 // Flush queue when online. Idempotency-Key prevents duplicate writes.
+// When `owner` is given, only that user's (or ownerless legacy) actions
+// flush; other users' actions stay queued for their own session.
 export async function flushQueue(
-  onResult?: (action: PendingAction, ok: boolean) => void
+  onResult?: (action: PendingAction, ok: boolean) => void,
+  owner?: string | null
 ): Promise<void> {
   if (!navigator.onLine) return;
   const q = getQueue();
-  const remaining: PendingAction[] = [];
-  for (const action of q) {
+  const mine = q.filter((a) => owner === undefined || a.owner == null || a.owner === owner);
+  const others = q.filter((a) => !(owner === undefined || a.owner == null || a.owner === owner));
+  const remaining: PendingAction[] = [...others];
+  for (const action of mine) {
     try {
       await api(action.path, {
         method: action.method,

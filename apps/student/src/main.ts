@@ -78,11 +78,16 @@ function shell(): void {
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
   bindOnlineIndicator();
-  void flushQueue((a, okAction) =>
-    toast(
-      okAction ? 'Pending action synced' : 'Will retry when online',
-      okAction ? 'success' : 'warning'
-    )
+  // Flush only this user's queued actions; another user's entries on a
+  // shared device stay queued for their own session.
+  const me = getMe();
+  void flushQueue(
+    (a, okAction) =>
+      toast(
+        okAction ? 'Pending action synced' : 'Will retry when online',
+        okAction ? 'success' : 'warning'
+      ),
+    me?.id ?? null
   );
   (document.getElementById('install-btn') as HTMLButtonElement).addEventListener('click', () =>
     deferredPrompt?.prompt()
@@ -245,7 +250,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
           const lid = (b as HTMLElement).dataset.done ?? '';
           try {
             if (!navigator.onLine) {
-              enqueueOffline('POST', `/api/v1/lessons/${lid}/complete`, {});
+              enqueueOffline('POST', `/api/v1/lessons/${lid}/complete`, {}, getMe()?.id ?? null);
               toast(d.offlineQueued, 'warning');
               return;
             }
@@ -283,7 +288,8 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
                 prompt: string;
                 options: { id: string; label: string }[];
               }[]
-            >(`/api/v1/quizzes/${qid}/questions`)) as {
+              // Attempt-scoped fetch: pooled draws belong to this attempt.
+            >(`/api/v1/quizzes/${qid}/questions?attempt_id=${encodeURIComponent(att.id)}`)) as {
               id: string;
               type: string;
               prompt: string;
@@ -296,7 +302,8 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
                   q,
                   i
                 ) => `<div class="mb-3"><strong>${i + 1}. ${esc(q.prompt)}</strong> <span class="badge bg-secondary">${esc(q.type.replace(/_/g, ' '))}</span>
-            ${q.type === 'multiple_choice' || q.type === 'single_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${esc(o.label)}</label>`).join('') : ''}
+            ${q.type === 'multiple_choice' ? q.options.map((o) => `<label class="form-check"><input type="checkbox" class="form-check-input" name="q_${q.id}" value="${o.id}">${esc(o.label)}</label>`).join('') : ''}
+            ${q.type === 'single_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${esc(o.label)}</label>`).join('') : ''}
             ${q.type === 'matching' ? q.options.map((o) => `<div class="d-flex gap-2 align-items-center mb-1"><span style="min-width:120px">${esc(o.label)}</span><input class="form-control" name="qm_${q.id}_${o.id}" placeholder="${d.answer}"></div>`).join('') : ''}
             ${q.type === 'ordering' ? `<div class="small text-muted mb-1">${d.orderHelp}</div>` + q.options.map((o) => `<div class="d-flex gap-2 align-items-center mb-1"><input type="number" min="1" max="${q.options.length}" class="form-control w-auto" name="qo_${q.id}_${o.id}" placeholder="#"><span>${esc(o.label)}</span></div>`).join('') : ''}
             ${q.type === 'true_false' ? `<select class="form-select" name="q_${q.id}"><option value="">—</option><option value="true">true</option><option value="false">false</option></select>` : ''}
@@ -312,7 +319,14 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
               const fdata = new FormData(form);
               const out: { question_id: string; payload: string }[] = [];
               for (const q of qs) {
-                if (q.type === 'multiple_choice' || q.type === 'single_choice') {
+                if (q.type === 'multiple_choice') {
+                  const vs = fdata.getAll(`q_${q.id}`).map(String).filter(Boolean);
+                  if (vs.length)
+                    out.push({
+                      question_id: q.id,
+                      payload: JSON.stringify({ option_ids: vs }),
+                    });
+                } else if (q.type === 'single_choice') {
                   const v = fdata.get(`q_${q.id}`);
                   if (v)
                     out.push({
@@ -358,6 +372,14 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
                     `input[name="q_${q.id}"][value="${p.option_id}"]`
                   ) as HTMLInputElement | null;
                   if (input) input.checked = true;
+                }
+                if (Array.isArray(p.option_ids)) {
+                  for (const oid of p.option_ids) {
+                    const input = form.querySelector(
+                      `input[name="q_${q.id}"][value="${String(oid)}"]`
+                    ) as HTMLInputElement | null;
+                    if (input) input.checked = true;
+                  }
                 }
                 if (p.pairs && typeof p.pairs === 'object') {
                   for (const [oid, val] of Object.entries(p.pairs as Record<string, string>)) {
@@ -408,10 +430,17 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
               async (e) => {
                 e.preventDefault();
                 const fd = new FormData(e.target as HTMLFormElement);
-                const answers: { question_id: string; option_id?: string; answer_text?: string }[] =
-                  [];
+                const answers: {
+                  question_id: string;
+                  option_id?: string;
+                  option_ids?: string[];
+                  answer_text?: string;
+                }[] = [];
                 for (const q of qs) {
-                  if (q.type === 'multiple_choice' || q.type === 'single_choice') {
+                  if (q.type === 'multiple_choice') {
+                    const vs = fd.getAll(`q_${q.id}`).map(String).filter(Boolean);
+                    if (vs.length) answers.push({ question_id: q.id, option_ids: vs });
+                  } else if (q.type === 'single_choice') {
                     const v = fd.get(`q_${q.id}`);
                     if (v) answers.push({ question_id: q.id, option_id: String(v) });
                   } else if (q.type === 'matching') {

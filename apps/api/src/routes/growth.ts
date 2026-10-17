@@ -1275,7 +1275,13 @@ growth.post('/invitations/accept', async (c) => {
     name?: string;
     password?: string;
   } | null;
-  if (!body?.token || !body?.name || !body?.password || body.password.length < 8) {
+  if (
+    !body?.token ||
+    !body?.name ||
+    !body?.password ||
+    body.password.length < 8 ||
+    body.password.length > 128
+  ) {
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   }
   const db = c.get('db');

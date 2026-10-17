@@ -320,17 +320,36 @@ describe('question banks', () => {
         }),
       })
     ).json()) as { data: { id: string } };
-    // attempt start snapshots pool (adds 1 more matching question)
+    // attempt start draws per-attempt pool copies (shared set untouched)
     const att = (await (
       await app.request(`/api/v1/quizzes/${q.data.id}/attempts`, {
         method: 'POST',
         headers: authHeader(tokS),
       })
     ).json()) as { data: { id: string } };
-    const qs = (await (
+    const sharedQs = (await (
       await app.request(`/api/v1/quizzes/${q.data.id}/questions`, { headers: authHeader(tokS) })
     ).json()) as { data: { id: string; type: string }[] };
-    expect(qs.data.length).toBeGreaterThanOrEqual(4);
+    expect(sharedQs.data.length).toBe(3);
+    // attempt-scoped read merges shared + this attempt's drawn copy
+    const qs = (await (
+      await app.request(`/api/v1/quizzes/${q.data.id}/questions?attempt_id=${att.data.id}`, {
+        headers: authHeader(tokS),
+      })
+    ).json()) as { data: { id: string; type: string }[] };
+    expect(qs.data.length).toBe(4);
+    // pool template survives attempts (reusable, never deleted)
+    const poolRow = await db
+      .prepare('SELECT id FROM quiz_pools WHERE quiz_id = ?')
+      .bind(q.data.id)
+      .first<{ id: string }>();
+    expect(poolRow?.id).toBeTruthy();
+    const copies = await db
+      .prepare('SELECT id, attempt_id FROM questions WHERE quiz_id = ? AND attempt_id IS NOT NULL')
+      .bind(q.data.id)
+      .all<{ id: string; attempt_id: string }>();
+    expect(copies.results.length).toBe(1);
+    expect(copies.results[0].attempt_id).toBe(att.data.id);
     // autosave + recovery
     const save = await app.request(`/api/v1/quiz-attempts/${att.data.id}/autosave`, {
       method: 'PUT',

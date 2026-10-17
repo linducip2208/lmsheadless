@@ -507,19 +507,21 @@ commerce.get('/orders', requireAuth(), async (c) => {
       Math.max(1, Number(url.searchParams.get('per_page') ?? '20') || 20)
     );
     const mineOnly = role === 'student' || role === 'parent';
-    const where = mineOnly ? 'organization_id = ? AND buyer_id = ?' : 'organization_id = ?';
+    const where = mineOnly ? 'o.organization_id = ? AND o.buyer_id = ?' : 'o.organization_id = ?';
     const params = mineOnly ? [orgId, user.id] : [orgId];
     const total =
       (
         await queryFirst<{ n: number }>(
           db,
-          `SELECT COUNT(*) as n FROM orders WHERE ${where}`,
+          `SELECT COUNT(*) as n FROM orders o WHERE ${where}`,
           ...params
         )
       )?.n ?? 0;
+    // Latest pending payment per order powers the admin manual-confirm button
+    // (server still re-validates privilege + pending status on confirm).
     const rows = await queryAll(
       db,
-      `SELECT * FROM orders WHERE ${where} ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`,
+      `SELECT o.*, (SELECT p.id FROM payments p WHERE p.order_id = o.id AND p.status = 'pending' ORDER BY p.created_at DESC, p.id DESC LIMIT 1) as pending_payment_id FROM orders o WHERE ${where} ORDER BY o.created_at DESC, o.id DESC LIMIT ? OFFSET ?`,
       ...params,
       perPage,
       (page - 1) * perPage

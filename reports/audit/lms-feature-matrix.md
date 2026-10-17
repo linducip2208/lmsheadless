@@ -1,24 +1,24 @@
-# LMS domain inventory (commit 2e8feba + tree; generated 2026-10-10)
+# LMS domain inventory (commit d73c6b9 + tree; regenerated 2026-10-16)
 
 Method: route registrations parsed from `apps/api/src/routes/*.ts` with
 mount prefixes resolved from `app.ts`; coverage = invocation-confirmed
-call-sites (`app.request`/`page.request`, static-prefix matched, 5,690 total).
+call-sites (`app.request`/`page.request`, static-prefix matched, 6,151 total).
 VERIFIED_PASS additionally requires the assertion behavior named per row —
 invocation alone is not a pass. Machine detail: `feature-matrix.json`
-(261 endpoints, 16 public, 57 frontend hashes, 108 tables, 23 migrations).
+(261 endpoints, 16 public, 57 frontend hashes, 108 tables, 24 migrations).
 
 ## Auth, sessions, recovery, roles
 
-| Feature                           | Chain (UI → API → DB → test)                                                | Status                                                                                                   |
-| --------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Register/login/logout/refresh     | web `#/register                                                             | #/login`, portals `#/login`→`POST /auth/*` → users/refresh_tokens → api/governance suites + roles E2E §1 | VERIFIED_PASS |
-| Refresh rotation + reuse kill     | `POST /auth/refresh` → token family revoke                                  | VERIFIED_PASS                                                                                            |
-| Password forgot/reset             | web `#/forgot                                                               | #/reset/:token` (new) → always-200 forgot, single-use reset, reset revokes sessions                      | VERIFIED_PASS |
-| Email verify loop                 | token + throttle + status                                                   | VERIFIED_PASS                                                                                            |
-| Invitations/parent links          | token accept, org-unit scoping                                              | VERIFIED_PASS                                                                                            |
-| Setup lock                        | first-run once, 403 after; concurrent-run race documented                   | PARTIAL                                                                                                  |
-| Roles/permissions catalog + remap | admin `#/roles` modal (no more `prompt()`) → `PUT /roles/:role/permissions` | VERIFIED_PASS                                                                                            |
-| User status edit                  | admin roster edit → `PATCH /users/:id` → `ignored` reported for non-super   | VERIFIED_PASS                                                                                            |
+| Feature                           | Chain (UI → API → DB → test)                                                          | Status                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Register/login/logout/refresh     | web `#/register                                                                       | #/login`, portals `#/login`→`POST /auth/*` → users/refresh_tokens → per-account lockout (5→15-min 423) → api/governance suites + roles E2E §1 | VERIFIED_PASS |
+| Refresh rotation + reuse kill     | `POST /auth/refresh` → token family revoke                                            | VERIFIED_PASS                                                                                                                                 |
+| Password forgot/reset             | web `#/forgot                                                                         | #/reset/:token` (new) → always-200 forgot, single-use reset, reset revokes sessions                                                           | VERIFIED_PASS |
+| Email verify loop                 | token + throttle + status                                                             | VERIFIED_PASS                                                                                                                                 |
+| Invitations/parent links          | token accept, org-unit scoping                                                        | VERIFIED_PASS                                                                                                                                 |
+| Setup lock                        | first-run once, 403 after; atomic single-winner claim, 409 while held, stale recovery | VERIFIED_PASS                                                                                                                                 |
+| Roles/permissions catalog + remap | admin `#/roles` modal (no more `prompt()`) → `PUT /roles/:role/permissions`           | VERIFIED_PASS                                                                                                                                 |
+| User status edit                  | admin roster edit → `PATCH /users/:id` → `ignored` reported for non-super             | VERIFIED_PASS                                                                                                                                 |
 
 ## Organization & academic structure
 
@@ -31,27 +31,28 @@ invocation alone is not a pass. Machine detail: `feature-matrix.json`
 
 ## Courses, content, delivery
 
-| Feature                                                      | Chain                                                                                                   | Status        |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------- |
-| Course builder (sections/lessons/order/tags/prereq/drip)     | admin `#/courses` builder + teacher UI (real buttons, serialized navigation) → courses/authoring routes | VERIFIED_PASS |
-| Draft/publish/approval workflow                              | status gates, approval queue, request endpoint                                                          | VERIFIED_PASS |
-| Enrollment (open/approval/closed, capacity, windows, prereq) | student shop/program + API → enrollments/requests/waitlist                                              | VERIFIED_PASS |
-| Paid gates (enroll/lesson/quiz/assignment)                   | minor-unit reads with legacy fallback                                                                   | VERIFIED_PASS |
-| Lesson completion → progress → auto-cert                     | `POST /lessons/:id/complete` → progress math → certificate                                              | VERIFIED_PASS |
-| SCORM 1.2                                                    | upload/launch/track/resume/isolate; sandboxed iframe                                                    | VERIFIED_PASS |
-| SCORM 2004 sequencing / H5P runtime                          | imported-not-interpreted / absent (docs honest)                                                         | PARTIAL       |
-| Files/uploads/downloads                                      | validated, owner/org-scoped, traversal-guarded                                                          | VERIFIED_PASS |
-| PWA offline queue                                            | lesson-complete queue, per-user flush, no private caching                                               | VERIFIED_PASS |
+| Feature                                                      | Chain                                                                                                                            | Status        |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Course builder (sections/lessons/order/tags/prereq/drip)     | admin `#/courses` builder + teacher UI (real buttons, serialized navigation) → courses/authoring routes                          | VERIFIED_PASS |
+| Draft/publish/approval workflow                              | status gates, approval queue, request endpoint                                                                                   | VERIFIED_PASS |
+| Enrollment (open/approval/closed, capacity, windows, prereq) | student shop/program + API → enrollments/requests/waitlist; archived blocked for students; promote + post-insert capacity guards | VERIFIED_PASS |
+| Paid gates (enroll/lesson/quiz/assignment)                   | minor-unit reads with legacy fallback                                                                                            | VERIFIED_PASS |
+| Lesson completion → progress → auto-cert                     | `POST /lessons/:id/complete` → progress math → certificate                                                                       | VERIFIED_PASS |
+| SCORM 1.2                                                    | upload/launch/track/resume/isolate; sandboxed iframe; original archive persisted (resolvable file_key)                           | VERIFIED_PASS |
+| SCORM 2004 sequencing / H5P runtime                          | imported-not-interpreted / absent (docs honest)                                                                                  | PARTIAL       |
+| Files/uploads/downloads                                      | validated, role-scoped (teaching/admin all, students/parents own-only), org quota enforced when set, traversal-guarded           | VERIFIED_PASS |
+| PWA offline queue                                            | lesson-complete queue, per-user owner-tagged flush, no private caching                                                           | VERIFIED_PASS |
 
 ## Assessment & assignments
 
 | Feature                                       | Chain                                                                                                                                                                  | Status        |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Question banks/pools/difficulty               | teacher `#/banks`, admin quizzes → banks routes                                                                                                                        | VERIFIED_PASS |
-| 7 question types + scoring                    | exact-score fixtures incl. partial/negative floors                                                                                                                     | VERIFIED_PASS |
+| Question banks/pools/difficulty               | teacher `#/banks`, admin quizzes → banks routes; draws snapshotted per attempt (`attempt_id`), template reusable                                                       | VERIFIED_PASS |
+| 7 question types + scoring                    | exact-score fixtures incl. partial/negative floors; multi-select via `option_ids[]` exact-set; whole-quiz denominator (skips score zero) → release-fixes suite         | VERIFIED_PASS |
 | Attempt limits/cooldown/expiry/answer release | server-enforced, resume-single-active                                                                                                                                  | VERIFIED_PASS |
 | Autosave + recovery                           | NEW `PUT/GET /quiz-attempts/:id/autosave` (canonical in assessment; shadow duplicates removed) + student debounced save + restore → quiz-autosave suite + roles E2E §8 | VERIFIED_PASS |
-| Manual grading + rubrics                      | per-answer grading, audit trail                                                                                                                                        | VERIFIED_PASS |
+| Manual grading + rubrics                      | per-answer grading, whole-quiz recompute, audit trail                                                                                                                  | VERIFIED_PASS |
+| Question reads (student/parent parity)        | both unprivileged: label-only options, no `is_correct`; teachers keep keys → release-fixes suite                                                                       | VERIFIED_PASS |
 | Assignments/submissions/feedback/late policy  | teacher review, student resubmit rules                                                                                                                                 | VERIFIED_PASS |
 
 ## Attendance, grades, certs, discussion
@@ -80,7 +81,7 @@ invocation alone is not a pass. Machine detail: `feature-matrix.json`
 | REST `/api/v1` + OpenAPI + envelope + pagination     | 179 frontend refs resolve; new routes registered in openapi                            | VERIFIED_PASS |
 | EN/ID dictionaries                                   | teacher/student/admin passes this session; quiz reorder labeled; remaining gaps listed | PARTIAL       |
 | Keyboard/focus/responsive/loading/empty/error states | tab roles, aria labels, per-view states; router race fixed (serialized navigation)     | VERIFIED_PASS |
-| Install/migrate/seed/setup                           | disposable-DB verified; seed custom-path guard; docs reconciled 001→023                | VERIFIED_PASS |
+| Install/migrate/seed/setup                           | disposable-DB verified; seed custom-path guard; docs reconciled 001→024                | VERIFIED_PASS |
 
 ## External-gated (BLOCKED_EXTERNAL, adapters + mock tests, never live)
 

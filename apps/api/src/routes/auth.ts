@@ -150,12 +150,33 @@ auth.post('/login', async (c) => {
     password_hash: string;
     name: string;
     status: string;
+    failed_login_count: number | null;
+    locked_until: string | null;
   }>(
     db,
-    'SELECT id, email, password_hash, name, status FROM users WHERE email = ? AND deleted_at IS NULL',
+    'SELECT id, email, password_hash, name, status, failed_login_count, locked_until FROM users WHERE email = ? AND deleted_at IS NULL',
     parsed.data.email.toLowerCase()
   );
+  // Per-account brake (complements the IP-bucket rate limit): 5 consecutive
+  // failures lock the account for 15 minutes. Unknown emails still get a
+  // generic 401 so the endpoint is not a fast user oracle.
+  if (row?.locked_until && new Date(row.locked_until).getTime() > Date.now()) {
+    return fail(c, 423, 'ACCOUNT_LOCKED', t('account_locked', c.get('lang')));
+  }
   if (!row || !(await verifyPassword(parsed.data.password, row.password_hash))) {
+    if (row) {
+      const fails = (row.failed_login_count ?? 0) + 1;
+      const lock = fails >= 5 ? new Date(Date.now() + 15 * 60000).toISOString() : null;
+      await execute(
+        db,
+        'UPDATE users SET failed_login_count = ?, locked_until = ?, updated_at = ? WHERE id = ?',
+        fails,
+        lock,
+        nowIso(),
+        row.id
+      );
+      if (lock) return fail(c, 423, 'ACCOUNT_LOCKED', t('account_locked', c.get('lang')));
+    }
     return fail(c, 401, 'INVALID_CREDENTIALS', t('invalid_credentials', c.get('lang')));
   }
   if (row.status !== 'active')
@@ -163,7 +184,7 @@ auth.post('/login', async (c) => {
   const now = nowIso();
   await execute(
     db,
-    'UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?',
+    'UPDATE users SET last_login_at = ?, failed_login_count = 0, locked_until = NULL, updated_at = ? WHERE id = ?',
     now,
     now,
     row.id
@@ -451,7 +472,7 @@ auth.post('/password/reset', async (c) => {
     token?: string;
     password?: string;
   } | null;
-  if (!body?.token || !body?.password || body.password.length < 8) {
+  if (!body?.token || !body?.password || body.password.length < 8 || body.password.length > 128) {
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   }
   const db = c.get('db');

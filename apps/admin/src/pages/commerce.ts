@@ -195,28 +195,48 @@ async function renderOrders(el: HTMLElement, orgId: string): Promise<void> {
   el.innerHTML = `<div id="o-list">${loadingHtml()}</div>`;
   const box = el.querySelector('#o-list') as HTMLElement;
   try {
-    const orders = (await call<{ id: string; kind: string; total: number; status: string }[]>(
-      '/api/v1/orders',
-      {},
-      { organization_id: orgId, per_page: '50' }
-    )) as {
+    const orders = (await call<
+      {
+        id: string;
+        kind: string;
+        total: number;
+        status: string;
+        pending_payment_id: string | null;
+      }[]
+    >('/api/v1/orders', {}, { organization_id: orgId, per_page: '50' })) as {
       id: string;
       kind: string;
       total: number;
       status: string;
+      pending_payment_id: string | null;
     }[];
     box.innerHTML = orders.length
-      ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">ID</th><th scope="col">${d.status}</th><th scope="col">${d.total}</th><th scope="col">${d.status}</th><th scope="col"></th></tr></thead><tbody>
+      ? `<div class="table-responsive"><table class="table card-table"><thead><tr><th scope="col">ID</th><th scope="col">${d.type}</th><th scope="col">${d.total}</th><th scope="col">${d.status}</th><th scope="col"></th></tr></thead><tbody>
       ${orders
         .map(
           (
             o
           ) => `<tr><td class="text-truncate" style="max-width:140px">${esc(o.id.slice(0, 8))}…</td><td>${esc(o.kind)}</td><td>${Number(o.total)}</td>
       <td><span class="badge ${o.status === 'paid' ? 'bg-green' : o.status === 'refunded' ? 'bg-red' : 'bg-yellow'}">${esc(o.status)}</span></td>
-      <td>${o.status === 'paid' ? `<button class="btn btn-sm btn-outline-danger" data-refund="${o.id}">${d.refund}</button>` : ''}</td></tr>`
+      <td class="text-end text-nowrap">${o.pending_payment_id ? `<button class="btn btn-sm btn-outline-green" data-confirm="${o.pending_payment_id}">${d.confirmPayment}</button> ` : ''}${o.status === 'paid' ? `<button class="btn btn-sm btn-outline-danger" data-refund="${o.id}">${d.refund}</button>` : ''}</td></tr>`
         )
         .join('')}</tbody></table></div>`
       : `<p class="text-muted">${d.empty}</p>`;
+    box.querySelectorAll('[data-confirm]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        if (!(await confirmDialog(d.confirmPayment, d.confirmDeleteBody, d.confirmPayment))) return;
+        try {
+          await call(`/api/v1/payments/${(b as HTMLElement).dataset.confirm}/confirm`, {
+            method: 'POST',
+            body: '{}',
+          });
+          toast(d.saved, 'success');
+          await renderOrders(el, orgId);
+        } catch (e) {
+          toast(e instanceof Error ? e.message : d.failed, 'danger');
+        }
+      })
+    );
     box.querySelectorAll('[data-refund]').forEach((b) =>
       b.addEventListener('click', async () => {
         if (!(await confirmDialog(d.refund, d.confirmDeleteBody, d.refund))) return;

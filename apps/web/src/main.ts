@@ -3,11 +3,16 @@ import './style.css';
 import { getDict, type WebDict } from './i18n.js';
 import { esc } from '@lms/ui';
 
+// Portal origins: localhost defaults are for development only. Production
+// deployments MUST set these via build-time env (VITE_PORTAL_ADMIN, ...)
+// or the runtime localStorage 'portal-urls' override ({admin,teacher,...}).
+// Without one of those, portal links point at localhost and are dead.
+const viteEnv = (import.meta as unknown as { env?: Record<string, string> }).env ?? {};
 const PORTALS: Record<string, string> = {
-  admin: 'http://localhost:5173',
-  teacher: 'http://localhost:5175',
-  student: 'http://localhost:5174',
-  parent: 'http://localhost:5176',
+  admin: viteEnv.VITE_PORTAL_ADMIN ?? 'http://localhost:5173',
+  teacher: viteEnv.VITE_PORTAL_TEACHER ?? 'http://localhost:5175',
+  student: viteEnv.VITE_PORTAL_STUDENT ?? 'http://localhost:5174',
+  parent: viteEnv.VITE_PORTAL_PARENT ?? 'http://localhost:5176',
 };
 try {
   const override = JSON.parse(localStorage.getItem('portal-urls') ?? '{}') as Record<

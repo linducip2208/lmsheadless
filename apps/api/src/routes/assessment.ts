@@ -237,20 +237,46 @@ assess.get('/quizzes/:id/questions', requireAuth(), async (c) => {
     difficulty: string;
   }>(
     db,
-    'SELECT id, type, prompt, points, position, difficulty FROM questions WHERE quiz_id = ? ORDER BY position ASC LIMIT 1000',
+    'SELECT id, type, prompt, points, position, difficulty FROM questions WHERE quiz_id = ? AND attempt_id IS NULL ORDER BY position ASC LIMIT 1000',
     c.req.param('id')
   );
   const role = orgRole(user, orgId);
-  const isStudent = role === 'student';
+  // Attempt-scoped reads (taking a pooled quiz): ?attempt_id= merges the
+  // shared set with that attempt's own drawn copies. The attempt must belong
+  // to the caller (students) or sit in the caller's org (teaching roles).
+  const attemptParam = new URL(c.req.url).searchParams.get('attempt_id');
+  let attemptQs: typeof questions = [];
+  if (attemptParam) {
+    const att = await queryFirst<{ id: string; quiz_id: string; student_id: string }>(
+      db,
+      'SELECT id, quiz_id, student_id FROM quiz_attempts WHERE id = ?',
+      attemptParam
+    );
+    if (!att || att.quiz_id !== c.req.param('id'))
+      return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+    if (role !== 'student' && role !== 'parent' && !canTeach(user, orgId))
+      return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    if ((role === 'student' || role === 'parent') && att.student_id !== user.id)
+      return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    attemptQs = await queryAll(
+      db,
+      'SELECT id, type, prompt, points, position, difficulty FROM questions WHERE quiz_id = ? AND attempt_id = ? ORDER BY position ASC LIMIT 1000',
+      c.req.param('id'),
+      attemptParam
+    );
+  }
+  // Parents are unprivileged readers like students: answer keys must never
+  // leak through the read API (review endpoints already treat them as such).
+  const isUnprivileged = role === 'student' || role === 'parent';
   const quiz = await queryFirst<{ shuffle_questions: number; answer_release: string }>(
     db,
     'SELECT shuffle_questions, answer_release FROM quizzes WHERE id = ?',
     c.req.param('id')
   );
-  const list = [...questions];
-  // Randomize order per fetch for students when the quiz enables shuffling.
+  const list = [...questions, ...attemptQs];
+  // Randomize order per fetch for unprivileged readers when the quiz enables shuffling.
   // Correctness is never exposed; only the presentation order changes.
-  if (isStudent && quiz?.shuffle_questions === 1) {
+  if (isUnprivileged && quiz?.shuffle_questions === 1) {
     for (let i = list.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [list[i], list[j]] = [list[j], list[i]];
@@ -263,12 +289,12 @@ assess.get('/quizzes/:id/questions', requireAuth(), async (c) => {
       'SELECT id, label, position FROM question_options WHERE question_id = ? ORDER BY position ASC',
       q.id
     );
-    // Ordering questions leak answers through position: shuffle per fetch for students.
+    // Ordering questions leak answers through position: shuffle per fetch for unprivileged readers.
     const shown =
-      isStudent && q.type === 'ordering' ? [...opts].sort(() => Math.random() - 0.5) : opts;
-    // Never leak correctness to students via read API.
+      isUnprivileged && q.type === 'ordering' ? [...opts].sort(() => Math.random() - 0.5) : opts;
+    // Never leak correctness to unprivileged readers via read API.
     out.push(
-      isStudent
+      isUnprivileged
         ? { ...q, options: shown }
         : {
             ...q,
@@ -398,7 +424,9 @@ assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
     now,
     now
   );
-  // Snapshot random pools on first attempt (documented behavior).
+  // Random pools snapshot per attempt: each attempt draws its own question
+  // copies (attempt_id-scoped), so concurrent first attempts can never
+  // corrupt each other and the pool template survives for future attempts.
   const pools = await queryAll<{ bank_id: string; pick_count: number }>(
     db,
     'SELECT bank_id, pick_count FROM quiz_pools WHERE quiz_id = ?',
@@ -409,7 +437,7 @@ assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
       (
         await queryFirst<{ v: number | null }>(
           db,
-          'SELECT MAX(position) as v FROM questions WHERE quiz_id = ?',
+          'SELECT MAX(position) as v FROM questions WHERE quiz_id = ? AND attempt_id IS NULL',
           quiz.id
         )
       )?.v ?? -1;
@@ -434,9 +462,10 @@ assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
         const qnid = newId();
         await execute(
           db,
-          'INSERT INTO questions (id, quiz_id, type, prompt, points, position, correct_answer, difficulty, explanation, negative_points, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO questions (id, quiz_id, attempt_id, type, prompt, points, position, correct_answer, difficulty, explanation, negative_points, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           qnid,
           quiz.id,
+          nid,
           bq.type,
           bq.prompt,
           bq.points,
@@ -480,7 +509,7 @@ assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
         }
       }
     }
-    await execute(db, 'DELETE FROM quiz_pools WHERE quiz_id = ?', quiz.id);
+    // Pools are reusable templates: never deleted, never mutated.
   }
   return created(c, { id: nid, expires_at: expiresAt });
 });
@@ -489,7 +518,12 @@ assess.post('/quiz-attempts/:attemptId/submit', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const db = c.get('db');
   const body = (await c.req.json().catch(() => null)) as {
-    answers?: { question_id: string; option_id?: string; answer_text?: string }[];
+    answers?: {
+      question_id: string;
+      option_id?: string;
+      option_ids?: string[];
+      answer_text?: string;
+    }[];
   } | null;
   if (!body?.answers || !Array.isArray(body.answers) || body.answers.length === 0) {
     return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
@@ -549,15 +583,36 @@ assess.post('/quiz-attempts/:attemptId/submit', requireAuth(), async (c) => {
       negative_points: number;
     }>(
       db,
-      'SELECT id, type, points, correct_answer, negative_points FROM questions WHERE id = ? AND quiz_id = ?',
+      'SELECT id, type, points, correct_answer, negative_points FROM questions WHERE id = ? AND quiz_id = ? AND (attempt_id IS NULL OR attempt_id = ?)',
       a.question_id,
-      attempt.quiz_id
+      attempt.quiz_id,
+      attempt.id
     );
     if (!q) continue;
     total += q.points;
     let correct = 0;
     let pending = false;
-    if ((q.type === 'multiple_choice' || q.type === 'single_choice') && a.option_id) {
+    let storedOptionId: string | null = a.option_id ?? null;
+    let storedText = (a.answer_text ?? '').slice(0, 5000);
+    if (q.type === 'multiple_choice' && Array.isArray(a.option_ids)) {
+      // Multi-select: full credit only for the exact correct set (no partial).
+      const ids = [...new Set(a.option_ids.filter((x) => typeof x === 'string'))].slice(0, 50);
+      const allOpts = await queryAll<{ id: string; is_correct: number }>(
+        db,
+        'SELECT id, is_correct FROM question_options WHERE question_id = ?',
+        q.id
+      );
+      const correctSet = new Set(allOpts.filter((o) => o.is_correct === 1).map((o) => o.id));
+      const picked = new Set(ids.filter((id) => allOpts.some((o) => o.id === id)));
+      correct =
+        correctSet.size > 0 &&
+        picked.size === correctSet.size &&
+        [...picked].every((id) => correctSet.has(id))
+          ? 1
+          : 0;
+      storedOptionId = null;
+      storedText = JSON.stringify({ option_ids: [...picked] }).slice(0, 5000);
+    } else if ((q.type === 'multiple_choice' || q.type === 'single_choice') && a.option_id) {
       const opt = await queryFirst<{ is_correct: number }>(
         db,
         'SELECT is_correct FROM question_options WHERE id = ? AND question_id = ?',
@@ -617,13 +672,26 @@ assess.post('/quiz-attempts/:attemptId/submit', requireAuth(), async (c) => {
       newId(),
       attempt.id,
       q.id,
-      a.option_id ?? null,
-      (a.answer_text ?? '').slice(0, 5000),
+      storedOptionId,
+      storedText,
       pending ? null : correct,
       pending ? 0 : pts,
       now
     );
   }
+  // Denominator is the whole attempt set (shared + this attempt's drawn
+  // copies), not just answered rows: skipping hard questions must not
+  // inflate the score.
+  const quizTotal =
+    (
+      await queryFirst<{ t: number | null }>(
+        db,
+        'SELECT SUM(points) as t FROM questions WHERE quiz_id = ? AND (attempt_id IS NULL OR attempt_id = ?)',
+        attempt.quiz_id,
+        attempt.id
+      )
+    )?.t ?? total;
+  if (quizTotal > 0) total = quizTotal;
   const raw = total === 0 ? 0 : Math.round((earned / total) * 10000) / 100;
   const pct = Math.max(0, raw);
   const passed = pct >= (quiz?.passing_score ?? 70) ? 1 : 0;
@@ -718,9 +786,10 @@ assess.put('/quiz-attempts/:attemptId/autosave', requireAuth(), async (c) => {
     if (!a?.question_id) continue;
     const q = await queryFirst<{ id: string }>(
       db,
-      'SELECT id FROM questions WHERE id = ? AND quiz_id = ?',
+      'SELECT id FROM questions WHERE id = ? AND quiz_id = ? AND (attempt_id IS NULL OR attempt_id = ?)',
       a.question_id,
-      attempt.quiz_id
+      attempt.quiz_id,
+      attempt.id
     );
     if (!q) continue;
     const raw = typeof a.payload === 'string' ? a.payload : JSON.stringify(a.payload ?? '');
@@ -1247,7 +1316,7 @@ assess.patch('/questions/:questionId', requireAuth(), async (c) => {
   const db = c.get('db');
   const q = await queryFirst<{ quiz_id: string }>(
     db,
-    'SELECT quiz_id FROM questions WHERE id = ?',
+    'SELECT quiz_id FROM questions WHERE id = ? AND attempt_id IS NULL',
     c.req.param('questionId')
   );
   if (!q) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
@@ -1282,7 +1351,12 @@ assess.patch('/questions/:questionId', requireAuth(), async (c) => {
   if (!sets.length) return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
   sets.push('updated_at = ?');
   params.push(nowIso(), c.req.param('questionId'));
-  await execute(db, `UPDATE questions SET ${sets.join(', ')} WHERE id = ?`, ...params);
+  // Attempt history is immutable: only shared rows are editable.
+  await execute(
+    db,
+    `UPDATE questions SET ${sets.join(', ')} WHERE id = ? AND attempt_id IS NULL`,
+    ...params
+  );
   return ok(c, { updated: true });
 });
 
@@ -1291,14 +1365,19 @@ assess.delete('/questions/:questionId', requireAuth(), async (c) => {
   const db = c.get('db');
   const q = await queryFirst<{ quiz_id: string }>(
     db,
-    'SELECT quiz_id FROM questions WHERE id = ?',
+    'SELECT quiz_id FROM questions WHERE id = ? AND attempt_id IS NULL',
     c.req.param('questionId')
   );
   if (!q) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const orgId = await quizOrg(db, q.quiz_id);
   if (!orgId || !canTeach(user, orgId))
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-  await execute(db, 'DELETE FROM questions WHERE id = ?', c.req.param('questionId'));
+  // Attempt copies are attempt history and survive shared deletes.
+  await execute(
+    db,
+    'DELETE FROM questions WHERE id = ? AND attempt_id IS NULL',
+    c.req.param('questionId')
+  );
   return ok(c, { deleted: true });
 });
 
@@ -1314,7 +1393,7 @@ assess.post('/quizzes/:id/questions/reorder', requireAuth(), async (c) => {
   }
   const existing = await queryAll<{ id: string }>(
     db,
-    'SELECT id FROM questions WHERE quiz_id = ?',
+    'SELECT id FROM questions WHERE quiz_id = ? AND attempt_id IS NULL',
     c.req.param('id')
   );
   const valid = new Set(existing.map((x) => x.id));
@@ -1354,9 +1433,10 @@ assess.post('/quiz-attempts/:attemptId/grade', requireAuth(), async (c) => {
     return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const question = await queryFirst<{ points: number }>(
     db,
-    'SELECT points FROM questions WHERE id = ? AND quiz_id = ?',
+    'SELECT points FROM questions WHERE id = ? AND quiz_id = ? AND (attempt_id IS NULL OR attempt_id = ?)',
     body.question_id,
-    attempt.quiz_id
+    attempt.quiz_id,
+    attempt.id
   );
   if (!question) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const capped = Math.min(body.points_awarded, question.points);
@@ -1368,10 +1448,14 @@ assess.post('/quiz-attempts/:attemptId/grade', requireAuth(), async (c) => {
     attempt.id,
     body.question_id
   );
-  // Recompute attempt score deterministically from stored points.
+  // Recompute attempt score deterministically from stored points. The
+  // denominator is the whole attempt set (shared + this attempt's drawn
+  // copies); unanswered questions score zero.
   const totals = await queryFirst<{ earned: number | null; total: number | null }>(
     db,
-    'SELECT SUM(qa.points_awarded) as earned, SUM(q.points) as total FROM quiz_answers qa JOIN questions q ON q.id = qa.question_id WHERE qa.attempt_id = ?',
+    'SELECT (SELECT COALESCE(SUM(qa.points_awarded), 0) FROM quiz_answers qa WHERE qa.attempt_id = ?) as earned, (SELECT COALESCE(SUM(q.points), 0) FROM questions q WHERE q.quiz_id = ? AND (q.attempt_id IS NULL OR q.attempt_id = ?)) as total',
+    attempt.id,
+    attempt.quiz_id,
     attempt.id
   );
   const quiz = await queryFirst<{ passing_score: number }>(

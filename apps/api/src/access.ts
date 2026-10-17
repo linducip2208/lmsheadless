@@ -17,6 +17,28 @@ export async function orgSetting(db: D1Like, orgId: string, key: string): Promis
   }
 }
 
+// Org storage quota (bytes, set via organizations.settings
+// `storage_quota_bytes`). Unset/invalid/non-positive means unlimited, so no
+// legitimate upload is ever blocked by default.
+export async function orgStorageExceeded(
+  db: D1Like,
+  orgId: string,
+  extraBytes: number
+): Promise<boolean> {
+  const raw = await orgSetting(db, orgId, 'storage_quota_bytes');
+  const quota = Number(raw);
+  if (!raw || !Number.isFinite(quota) || quota <= 0) return false;
+  const used =
+    (
+      await queryFirst<{ s: number | null }>(
+        db,
+        'SELECT SUM(size_bytes) as s FROM files WHERE organization_id = ?',
+        orgId
+      )
+    )?.s ?? 0;
+  return used + Math.max(0, extraBytes) > quota;
+}
+
 export async function courseOrg(db: D1Like, courseId: string): Promise<string | null> {
   const row = await queryFirst<{ organization_id: string }>(
     db,

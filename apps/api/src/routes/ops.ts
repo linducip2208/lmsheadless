@@ -10,7 +10,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { orgSetting, wantsNotification } from '../access.js';
+import { orgSetting, orgStorageExceeded, wantsNotification } from '../access.js';
 import type { AppVars, AuthUser } from '../types.js';
 import { objectKey, putObject, validateUpload } from '../storage.js';
 import { t } from '../i18n.js';
@@ -862,9 +862,6 @@ ops.post('/api/v1/uploads', requireAuth(), async (c) => {
     });
   const err = validateUpload(file.name, file.type || 'application/octet-stream', file.size, 'any');
   if (err) return fail(c, 400, 'INVALID_FILE', err);
-  const key = objectKey(prefix || 'general', file.name);
-  const buf = await file.arrayBuffer();
-  await putObject(c.get('env'), key, buf, file.type || 'application/octet-stream');
   const db = c.get('db');
   const orgId =
     typeof form?.get('organization_id') === 'string'
@@ -872,6 +869,11 @@ ops.post('/api/v1/uploads', requireAuth(), async (c) => {
       : null;
   if (orgId && !canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  if (orgId && (await orgStorageExceeded(db, orgId, file.size)))
+    return fail(c, 413, 'QUOTA_EXCEEDED', 'Organization storage quota exceeded');
+  const key = objectKey(prefix || 'general', file.name);
+  const buf = await file.arrayBuffer();
+  await putObject(c.get('env'), key, buf, file.type || 'application/octet-stream');
   const fileId = newId();
   await execute(
     db,
@@ -988,14 +990,16 @@ ops.get('/api/v1/reports/quiz-performance', requireAuth(), async (c) => {
     )?.n ?? 0;
   const questions = await queryAll<{ id: string; prompt: string }>(
     db,
-    'SELECT id, prompt FROM questions WHERE quiz_id = ? ORDER BY position ASC',
+    'SELECT id, prompt FROM questions WHERE quiz_id = ? AND attempt_id IS NULL ORDER BY position ASC',
     quizId
   );
   // Single aggregated pass over answers (no per-question queries).
+  // Per-attempt drawn copies are attempt history, not shared items: they are
+  // excluded from per-question rates (attempts/average/pass rate are unaffected).
   const answerStats = await queryAll<{ question_id: string; total: number; correct: number }>(
     db,
     `SELECT question_id, COUNT(*) as total, SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct
-     FROM quiz_answers WHERE question_id IN (SELECT id FROM questions WHERE quiz_id = ?) GROUP BY question_id`,
+     FROM quiz_answers WHERE question_id IN (SELECT id FROM questions WHERE quiz_id = ? AND attempt_id IS NULL) GROUP BY question_id`,
     quizId
   );
   const statMap = new Map(answerStats.map((s) => [s.question_id, s]));

@@ -5,6 +5,9 @@
 - ZIP upload (≤100MB, ≤500 files), `imsmanifest.xml` parsing, version gate.
 - Entry launch URL, per-learner attempts with resume (`location`,
   `suspend_data`), commit of `completion/success/score/total_time`.
+- The original archive is stored alongside extracted files, so
+  `scorm_packages.file_key` and the `files` row always resolve (re-export,
+  re-download, storage audits).
 - Completion maps back to lesson progress when the package is lesson-attached.
 - No package versioning yet: re-uploading the same course package replaces
   stored files (the `package_version` column exists for a future versioning

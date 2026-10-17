@@ -1,5 +1,72 @@
 # Changelog
 
+## Unreleased — finalization audit fixes (HEAD d73c6b9 + tree)
+
+### Round 2 (2026-10-16; each with a regression test in `test/release2-fixes.test.ts`)
+
+- Quiz pool draws are now per-attempt (`attempt_id`-scoped copies): concurrent
+  attempts can no longer corrupt each other, the pool template survives
+  (migration 024), player fetches `?attempt_id=…`, attempt history immutable,
+  per-question analytics cover shared items only
+- Org file browsing/download is role-scoped (teaching/admin see all;
+  students/parents see only their own uploads; owners always)
+- Login has per-account lockout (5 failures → 15-min 423, reset on success;
+  unknown emails stay generic 401)
+- First-run setup is single-winner under concurrency (atomic claim, stale
+  claims recoverable after 5 min); setup passwords capped at 128 chars
+- Org storage quota enforced when `organizations.settings.storage_quota_bytes`
+  is set (unset/invalid = unlimited; uploads + SCORM return 413 over quota)
+- Orders list exposes `pending_payment_id`; admin commerce renders a Confirm
+  button for pending manual payments (server re-validates on confirm)
+- New real-browser spec: student multi-select quiz submit via UI scores 100
+  (server state re-verified)
+
+### Round 1 (2026-10-11; each with a regression test in `test/release-fixes.test.ts`)
+
+- Quiz question reads no longer leak `is_correct` to parents (treated as
+  unprivileged readers, same as students; teachers unaffected)
+- Password reset + invitation accept reject oversized passwords (>128 chars,
+  PBKDF2 burn guard; valid lengths unaffected, invite token not consumed by
+  rejected attempts)
+- Archived courses refuse new student enrollments (`ENROLLMENT_CLOSED`;
+  teacher manual placement bypasses; draft stays enrollable per suite-encoded
+  behavior)
+- Waitlist promote re-checks capacity (`COURSE_FULL` instead of silent
+  overfill); enrollment has a post-insert capacity guard against
+  check-then-insert races
+- Quiz scoring divides by the whole quiz (skipped questions score zero, no
+  inflation) in both auto-submit and manual regrade
+- `multiple_choice` accepts `option_ids[]` with exact-set scoring; student
+  portal renders checkboxes for multi-select (autosave/restore included)
+- ICS export uses stable per-session UIDs (no more calendar duplicates)
+- SCORM upload persists the original archive so `file_key`/files rows resolve
+- Offline queue is now per-user isolated (owner-tagged actions, scoped flush;
+  shared devices can no longer replay one user's writes as another)
+- Public-site portal links configurable via `VITE_PORTAL_*` build env
+  (localhost remains dev default; `localStorage.portal-urls` override kept)
+
+Evidence (round 2, re-verified end-to-end):
+
+- 149/149 API tests green (143 + 6 new), Playwright 20/20 chromium,
+  typecheck/lint/format/contract/static-audit/audit green, build green
+- bench 6/6 budgets met (seeded disposable DB), scale 1500/4500 green,
+  `npm audit --omit=dev` 0 vulns, migrations 001→024 idempotent on
+  disposable copy, `PRAGMA integrity_check` ok / 0 FK violations / 0 orphans
+  (10 checks) on the local DB
+- Source-derived inventory: 261 endpoints (259 invoked), 105 e2e-invoked,
+  6,151 call-sites, 108 tables, 24 migrations
+
+Evidence (round 1):
+
+- 143/143 API tests green (134 existing + 9 new), Playwright 19/19 chromium,
+  typecheck/lint/format/contract/static-audit/audit green, build green
+- bench 6/6 budgets met (seeded disposable DB), scale 1500/4500 green,
+  `npm audit --omit=dev` 0 vulns, migrations 001→023 idempotent on
+  disposable copy, `PRAGMA integrity_check` ok / 0 FK violations / 0 orphans
+  (10 checks) on the local DB
+- Source-derived inventory: 261 endpoints (259 invoked), 105 e2e-invoked,
+  5,915 call-sites, 108 tables, 23 migrations
+
 ## 1.11.0 — LMS completion release (LMS scope only)
 
 Learning workflows:

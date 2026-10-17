@@ -6,6 +6,10 @@ const dict: Record<string, Record<Lang, string>> = {
   not_found: { en: 'Resource not found', id: 'Data tidak ditemukan' },
   validation_failed: { en: 'Validation failed', id: 'Validasi gagal' },
   invalid_credentials: { en: 'Invalid email or password', id: 'Email atau kata sandi salah' },
+  account_locked: {
+    en: 'Too many failed attempts, try again later',
+    id: 'Terlalu banyak percobaan gagal, coba lagi nanti',
+  },
   inactive_account: { en: 'Account is not active', id: 'Akun tidak aktif' },
   too_many_requests: {
     en: 'Too many requests, slow down',

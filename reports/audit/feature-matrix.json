@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generated_at": "2026-10-10T15:30:40.353Z",
+    "generated_at": "2026-10-16T13:24:19.082Z",
     "commit": "ac79226",
     "method": "route registrations parsed from source; auth read from handler; coverage = invocation-confirmed request call-sites (app.request/page.request/fetch) per file, static-prefix matched; assertion depth spot-audited per module (see feature-inventory.md)",
     "counts": {
@@ -8,10 +8,10 @@
       "public_endpoints": 16,
       "invoked_by_tests": 259,
       "invoked_by_e2e": 105,
-      "total_callsites": 5690,
+      "total_callsites": 6151,
       "frontend_hashes": 57,
       "tables": 108,
-      "migrations": 23
+      "migrations": 24
     }
   },
   "endpoints": [
@@ -42,12 +42,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -63,12 +66,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -84,12 +90,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -105,12 +114,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -126,12 +138,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -147,12 +162,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -167,12 +185,14 @@
         "extended.test.ts",
         "journey.test.ts",
         "platform.test.ts",
-        "quiz-autosave.test.ts"
+        "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 22,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -187,12 +207,14 @@
         "extended.test.ts",
         "journey.test.ts",
         "platform.test.ts",
-        "quiz-autosave.test.ts"
+        "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 22,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -207,12 +229,14 @@
         "extended.test.ts",
         "journey.test.ts",
         "platform.test.ts",
-        "quiz-autosave.test.ts"
+        "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 22,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -227,12 +251,14 @@
         "extended.test.ts",
         "journey.test.ts",
         "platform.test.ts",
-        "quiz-autosave.test.ts"
+        "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 22,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -452,12 +478,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -472,12 +501,14 @@
         "extended.test.ts",
         "journey.test.ts",
         "platform.test.ts",
-        "quiz-autosave.test.ts"
+        "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 22,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -494,9 +525,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 12,
+      "callsites": 13,
       "status": "VERIFIED_PASS"
     },
     {
@@ -510,13 +542,15 @@
         "growth.test.ts",
         "hardening.test.ts",
         "helpers.ts",
-        "platform.test.ts"
+        "platform.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 13,
+      "callsites": 18,
       "status": "VERIFIED_PASS"
     },
     {
@@ -641,12 +675,13 @@
       "auth": "PUBLIC",
       "invoked_by_tests": [
         "extended.test.ts",
+        "release-fixes.test.ts",
         "security-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 3,
+      "callsites": 5,
       "status": "VERIFIED_PASS"
     },
     {
@@ -738,15 +773,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -772,15 +809,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -806,15 +845,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -840,15 +881,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -893,15 +936,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -927,15 +972,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -961,15 +1008,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1033,15 +1082,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1067,15 +1118,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1101,15 +1154,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1135,15 +1190,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1169,15 +1226,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1203,15 +1262,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1250,15 +1311,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1320,10 +1383,11 @@
       "module": "banks",
       "auth": "requireAuth",
       "invoked_by_tests": [
-        "enterprise.test.ts"
+        "enterprise.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 6,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1333,10 +1397,11 @@
       "module": "banks",
       "auth": "requireAuth",
       "invoked_by_tests": [
-        "enterprise.test.ts"
+        "enterprise.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 6,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1346,10 +1411,11 @@
       "module": "banks",
       "auth": "requireAuth",
       "invoked_by_tests": [
-        "enterprise.test.ts"
+        "enterprise.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 6,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1359,10 +1425,11 @@
       "module": "banks",
       "auth": "requireAuth",
       "invoked_by_tests": [
-        "enterprise.test.ts"
+        "enterprise.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 6,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1372,10 +1439,11 @@
       "module": "banks",
       "auth": "requireAuth",
       "invoked_by_tests": [
-        "enterprise.test.ts"
+        "enterprise.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 6,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1391,12 +1459,15 @@
         "journey.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
-        "release17.test.ts"
+        "release-fixes.test.ts",
+        "release17.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 41,
+      "callsites": 61,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1674,12 +1745,13 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
-        "coverage-gaps.test.ts"
+        "coverage-gaps.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 45,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1692,12 +1764,13 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
-        "coverage-gaps.test.ts"
+        "coverage-gaps.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 45,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1710,12 +1783,13 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
-        "coverage-gaps.test.ts"
+        "coverage-gaps.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 45,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1728,12 +1802,13 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
-        "coverage-gaps.test.ts"
+        "coverage-gaps.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 45,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1745,12 +1820,13 @@
       "invoked_by_tests": [
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
-        "commerce.test.ts"
+        "commerce.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 16,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1780,12 +1856,13 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
-        "coverage-gaps.test.ts"
+        "coverage-gaps.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 45,
       "status": "VERIFIED_PASS"
     },
     {
@@ -1940,12 +2017,13 @@
         "commerce-edges.test.ts",
         "commerce-fixes.test.ts",
         "commerce.test.ts",
-        "coverage-gaps.test.ts"
+        "coverage-gaps.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [
         "roles.spec.ts"
       ],
-      "callsites": 43,
+      "callsites": 45,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2079,15 +2157,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2113,15 +2193,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2147,15 +2229,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2181,15 +2265,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2215,15 +2301,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2249,15 +2337,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2283,15 +2373,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2317,15 +2409,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2351,15 +2445,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2385,15 +2481,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2458,12 +2556,14 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts"
       ],
       "invoked_by_e2e": [
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 26,
+      "callsites": 35,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2489,15 +2589,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2523,15 +2625,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2602,15 +2706,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -2682,15 +2788,17 @@
         "lifecycle-fixes.test.ts",
         "platform.test.ts",
         "quiz-autosave.test.ts",
+        "release-fixes.test.ts",
         "release17.test.ts",
         "security.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 113,
+      "callsites": 119,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3032,10 +3140,11 @@
       "auth": "requireAuth",
       "invoked_by_tests": [
         "growth.test.ts",
-        "journey.test.ts"
+        "journey.test.ts",
+        "release-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 6,
+      "callsites": 9,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3046,10 +3155,11 @@
       "auth": "PUBLIC",
       "invoked_by_tests": [
         "growth.test.ts",
-        "journey.test.ts"
+        "journey.test.ts",
+        "release-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 3,
+      "callsites": 5,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3246,10 +3356,11 @@
       "invoked_by_tests": [
         "enterprise.test.ts",
         "enterprise2.test.ts",
+        "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 16,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3261,10 +3372,11 @@
       "invoked_by_tests": [
         "enterprise.test.ts",
         "enterprise2.test.ts",
+        "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 16,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3276,10 +3388,11 @@
       "invoked_by_tests": [
         "enterprise.test.ts",
         "enterprise2.test.ts",
+        "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 16,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3291,10 +3404,11 @@
       "invoked_by_tests": [
         "enterprise.test.ts",
         "enterprise2.test.ts",
+        "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 16,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3306,10 +3420,11 @@
       "invoked_by_tests": [
         "enterprise.test.ts",
         "enterprise2.test.ts",
+        "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 16,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3321,10 +3436,11 @@
       "invoked_by_tests": [
         "enterprise.test.ts",
         "enterprise2.test.ts",
+        "release-fixes.test.ts",
         "xss-escape.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 16,
+      "callsites": 17,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3334,10 +3450,11 @@
       "module": "live",
       "auth": "requireAuth",
       "invoked_by_tests": [
-        "enterprise.test.ts"
+        "enterprise.test.ts",
+        "release-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 1,
+      "callsites": 3,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3649,10 +3766,11 @@
         "extended.test.ts",
         "hardening.test.ts",
         "platform.test.ts",
+        "release2-fixes.test.ts",
         "security.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 5,
+      "callsites": 7,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3733,9 +3851,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3755,9 +3874,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3777,9 +3897,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3799,9 +3920,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3821,9 +3943,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3843,9 +3966,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3865,9 +3989,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3887,9 +4012,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3909,9 +4035,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3931,9 +4058,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3953,9 +4081,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -3988,9 +4117,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4010,9 +4140,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4062,10 +4193,11 @@
       "auth": "PUBLIC",
       "invoked_by_tests": [
         "journey.test.ts",
-        "platform.test.ts"
+        "platform.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 7,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4113,9 +4245,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4135,9 +4268,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4157,9 +4291,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 27,
+      "callsites": 28,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4239,10 +4374,11 @@
       "auth": "requireAuth",
       "invoked_by_tests": [
         "extended.test.ts",
-        "platform.test.ts"
+        "platform.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 11,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4253,10 +4389,11 @@
       "auth": "requireAuth",
       "invoked_by_tests": [
         "extended.test.ts",
-        "platform.test.ts"
+        "platform.test.ts",
+        "release2-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 4,
+      "callsites": 11,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4373,10 +4510,11 @@
       "module": "scorm",
       "auth": "requireAuth",
       "invoked_by_tests": [
-        "growth.test.ts"
+        "growth.test.ts",
+        "release-fixes.test.ts"
       ],
       "invoked_by_e2e": [],
-      "callsites": 3,
+      "callsites": 4,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4460,9 +4598,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 25,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4481,9 +4620,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 25,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4502,9 +4642,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 25,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4523,9 +4664,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 25,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4544,9 +4686,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 25,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4565,9 +4708,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 25,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4586,9 +4730,10 @@
       ],
       "invoked_by_e2e": [
         "portal-crud.spec.ts",
-        "roles.spec.ts"
+        "roles.spec.ts",
+        "student-multiselect.spec.ts"
       ],
-      "callsites": 23,
+      "callsites": 25,
       "status": "VERIFIED_PASS"
     },
     {
@@ -4652,12 +4797,12 @@
     {
       "id": "FE-AD-01",
       "portal": "admin",
-      "hash": "#/users"
+      "hash": "#/organizations"
     },
     {
       "id": "FE-AD-02",
       "portal": "admin",
-      "hash": "#/organizations"
+      "hash": "#/users"
     },
     {
       "id": "FE-AD-03",
@@ -4687,27 +4832,27 @@
     {
       "id": "FE-AD-08",
       "portal": "admin",
-      "hash": "#/attendance"
+      "hash": "#/scorm"
     },
     {
       "id": "FE-AD-09",
       "portal": "admin",
-      "hash": "#/live"
+      "hash": "#/files"
     },
     {
       "id": "FE-AD-10",
       "portal": "admin",
-      "hash": "#/scorm"
+      "hash": "#/attendance"
     },
     {
       "id": "FE-AD-11",
       "portal": "admin",
-      "hash": "#/commerce"
+      "hash": "#/live"
     },
     {
       "id": "FE-AD-12",
       "portal": "admin",
-      "hash": "#/data"
+      "hash": "#/community"
     },
     {
       "id": "FE-AD-13",
@@ -4717,22 +4862,22 @@
     {
       "id": "FE-AD-14",
       "portal": "admin",
-      "hash": "#/community"
+      "hash": "#/certificates"
     },
     {
       "id": "FE-AD-15",
       "portal": "admin",
-      "hash": "#/certificates"
+      "hash": "#/commerce"
     },
     {
       "id": "FE-AD-16",
       "portal": "admin",
-      "hash": "#/alerts"
+      "hash": "#/reports"
     },
     {
       "id": "FE-AD-17",
       "portal": "admin",
-      "hash": "#/system"
+      "hash": "#/alerts"
     },
     {
       "id": "FE-AD-18",
@@ -4742,12 +4887,12 @@
     {
       "id": "FE-AD-19",
       "portal": "admin",
-      "hash": "#/files"
+      "hash": "#/system"
     },
     {
       "id": "FE-AD-20",
       "portal": "admin",
-      "hash": "#/reports"
+      "hash": "#/data"
     },
     {
       "id": "FE-AD-21",
@@ -4777,32 +4922,32 @@
     {
       "id": "FE-TE-03",
       "portal": "teacher",
-      "hash": "#/banks"
+      "hash": "#/live"
     },
     {
       "id": "FE-TE-04",
       "portal": "teacher",
-      "hash": "#/grading"
+      "hash": "#/cohorts"
     },
     {
       "id": "FE-TE-05",
       "portal": "teacher",
-      "hash": "#/attendance"
+      "hash": "#/students"
     },
     {
       "id": "FE-TE-06",
       "portal": "teacher",
-      "hash": "#/live"
+      "hash": "#/banks"
     },
     {
       "id": "FE-TE-07",
       "portal": "teacher",
-      "hash": "#/cohorts"
+      "hash": "#/grading"
     },
     {
       "id": "FE-TE-08",
       "portal": "teacher",
-      "hash": "#/ai"
+      "hash": "#/attendance"
     },
     {
       "id": "FE-TE-09",
@@ -4812,7 +4957,7 @@
     {
       "id": "FE-TE-10",
       "portal": "teacher",
-      "hash": "#/students"
+      "hash": "#/ai"
     },
     {
       "id": "FE-TE-11",

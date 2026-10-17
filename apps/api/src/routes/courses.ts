@@ -557,11 +557,19 @@ courses.post('/enrollments', requireAuth(), async (c) => {
     enrollment_start: string | null;
     enrollment_end: string | null;
     enrollment_mode: string | null;
+    status: string | null;
   }>(
     db,
-    'SELECT price, price_minor, capacity, enrollment_start, enrollment_end, enrollment_mode FROM courses WHERE id = ?',
+    'SELECT price, price_minor, capacity, enrollment_start, enrollment_end, enrollment_mode, status FROM courses WHERE id = ?',
     parsed.data.course_id
   );
+  // Archived courses accept no new enrollments from students; teachers
+  // (manual placement) bypass so records can be repaired. Draft courses
+  // stay enrollable: creation defaults to draft and the suite + product
+  // flows enroll before publishing.
+  if (course?.status === 'archived' && !canTeach(user, orgId)) {
+    return fail(c, 400, 'ENROLLMENT_CLOSED', 'Enrollment for this course is closed');
+  }
   const nowMs = Date.now();
   if ((course?.enrollment_mode ?? 'open') === 'closed' && !canTeach(user, orgId)) {
     return fail(c, 400, 'ENROLLMENT_CLOSED', 'Enrollment for this course is closed');
@@ -639,10 +647,11 @@ courses.post('/enrollments', requireAuth(), async (c) => {
     }
   }
   const now = nowIso();
+  const enrollmentId = newId();
   await execute(
     db,
     'INSERT INTO enrollments (id, course_id, student_id, status, enrolled_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    newId(),
+    enrollmentId,
     parsed.data.course_id,
     studentId,
     parsed.data.status ?? 'active',
@@ -650,6 +659,23 @@ courses.post('/enrollments', requireAuth(), async (c) => {
     now,
     now
   );
+  // Post-insert capacity guard: closes the check-then-insert race under
+  // concurrent requests. Overshoot rolls back the loser's own row (safe
+  // direction: underfill, never overfill).
+  if (course?.capacity) {
+    const after =
+      (
+        await queryFirst<{ n: number }>(
+          db,
+          "SELECT COUNT(*) as n FROM enrollments WHERE course_id = ? AND status = 'active'",
+          parsed.data.course_id
+        )
+      )?.n ?? 0;
+    if (after > course.capacity) {
+      await execute(db, 'DELETE FROM enrollments WHERE id = ?', enrollmentId);
+      return fail(c, 400, 'COURSE_FULL', 'Course is full; join the waitlist', { waitlist: true });
+    }
+  }
   await audit(c, 'enrollment.created', {
     entity: 'enrollment',
     organizationId: orgId,

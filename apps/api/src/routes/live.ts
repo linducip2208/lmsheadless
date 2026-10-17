@@ -346,6 +346,7 @@ live.get('/live-sessions.ics', requireAuth(), async (c) => {
   if (!orgId || !canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const rows = await queryAll<{
+    id: string;
     title: string;
     description: string | null;
     starts_at: string;
@@ -353,7 +354,7 @@ live.get('/live-sessions.ics', requireAuth(), async (c) => {
     meeting_url: string | null;
   }>(
     c.get('db'),
-    "SELECT title, description, starts_at, ends_at, meeting_url FROM live_sessions WHERE organization_id = ? AND status = 'scheduled' ORDER BY starts_at ASC, id ASC LIMIT 200",
+    "SELECT id, title, description, starts_at, ends_at, meeting_url FROM live_sessions WHERE organization_id = ? AND status = 'scheduled' ORDER BY starts_at ASC, id ASC LIMIT 200",
     orgId
   );
   const esc = (s: string) =>
@@ -374,9 +375,11 @@ live.get('/live-sessions.ics', requireAuth(), async (c) => {
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//LMS Headless//Live//EN',
-    ...rows.flatMap((s, i) => [
+    ...rows.flatMap((s) => [
       'BEGIN:VEVENT',
-      `UID:live-${i}-${Date.now()}@lms`,
+      // Stable UID per session: regenerating it on every export duplicates
+      // events in calendar clients.
+      `UID:live-${s.id}@lms`,
       `DTSTAMP:${stamp(nowIso())}`,
       `DTSTART:${stamp(s.starts_at)}`,
       `DTEND:${stamp(s.ends_at)}`,

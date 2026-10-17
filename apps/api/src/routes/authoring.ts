@@ -346,6 +346,28 @@ authoring.post('/courses/:id/waitlist/:entryId/promote', requireAuth(), async (c
     c.req.param('id')
   );
   if (!entry) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  if (entry.status === 'promoted')
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')));
+  // Capacity re-check: promoting into a full course must fail instead of
+  // silently overfilling it.
+  const cap = await queryFirst<{ capacity: number | null }>(
+    db,
+    'SELECT capacity FROM courses WHERE id = ?',
+    c.req.param('id')
+  );
+  if (cap?.capacity) {
+    const count =
+      (
+        await queryFirst<{ n: number }>(
+          db,
+          "SELECT COUNT(*) as n FROM enrollments WHERE course_id = ? AND status = 'active'",
+          c.req.param('id')
+        )
+      )?.n ?? 0;
+    if (count >= cap.capacity) {
+      return fail(c, 400, 'COURSE_FULL', 'Course is full; cannot promote from waitlist');
+    }
+  }
   const now = nowIso();
   await execute(
     db,
