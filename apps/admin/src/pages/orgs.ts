@@ -1,5 +1,7 @@
 import { call, crud, loadingHtml, errorHtml, toast, modalForm, getMe, t, esc } from '../lib.js';
 
+let orgDetailGen = 0;
+
 export async function renderOrgs(el: HTMLElement): Promise<void> {
   const me = getMe();
   const d = t();
@@ -38,6 +40,9 @@ export async function renderOrgs(el: HTMLElement): Promise<void> {
 
 async function showOrgDetail(el: HTMLElement, orgId: string): Promise<void> {
   const d = t();
+  // Same stale-paint guard as settings branding: overlapping detail renders
+  // must not let an older fetch overwrite fresher data.
+  const gen = ++orgDetailGen;
   el.innerHTML = `<div class="card"><div class="card-body">${loadingHtml()}</div></div>`;
   try {
     const [members, branding] = await Promise.all([
@@ -48,6 +53,7 @@ async function showOrgDetail(el: HTMLElement, orgId: string): Promise<void> {
         (): Record<string, string> => ({})
       ),
     ]);
+    if (gen !== orgDetailGen) return;
     el.innerHTML = `<div class="row row-cards">
       <div class="col-md-7"><div class="card"><div class="card-header d-flex align-items-center">
         <h3 class="card-title">${d.members}</h3><button class="btn btn-sm btn-primary ms-auto" id="add-member">${d.create}</button></div>

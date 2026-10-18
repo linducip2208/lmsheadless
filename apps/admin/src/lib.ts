@@ -5,12 +5,13 @@ import {
   confirmDialog,
   formatDateTime,
   getAccessToken,
+  downloadFile,
   esc,
   type ApiClient,
 } from '@lms/ui';
 import { getDict, type Dict } from './i18n.js';
 
-export { toast, modalForm, confirmDialog, formatDateTime, getAccessToken, esc };
+export { toast, modalForm, confirmDialog, formatDateTime, getAccessToken, downloadFile, esc };
 export type { ApiClient };
 export type { Me } from '@lms/ui';
 

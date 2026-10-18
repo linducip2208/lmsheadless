@@ -90,6 +90,36 @@ export async function api<T = unknown>(
   return json.data as T;
 }
 
+// ---- Authenticated downloads ----
+// Plain navigation (<a href>, location.href) can never carry the
+// memory-held access token, so every protected download 401'd in normal
+// sessions. This helper reuses the JSON client's token and triggers the
+// save via a blob URL, keeping the SPA mounted.
+export async function downloadFile(path: string, filename: string): Promise<void> {
+  const token = getAccessToken();
+  const res = await fetch(path, {
+    headers: token ? { authorization: `Bearer ${token}` } : {},
+    credentials: 'same-origin',
+  });
+  if (!res.ok) {
+    const err = new Error(`Download failed (${res.status})`) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  try {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+}
+
 // ---- Authenticated client factory (one per app) ----
 export interface Me {
   id: string;

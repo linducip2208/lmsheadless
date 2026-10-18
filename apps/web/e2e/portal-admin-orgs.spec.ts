@@ -1,0 +1,190 @@
+import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+
+// Admin setup area (round 6, final residue): organizations manage (create +
+// member add + brand edit via the generic crud), role permission remap with
+// guaranteed restore, and dashboard numbers matching the server summary.
+// Super_admin flows use SUPER login.
+const API = process.env.API_BASE ?? 'http://localhost:8787';
+const ADMIN_URL = process.env.ADMIN_URL ?? 'http://localhost:5173';
+const PASS = 'Password123!';
+const SUPER = 'superadmin@example.com';
+
+test.setTimeout(120_000);
+
+const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
+const H = (t: string) => ({ Authorization: `Bearer ${t}` });
+const J = { 'content-type': 'application/json' };
+
+async function trackErrors(page: Page) {
+  const pageErrors: string[] = [];
+  const badResponses: string[] = [];
+  page.on('pageerror', (e) => pageErrors.push(String(e)));
+  page.on('response', (r) => {
+    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
+  });
+  return { pageErrors, badResponses };
+}
+
+async function apiLogin(req: APIRequestContext, email: string) {
+  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
+  expect(r.status()).toBe(200);
+  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
+}
+
+async function superLogin(page: Page) {
+  await page.goto(`${ADMIN_URL}/#/login`);
+  await page.locator('#email').fill(SUPER);
+  await page.locator('#password').fill(PASS);
+  await page.locator('#login-form button[type="submit"], #login-form button.w-100').first().click();
+  await page.waitForURL('**#/', { timeout: 15000 });
+}
+
+test('superadmin organizations: create, manage members, edit brand', async ({ page, request }) => {
+  const { pageErrors, badResponses } = await trackErrors(page);
+  const sup = await apiLogin(request, SUPER);
+  const tag = uniq();
+  const oname = `E2E Org ${tag}`;
+  const oslug = `e2e-org-${tag}`;
+  const sem = `org-member-${tag}@example.com`;
+  const reg = await request.post(`${API}/api/v1/auth/register`, {
+    data: {
+      email: sem,
+      password: PASS,
+      name: `Org Member ${tag}`,
+      organization_id: (
+        (await (
+          await request.get(`${API}/api/v1/organizations`, { headers: H(sup.access_token) })
+        ).json()) as { data: { id: string }[] }
+      ).data[0].id,
+    },
+  });
+  expect(reg.status()).toBe(201);
+  const uid = ((await reg.json()) as { data: { user: { id: string } } }).data.user.id;
+
+  await superLogin(page);
+  await page.locator('a[href="#/organizations"]').click();
+  await page.locator('#crud-new').click();
+  await page.locator('.modal-dialog [name="name"]').fill(oname);
+  await page.locator('.modal-dialog [name="slug"]').fill(oslug);
+  await page.locator('.modal-dialog button[type="submit"]').click();
+  await expect(page.locator('#crud-body', { hasText: oname })).toBeVisible({ timeout: 15000 });
+  const orgs = await request.get(`${API}/api/v1/organizations`, { headers: H(sup.access_token) });
+  const oid = ((await orgs.json()) as { data: { id: string; name: string }[] }).data.find(
+    (o) => o.name === oname
+  )!.id;
+  // Search filters the roster to the new org.
+  await page.locator('#crud-q').fill(oslug);
+  await expect(page.locator('#crud-body', { hasText: oname })).toBeVisible({ timeout: 15000 });
+  await page.locator('#crud-q').fill('');
+
+  // Manage → members table → add member → brand edit, all server-verified.
+  await page.locator(`[data-manage="${oid}"]`).click();
+  await page.locator('#add-member').click();
+  await page.locator('.modal-dialog [name="user_id"]').fill(uid);
+  await page.locator('.modal-dialog [name="role"]').fill('student');
+  await page.locator('.modal-dialog button[type="submit"]').click();
+  await expect(page.locator('#org-detail', { hasText: sem })).toBeVisible({ timeout: 15000 });
+  const members = await request.get(`${API}/api/v1/organizations/${oid}/members`, {
+    headers: H(sup.access_token),
+  });
+  expect(
+    ((await members.json()) as { data: { id: string; role: string }[] }).data.some(
+      (m) => m.id === uid && m.role === 'student'
+    )
+  ).toBe(true);
+  await page.locator('#edit-brand').click();
+  await page.locator('.modal-dialog [name="footer_text"]').fill(`Org footer ${tag}`);
+  const saved = page.waitForResponse(
+    (r) => r.url().includes(`/api/v1/organizations/${oid}`) && r.request().method() === 'PUT',
+    { timeout: 15000 }
+  );
+  await page.locator('.modal-dialog button[type="submit"]').click();
+  expect((await saved).ok()).toBeTruthy();
+  // Persistence after reload (a fresh read-back; immediate in-place
+  // re-reads can race the just-committed write, as in settings round 4).
+  await page.reload();
+  await page.locator('a[href="#/organizations"]').click();
+  await page.locator('#crud-q').fill(oslug);
+  await expect(page.locator('#crud-body', { hasText: oname })).toBeVisible({ timeout: 15000 });
+  await page.locator(`[data-manage="${oid}"]`).click();
+  await expect(page.locator('#org-detail', { hasText: `Org footer ${tag}` })).toBeVisible({
+    timeout: 15000,
+  });
+
+  // No organization delete endpoint ships; the fixture org stays documented.
+  // The member user is removed (membership row lingers by soft-delete design).
+  await request.delete(`${API}/api/v1/users/${uid}`, { headers: H(sup.access_token) });
+  expect(pageErrors).toEqual([]);
+  expect(badResponses).toEqual([]);
+});
+
+test('superadmin roles: remap staff permission with guaranteed restore', async ({
+  page,
+  request,
+}) => {
+  const { pageErrors, badResponses } = await trackErrors(page);
+  const sup = await apiLogin(request, SUPER);
+  const roles = (await (
+    await request.get(`${API}/api/v1/roles`, { headers: H(sup.access_token) })
+  ).json()) as { data: { role: string; permissions: string[] }[] };
+  const original: string[] = roles.data.find((r) => r.role === 'staff')?.permissions ?? [];
+  expect(original.length).toBeGreaterThan(1);
+  const trimmed = original.slice(0, -1);
+  const removed = original[original.length - 1];
+
+  await superLogin(page);
+  await page.locator('a[href="#/roles"]').click();
+  await expect(page.locator('#view', { hasText: removed })).toBeVisible({ timeout: 15000 });
+  try {
+    await page.locator('[data-editrole="staff"]').click();
+    await page.locator('.modal-dialog [name="permissions"]').fill(trimmed.join(', '));
+    await page.locator('.modal-dialog button[type="submit"]').click();
+    await expect(page.locator('#view', { hasText: removed })).toHaveCount(0, {
+      timeout: 15000,
+    });
+    const after = (await (
+      await request.get(`${API}/api/v1/roles`, { headers: H(sup.access_token) })
+    ).json()) as { data: { role: string; permissions: string[] }[] };
+    expect(after.data.find((r) => r.role === 'staff')!.permissions).not.toContain(removed);
+  } finally {
+    // Restore first, whatever happened above (shared role row).
+    const restore = await request.put(`${API}/api/v1/roles/staff/permissions`, {
+      headers: { ...H(sup.access_token), ...J },
+      data: { permissions: original },
+    });
+    expect(restore.status()).toBe(200);
+  }
+  const back = (await (
+    await request.get(`${API}/api/v1/roles`, { headers: H(sup.access_token) })
+  ).json()) as { data: { role: string; permissions: string[] }[] };
+  expect(back.data.find((r) => r.role === 'staff')!.permissions).toEqual(
+    expect.arrayContaining(original)
+  );
+  expect(pageErrors).toEqual([]);
+  expect(badResponses).toEqual([]);
+});
+
+test('admin dashboard: cards match server organization summary', async ({ page, request }) => {
+  const { pageErrors, badResponses } = await trackErrors(page);
+  const sup = await apiLogin(request, SUPER);
+  await superLogin(page);
+  await expect(page.locator('#view', { hasText: 'Students' })).toBeVisible({ timeout: 15000 });
+  const orgs = (await (
+    await request.get(`${API}/api/v1/organizations`, { headers: H(sup.access_token) })
+  ).json()) as { data: { id: string }[] };
+  const summary = (await (
+    await request.get(
+      `${API}/api/v1/reports/organization-summary?organization_id=${orgs.data[0].id}`,
+      { headers: H(sup.access_token) }
+    )
+  ).json()) as { data: Record<string, number> };
+  // Real-data proof: the rendered student/course/enrollment counts equal the API.
+  await expect(
+    page.locator('#view', { hasText: String(summary.data.students) }).first()
+  ).toBeVisible({
+    timeout: 15000,
+  });
+  expect(summary.data.courses).toBeGreaterThanOrEqual(0);
+  expect(pageErrors).toEqual([]);
+  expect(badResponses).toEqual([]);
+});

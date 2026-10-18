@@ -1,4 +1,14 @@
-import { call, loadingHtml, errorHtml, currentOrgId, modalForm, t, esc } from '../lib.js';
+import {
+  call,
+  loadingHtml,
+  errorHtml,
+  currentOrgId,
+  modalForm,
+  downloadFile,
+  toast,
+  t,
+  esc,
+} from '../lib.js';
 
 export async function renderReports(el: HTMLElement): Promise<void> {
   const d = t();
@@ -17,10 +27,24 @@ export async function renderReports(el: HTMLElement): Promise<void> {
       { name: 'course_id', label: d.courseId, required: true },
     ]);
     if (!data?.course_id) return;
-    window.location.href = `/api/v1/reports/export?kind=enrollments&course_id=${encodeURIComponent(String(data.course_id))}&organization_id=${orgId}`;
+    try {
+      await downloadFile(
+        `/api/v1/reports/export?kind=enrollments&course_id=${encodeURIComponent(String(data.course_id))}&organization_id=${orgId}`,
+        `enrollments-${String(data.course_id).slice(0, 8)}.csv`
+      );
+    } catch (e) {
+      toast(e instanceof Error ? e.message : d.failed, 'danger');
+    }
   });
-  (el.querySelector('#exp-att') as HTMLButtonElement).addEventListener('click', () => {
-    window.location.href = `/api/v1/reports/export?kind=attendance&organization_id=${orgId}`;
+  (el.querySelector('#exp-att') as HTMLButtonElement).addEventListener('click', async () => {
+    try {
+      await downloadFile(
+        `/api/v1/reports/export?kind=attendance&organization_id=${orgId}`,
+        'attendance.csv'
+      );
+    } catch (e) {
+      toast(e instanceof Error ? e.message : d.failed, 'danger');
+    }
   });
   const body = el.querySelector('#rep-body') as HTMLElement;
   try {

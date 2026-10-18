@@ -1,4 +1,4 @@
-# Release readiness verdict: CONDITIONALLY READY (2026-10-17, round 3)
+# Release readiness verdict: CONDITIONALLY READY (2026-10-18, round 6)
 
 The standalone LMS is releasable to self-hosting owners under these
 conditions (all recorded, none waived silently):
@@ -22,11 +22,10 @@ conditions (all recorded, none waived silently):
    auto-purged; values 1..3650 bound attempt-copy storage).
 
 Blockers for an unconditional READY: live-provider credentials (customer
-scope), per-portal SPA browser-CRUD automation, R2-restore drill on real
-bindings, restrictive upload defaults, multi-instance setup lock, live cron
-execution on a real deployment. None blocks self-hosted release under the
-conditions above.
+scope), R2-restore drill on real bindings, restrictive upload defaults,
+multi-instance setup lock, live cron execution on a real deployment. The
+former per-portal browser-CRUD blocker is CLOSED (round 6: 70/70, every
+route). None blocks self-hosted release under the conditions above.
 
-Acceptance criteria 1-15: met except #10 (portal-CRUD browser E2E — API-level
-role journeys substituted and disclosed) and #12 (R2 half of backup drill —
-SQLite half drilled PASS). No 100/100 claimed. Score 94/100.
+Acceptance criteria 1-15: met except #12 (R2 half of backup drill —
+SQLite half drilled PASS). Score 95/100 (Browser E2E now full).

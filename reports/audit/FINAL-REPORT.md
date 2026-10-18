@@ -1,8 +1,8 @@
 # LAPORAN FINAL — Audit, Finalisasi & Production Readiness LMS Headless
 
-> **Skor akhir: 94/100 — CONDITIONALLY READY**
+> **Skor akhir: 95/100 — CONDITIONALLY READY**
 > Tanggal: 2026-10-18 · Branch: `main` · HEAD: `58731ab` · 5 round kerja
-> Bukti: 168/168 API tests (30 file) · 42/42 Playwright (13 spec) · contract 181/181 ·
+> Bukti: 168/168 API tests (30 file) · 70/70 Playwright (24 spec) · contract 181/181 ·
 > static-audit PASS · audit PASS · `npm audit` 0 vuln · 268 endpoint (266 invoked)
 
 ---
@@ -11,7 +11,7 @@
 
 1. [Ringkasan Eksekutif](#1-ringkasan-eksekutif)
 2. [Metodologi & Standar Bukti](#2-metodologi--standar-bukti)
-3. [Scorecard 94/100 — Per Kriteria + Bukti](#3-scorecard-94100--per-kriteria--bukti)
+3. [Scorecard 95/100 — Per Kriteria + Bukti](#3-scorecard-95100--per-kriteria--bukti)
 4. [Jejak Kerja Per Round](#4-jejak-kerja-per-round)
 5. [Register Bug Nyata](#5-register-bug-nyata)
 6. [Bukti Pengujian](#6-bukti-pengujian)
@@ -39,10 +39,10 @@ tercatat di `reports/audit/`.
 
 | Angka kunci               | Nilai                                                                                                                 | Sumber                                  |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| Skor total                | **94/100** (bobot tak pernah diubah)                                                                                  | `final-scorecard.md`                    |
+| Skor total                | **95/100** (bobot tak pernah diubah; Browser E2E penuh sejak round 6)                                                 | `final-scorecard.md`                    |
 | Verdict rilis             | **CONDITIONALLY READY**                                                                                               | `release-readiness.md`                  |
 | API tests                 | **168/168 PASS**, 30 file                                                                                             | `npm test`                              |
-| Browser E2E               | **42/42 PASS**, 13 spec, zero flakes (run final)                                                                      | `npm run test:e2e`                      |
+| Browser E2E               | **70/70 PASS**, 24 spec, zero flakes (run final)                                                                      | `npm run test:e2e`                      |
 | Contract OpenAPI          | **181/181** frontend refs resolve                                                                                     | `npm run contract`                      |
 | Static-audit / audit repo | PASS / PASS                                                                                                           | `npm run static-audit`, `npm run audit` |
 | Production vuln deps      | **0**                                                                                                                 | `npm audit --omit=dev`                  |
@@ -79,19 +79,19 @@ semuanya berstatus BLOCKED_EXTERNAL atau keputusan owner (§10, §14, §15).
 
 ---
 
-## 3. Scorecard 94/100 — Per Kriteria + Bukti
+## 3. Scorecard 95/100 — Per Kriteria + Bukti
 
-| Kriteria (maks)                  | Skor   | Bukti                                                                                                      | Yang kurang menuju 100                                                                                                                        |
-| -------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Functional correctness (20)      | 19     | 268 endpoint/266 invoked; 168/168 API; endpoint teardown beraudit; 4 bug round-5 + race round-4 diperbaiki | −1: edge asesmen minor (expired burns attempt, duplicate drops windows)                                                                       |
-| Integration completeness (15)    | **15** | 19/22 verified-connected (scheduler kini in-app); contract 181/181; static-audit + audit PASS              | — (penuh)                                                                                                                                     |
-| Security & access control (20)   | **20** | Kontrol round-1/2 terverifikasi ulang dalam suite; audit tanpa secret; kill switch cron                    | — (penuh; residual low tetap dilacak)                                                                                                         |
-| Data integrity & migrations (10) | 9      | 001→024 idempotent; cascade jujur (opt-in, default off); drill 2026-10-16 OK, 0 FK violation               | −1: klausa CASCADE tak terjangkau (desain diterima)                                                                                           |
-| Browser E2E & regression (15)    | 14     | 42/42 Playwright zero-flake; regression per fix; reload proofs                                             | −1: residue per-route CRUD (admin live + data/imports UI, teacher cohorts + AI, student live/programs/tutor/SCORM-player) — semua API-covered |
-| Reliability/backup/perf (10)     | 8      | Cron idempotent terbukti; drill lokal PASS; bench 6/6 + scale 1500/4500 (state commit `5b3efdf`)           | −2: restore R2 live belum di-drill, angka perf local-only, eksekusi cron live unverified                                                      |
-| Install/docs/commercial (10)     | 9      | Docs ditulis mengikuti kode; `[triggers]` + kill switch terdokumentasi; EN/ID                              | −1: LICENSE belum diputuskan owner                                                                                                            |
+| Kriteria (maks)                  | Skor   | Bukti                                                                                                      | Yang kurang menuju 100                                                                                                                      |
+| -------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Functional correctness (20)      | 19     | 268 endpoint/266 invoked; 168/168 API; endpoint teardown beraudit; 4 bug round-5 + race round-4 diperbaiki | −1: edge asesmen minor (expired burns attempt, duplicate drops windows)                                                                     |
+| Integration completeness (15)    | **15** | 19/22 verified-connected (scheduler kini in-app); contract 181/181; static-audit + audit PASS              | — (penuh)                                                                                                                                   |
+| Security & access control (20)   | **20** | Kontrol round-1/2 terverifikasi ulang dalam suite; audit tanpa secret; kill switch cron                    | — (penuh; residual low tetap dilacak)                                                                                                       |
+| Data integrity & migrations (10) | 9      | 001→024 idempotent; cascade jujur (opt-in, default off); drill 2026-10-16 OK, 0 FK violation               | −1: klausa CASCADE tak terjangkau (desain diterima)                                                                                         |
+| Browser E2E & regression (15)    | 15     | 70/70 Playwright zero-flake; regression per fix; reload + download-event proofs                            | residue CLOSED round 6: tiap route portal punya browser flow + server re-verify; un-automated hanya OAuth/send/cron-live (BLOCKED_EXTERNAL) |
+| Reliability/backup/perf (10)     | 8      | Cron idempotent terbukti; drill lokal PASS; bench 6/6 + scale 1500/4500 (state commit `5b3efdf`)           | −2: restore R2 live belum di-drill, angka perf local-only, eksekusi cron live unverified                                                    |
+| Install/docs/commercial (10)     | 9      | Docs ditulis mengikuti kode; `[triggers]` + kill switch terdokumentasi; EN/ID                              | −1: LICENSE belum diputuskan owner                                                                                                          |
 
-**Total 94/100.** Angka sama dengan round 1–4, tetapi _penyebab_
+**Total 95/100.** Angka naik 94 → 95 di round 6 (sama di round 1–4), dan _penyebab_
 pengurang menyusut tiap round — didokumentasikan di `final-scorecard.md`.
 
 ---
@@ -105,6 +105,7 @@ pengurang menyusut tiap round — didokumentasikan di `final-scorecard.md`.
 | Round 3 docs | `6cc841e`                | Scorecard, gaps, baseline, readiness, matrix, CHANGELOG                                                            | format:check PASS      |
 | Round 4      | `90692ef` → merge `main` | 5 endpoint DELETE beraudit + tombol UI + stale-render guard + 8 spec browser                                       | 164/164 API, 29/29 E2E |
 | Round 5      | `58731ab` → merge `main` | Parent-link revoke, 3 fix roster/append, upload-auth fix, SCORM interop fix + 13 spec browser                      | 168/168 API, 42/42 E2E |
+| Round 6      | `HEAD` → merge `main`    | Residue E2E closure (11 spec / 28 test) + `downloadFile()` fix + orgs guard                                        | 168/168 API, 70/70 E2E |
 
 Detail per round: `CHANGELOG.md` (Round 1–5), `docs/implementation-status.md`.
 
@@ -161,7 +162,7 @@ di UI student); tidak ada endpoint delete untuk announcements/files
 | Perintah                         | Hasil                                                           |
 | -------------------------------- | --------------------------------------------------------------- |
 | `npm test`                       | **168/168 PASS**, 30 file, exit 0                               |
-| `npm run test:e2e`               | **42/42 PASS** chromium, zero flakes (run final 1,1 mnt)        |
+| `npm run test:e2e`               | **70/70 PASS** chromium, zero flakes (run final)                |
 | `npm run lint`                   | PASS (`--max-warnings=0`)                                       |
 | `npm run typecheck`              | PASS (semua workspace)                                          |
 | `npm run format:check`           | PASS                                                            |
@@ -187,7 +188,7 @@ program-lock (2), pwa, quiz-autosave, quiz-copy-purge (3),
 release-fixes, release17, release2-fixes, resource-deletes (6),
 roster-defaults (3), security, security-fixes, xapi, xss-escape.
 
-### 6c. 13 spec Playwright (42 tests, semua dengan server re-verify + zero page-error/5xx assertion)
+### 6c. 24 spec Playwright (70 tests, semua dengan server re-verify + zero page-error/5xx assertion)
 
 | Spec                            | Isi                                                                                                             | n   |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------- | --- |
@@ -345,15 +346,15 @@ yang disengaja; i18n EN/ID tenang. −1: LICENSE belum diputuskan owner
 
 ## 16. Kesimpulan
 
-**94/100 — CONDITIONALLY READY.** Core LMS (auth, org/RBAC, courses,
+**95/100 — CONDITIONALLY READY.** Core LMS (auth, org/RBAC, courses,
 assessment, attendance, grades, certs, discussion, commerce purchase
 flows, SCORM 1.2, xAPI, AI framework, PWA) terbukti lewat 168 API tests
-dan 42 browser tests tanpa satu pun kegagalan yang disembunyikan, dengan
+dan 70 browser tests tanpa satu pun kegagalan yang disembunyikan, dengan
 20+ bug nyata yang ditemukan dan diperbaiki di jalan. Tiga angka 100 yang
-belum diambil (assessment edges, residue E2E, R2/perf-live, LICENSE)
-semuanya bernama, beralasan, dan berlangkah-solusi. Rilis self-hosted
-dapat jalan di bawah kondisi §15; unconditional READY menunggu kredensial
-dan drill live milik owner.
+belum diambil (assessment edges, R2/perf-live, LICENSE) semuanya
+bernama, beralasan, dan berlangkah-solusi — residue E2E sudah ditutup
+penuh di round 6. Rilis self-hosted dapat jalan di bawah kondisi §15;
+unconditional READY menunggu kredensial dan drill live milik owner.
 
 ---
 

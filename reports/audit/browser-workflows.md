@@ -1,13 +1,14 @@
-# Browser workflows (Playwright chromium, 42/42 this session 2026-10-18, round 5)
+# Browser workflows (Playwright chromium, 70/70 this session 2026-10-18, round 6)
 
-Full-suite run 42/42 with zero flakes: 29 prior specs + 13 new round-5
-specs (`e2e/portal-admin-assess.spec.ts` 4/4, `e2e/teacher-more.spec.ts`
-3/3, `e2e/portal-family.spec.ts` 2/2, `e2e/portal-admin-ops.spec.ts`
-4/4). The new specs found four real product bugs (question position
-collision, grades/certs self-default rosters, multipart upload 401s,
-SCORM jszip interop) — all fixed with API regression pins, all green on
-re-run. Prior cold-load flake class (round 4: portal-crud teacher,
-student-multiselect, retry-green) did not recur in this run.
+Full-suite run 70/70 with zero flakes: 42 prior specs + 28 new round-6
+specs (`portal-admin-live` 1/1, `portal-data` 3/3, `teacher-cohorts-ai`
+2/2, `student-explore` 3/3, `portal-admin-orgs` 3/3, `portal-admin-more`
+4/4, `portal-admin-insight` 4/4, `portal-commerce-more` 2/2,
+`student-submit` 2/2, `teacher-profile` 1/1, `student-commerce` 3/3).
+Round 6 found one more real product bug (navigation downloads always
+401 — fixed via shared `downloadFile()` helper, proven byte-exact) and
+closed the per-route residue: every portal route now has real-browser
+CRUD + key-action coverage with server re-verification.
 
 Config: `apps/web/playwright.config.ts` — API + 5 portal dev servers,
 `workers: 1` (shared SQLite + cold vite transforms flake under parallel
@@ -140,12 +141,50 @@ package error; a hand-built valid 1.2 package (stored-zip builder,
 CRC-correct) imports and lists with `version: 1.2` — proving the jszip
 interop fix. Zero page errors / 5xx.
 
-## Not browser-covered (disclosed, narrowed by round 5)
+## Round 6 specs (all green, server re-verified, zero page errors / 5xx)
 
-Round 5 closed quizzes/assignments/gradebook/certificates, community,
-files, global-settings/audit, SCORM import, teacher
-students/live/exercises, student grades, and parent revoke. Still
-API-verified only: admin live tab and data/imports UI, teacher cohorts
-and AI-draft views, student live/programs/tutor/SCORM-player views. All
-are covered at API-integration level (8,328 call-sites, 151 e2e-invoked
-endpoints); the residue is the remaining E2E backlog.
+- `portal-admin-live` (1/1): schedule → reschedule (server start moves) →
+  record attendance (response `recorded: 1`) → cancel (badge + server
+  `cancelled`) → `.ics` downloads with `BEGIN:VCALENDAR`.
+- `portal-data` (3/3): users CSV dry-run (`valid: 2`, job `dry_run`,
+  empty error detail, nothing written); AI mock config + outline job +
+  review-approve (`reviewed_at` set); invites full loop
+  (invite_url token → accept 201 → login works).
+- `teacher-cohorts-ai` (2/2): cohort roster + progress expand; mock
+  outline renders draft with review label, job listed.
+- `student-explore` (3/3): live register → registration row; programs
+  detail → enroll → active; tutor mock ask → answer + stored
+  conversation; SCORM player → bookmark + mark-done → attempt completed.
+- `portal-admin-orgs` (3/3): org create + search + manage (member add,
+  brand edit with reload persistence); roles remap with try/finally
+  restore; dashboard cards equal server summary.
+- `portal-admin-more` (4/4): attendance with notes; discussions
+  create + replies; bundles create/publish/view; coupons + affiliates
+  - plans modals.
+- `portal-admin-insight` (4/4): reports overview + attendance CSV bytes;
+  alerts run + dismiss; announcement → mark-read → unread 0; system
+  status `ok`; exercises create; email queue + log-driver send.
+- `portal-commerce-more` (2/2): payouts approve (`paid`) + reject
+  (`rejected`) + double-decide 400; revenue cards + global search finds
+  fixtures.
+- `student-submit` (2/2): assignment submit → teacher sees body;
+  exercise submit → teacher sees code.
+- `teacher-profile` (1/1): password change via UI on fixture account
+  (new logs in, old 401s; seeds untouched).
+- `student-commerce` (3/3): bundle buy → pending + claim; plan buy →
+  pending subscription row; gift loop (paid → code → redeem → active).
+
+## Not browser-covered (disclosed)
+
+Nothing in LMS scope remains API-only at route/action level: every portal
+route listed in each app's router/nav has at least one real-browser flow
+with server re-verification (24 spec files, 70 tests). Deliberately
+un-automated: live vendor OAuth and live-send paths (BLOCKED_EXTERNAL —
+no credentials by design), production cron execution (needs real deploy).
+Flake record: one transient API single-failure (round 4, unidentified,
+never recurred); one E2E flaky-retry in an intermediate round-6 run
+(full re-runs green); cold-load class documented, never suppressed.
+(Round-5 residue note, now closed: that round left admin live tab and
+data/imports UI, teacher cohorts and AI-draft views, student
+live/programs/tutor/SCORM-player views API-only — all covered by round
+6 above.)

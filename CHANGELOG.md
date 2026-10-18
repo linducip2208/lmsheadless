@@ -2,6 +2,37 @@
 
 ## Unreleased — finalization audit fixes (HEAD d73c6b9 + tree)
 
+### Round 6 (2026-10-18; regression tests: 12 new Playwright specs, 28 tests)
+
+- Residue E2E closure: every portal route now has real-browser coverage —
+  admin live (schedule/reschedule/attendance/cancel + .ics), data imports
+  (CSV dry-run + job detail), AI config/mock job/review-approve, invites
+  full loop (create → accept → login), orgs manage (create/member/brand),
+  roles remap (with guaranteed restore), dashboard vs summary, attendance
+  with notes, discussions tab, bundles/coupons/affiliates/plans,
+  payouts approve+reject, revenue cards, global search, reports + CSV
+  download, alerts run+dismiss, notifications mark-read, system status,
+  email queue+log-driver send, exercises tab, teacher cohorts/AI/profile
+  (password round-trip on fixture), student live/programs/tutor/SCORM/
+  assignment-submit/exercise-submit/bundle-buy/plan-buy/gift-loop.
+- Real product bug fixed: protected downloads (CSV exports, file downloads,
+  .ics) via bare navigation always 401'd (no token on navigations) — new
+  shared `downloadFile()` helper (memory-first token + blob URL) in
+  `@lms/ui`, wired into all three spots, proven by download-event tests
+  with byte-level assertions.
+- Real UX gap closed: teacher profile password change now browser-covered
+  (fixture user, new-works/old-dead, seed creds untouched).
+
+Evidence (round 6, re-verified end-to-end):
+
+- 168/168 API tests green (30 files, unchanged count — round 6 is
+  E2E + fixes), Playwright **70/70** chromium (42 + 28 new, zero flakes),
+  typecheck/lint/format:check/contract (181 refs)/static-audit/audit
+  green, build green, `npm audit --omit=dev` 0 vulns
+- Source-derived inventory: 268 endpoints (266 invoked), 189 e2e-invoked,
+  9,731 call-sites, 108 tables; sole zero-invocation endpoint remains the
+  pre-existing `GET /reports/completion` (documented matcher blind spot)
+
 ### Round 5 (2026-10-18; regression tests: `test/roster-defaults.test.ts`,
 
 `e2e/portal-admin-assess.spec.ts`, `e2e/teacher-more.spec.ts`,

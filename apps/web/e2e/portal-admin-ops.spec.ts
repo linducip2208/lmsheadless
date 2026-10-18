@@ -1,4 +1,5 @@
 import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 
 // Admin ops tabs (round 5): community announcements (course-scoped modal
 // create), files upload via the real file input, global settings edit as
@@ -123,7 +124,13 @@ test('admin files: upload via file input, listed with download link', async ({ p
     (await files.json()) as { data: { id: string; file_name: string; size_bytes: number }[] }
   ).data.find((f) => f.file_name === fname)!;
   expect(row.size_bytes).toBeGreaterThan(0);
-  await expect(page.locator(`#file-list a[href="/api/v1/files/${row.id}/download"]`)).toBeVisible();
+  // Authenticated download through the new button: filename + byte proof.
+  const dl = page.waitForEvent('download', { timeout: 15000 });
+  await page.locator(`#file-list [data-dl="${row.id}"]`).click();
+  const dlFile = await dl;
+  expect(dlFile.suggestedFilename()).toBe(fname);
+  const dlPath = (await dlFile.path()) ?? '';
+  expect(readFileSync(dlPath, 'utf8')).toBe('e2e file body');
   // No file delete endpoint ships; the tiny fixture row stays documented.
   expect(pageErrors).toEqual([]);
   expect(badResponses).toEqual([]);

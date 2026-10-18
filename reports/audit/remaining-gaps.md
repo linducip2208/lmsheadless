@@ -7,6 +7,21 @@ decide buttons, AI quota-reset endpoint + scheduler procedure, instructor
 assignment API + UI wiring path, blocking native dialogs, teacher i18n
 worst-offenders, router navigation races, `javascript:` URL storage.
 
+Closed 2026-10-18 (round 6; 11 new Playwright specs, 28 tests,
+Playwright 70/70 total):
+
+- Residue E2E closure: admin live (schedule/reschedule/attendance/cancel
+  - .ics), data imports (CSV dry-run + job detail), AI config/mock
+    job/review-approve, invites full loop, orgs manage, roles remap (with
+    restore), dashboard vs summary, attendance-admin with notes, discussions
+    tab, bundles/coupons/affiliates/plans, payouts approve+reject, revenue,
+    global search, reports + CSV, alerts run+dismiss, notifications
+    mark-read, system status, email queue+send, exercises tab, teacher
+    cohorts/AI/profile, student live/programs/tutor/SCORM/submits/shop
+    edges. Every portal route now has real-browser coverage.
+- Authenticated downloads (real bug): CSV/file/.ics navigation downloads
+  always 401'd — shared `downloadFile()` helper + 3 wirings, byte-proven.
+
 Closed 2026-10-18 (round 5; `test/roster-defaults.test.ts` 3/3,
 `test/resource-deletes.test.ts` 6/6, `e2e/portal-admin-assess.spec.ts`
 4/4, `e2e/teacher-more.spec.ts` 3/3, `e2e/portal-family.spec.ts` 2/2,
@@ -95,14 +110,15 @@ Closed 2026-10-11 (HEAD d73c6b9 + tree, `test/release-fixes.test.ts` green):
 
 ## Still open (with reason + next action)
 
-1. Per-route browser CRUD for the residue: admin live tab and data/imports
-   UI, teacher cohorts and AI-draft views, student
-   live/programs/tutor/SCORM-player views (see browser-workflows.md) —
-   API-covered (168 tests); needs final Playwright expansion. Rounds 4–5
-   closed cohorts/programs/settings-org/global/audit, banks/grading/
-   attendance, discussion/shop-buy, quizzes/assignments/gradebook/certs,
-   community/files/SCORM, teacher students/live/exercises, student grades,
-   parent revoke (21 specs).
+1. Per-route browser CRUD: CLOSED in round 6 — gap #1's residue list
+   (admin live + data/imports UI, teacher cohorts + AI views, student
+   live/programs/tutor/SCORM-player) is now fully browser-covered
+   (70/70), plus the micro-residue found during the round-6 audit
+   (orgs/roles/dashboard, attendance-admin, discussions, bundles/coupons/
+   affiliates/plans/payouts/revenue/search, reports/CSV, alerts,
+   notifications, system, email/exercises tabs, teacher profile, student
+   submits/shop edges). Deliberately un-automated: vendor OAuth, live
+   sends, live cron execution (all BLOCKED_EXTERNAL).
 2. Live-provider credentials (Midtrans-live, SMTP, VAPID-send, OpenAI key,
    Zoom/Meet OAuth, R2/KV bindings, sandbox) — owner-supplied; adapters +
    mock tests ship. The cron's production execution needs a real

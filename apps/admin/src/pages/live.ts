@@ -1,4 +1,14 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
+import {
+  call,
+  loadingHtml,
+  errorHtml,
+  toast,
+  modalForm,
+  currentOrgId,
+  downloadFile,
+  t,
+  esc,
+} from '../lib.js';
 
 export async function renderLive(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
@@ -8,8 +18,15 @@ export async function renderLive(el: HTMLElement): Promise<void> {
     return;
   }
   el.innerHTML = `<button class="btn btn-primary mb-2" id="lv-new">${d.schedule}</button>
-    <a class="btn btn-outline-secondary mb-2 ms-2" href="/api/v1/live-sessions.ics?organization_id=${orgId}">.ics</a>
+    <button class="btn btn-outline-secondary mb-2 ms-2" id="lv-ics">.ics</button>
     <div id="lv-list">${loadingHtml()}</div>`;
+  (el.querySelector('#lv-ics') as HTMLButtonElement).addEventListener('click', async () => {
+    try {
+      await downloadFile(`/api/v1/live-sessions.ics?organization_id=${orgId}`, 'live-sessions.ics');
+    } catch (e) {
+      toast(e instanceof Error ? e.message : d.failed, 'danger');
+    }
+  });
   const load = async () => {
     const box = el.querySelector('#lv-list') as HTMLElement;
     try {

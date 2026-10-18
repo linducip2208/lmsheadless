@@ -1,5 +1,18 @@
 # Implementation status (October 2026)
 
+## Round 6 audit additions (in-repo, 2026-10-18)
+
+- Residue E2E closure: 12 new specs / 28 tests covering every remaining
+  portal route (admin live/data/orgs/roles/dashboard/attendance/
+  discussions/bundles/coupons/affiliates/plans/payouts/revenue/search/
+  reports/alerts/notifications/system/email/exercises, teacher
+  cohorts/AI/profile, student live/programs/tutor/SCORM/submits/shop
+  edges). Per-route browser CRUD now exhaustive.
+- Real product bug fixed: authenticated downloads (`downloadFile()`
+  helper + 3 wirings; navigation downloads always 401'd before).
+- Evidence: 168 API tests, 70/70 E2E zero-flake, toolchain green,
+  scorecard 95/100 (Browser E2E 15/15).
+
 ## Round 5 audit additions (in-repo, 2026-10-18)
 
 - Parent-link revoke endpoint (audited, admin-only) + family E2E loop.

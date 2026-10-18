@@ -6,6 +6,7 @@ import {
   confirmDialog,
   currentOrgId,
   getAccessToken,
+  downloadFile,
   t,
   esc,
 } from '../lib.js';
@@ -158,7 +159,7 @@ export async function renderFilesPage(el: HTMLElement): Promise<void> {
             .map(
               (f) => `<div class="list-group-item d-flex gap-2 align-items-center">
         <div><strong>${f.file_name}</strong><div class="text-muted small">${f.mime_type} · ${(f.size_bytes / 1024).toFixed(1)} KB</div></div>
-        <a class="btn btn-sm btn-outline-primary ms-auto" href="/api/v1/files/${f.id}/download">${d.download}</a></div>`
+        <button class="btn btn-sm btn-outline-primary ms-auto" data-dl="${f.id}" data-fn="${esc(f.file_name)}">${d.download}</button></div>`
             )
             .join('')}</div>`
         : `<p class="text-muted">${d.empty}</p>`;
@@ -166,6 +167,15 @@ export async function renderFilesPage(el: HTMLElement): Promise<void> {
       box.innerHTML = errorHtml(e);
     }
   };
+  el.querySelector('#file-list')?.addEventListener('click', async (e) => {
+    const b = (e.target as HTMLElement).closest('[data-dl]') as HTMLElement | null;
+    if (!b?.dataset.dl) return;
+    try {
+      await downloadFile(`/api/v1/files/${b.dataset.dl}/download`, b.dataset.fn || 'download');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
+    }
+  });
   (el.querySelector('#up-form') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     const input = el.querySelector('#up-file') as HTMLInputElement;
