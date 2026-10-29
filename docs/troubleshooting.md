@@ -1,5 +1,15 @@
 # Troubleshooting
 
+## Flaky E2E first test (cold vite transforms)
+
+The first spec of a Playwright run may time out once while vite compiles
+portals on demand ("cold-load class"), then go green on retry and on every
+re-run. This is environmental, not a product bug: `apps/web/playwright.config.ts`
+runs `e2e/global-setup.ts` to warm all five portals + the API before specs,
+which reduced the suite from flaky to 73/73 green. If a single spec still
+flakes, re-run just that file — a second consecutive failure is a real bug.
+See `docs/architecture.md` (quarantine process).
+
 ## `npm run db:migrate` fails with “table already exists”
 
 Migrations use `CREATE TABLE IF NOT EXISTS` and guarded `ALTER`s — safe to

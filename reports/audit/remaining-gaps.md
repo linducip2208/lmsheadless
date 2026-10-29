@@ -110,33 +110,53 @@ Closed 2026-10-11 (HEAD d73c6b9 + tree, `test/release-fixes.test.ts` green):
 
 ## Still open (with reason + next action)
 
-1. Per-route browser CRUD: CLOSED in round 6 — gap #1's residue list
-   (admin live + data/imports UI, teacher cohorts + AI views, student
-   live/programs/tutor/SCORM-player) is now fully browser-covered
-   (70/70), plus the micro-residue found during the round-6 audit
-   (orgs/roles/dashboard, attendance-admin, discussions, bundles/coupons/
-   affiliates/plans/payouts/revenue/search, reports/CSV, alerts,
-   notifications, system, email/exercises tabs, teacher profile, student
-   submits/shop edges). Deliberately un-automated: vendor OAuth, live
-   sends, live cron execution (all BLOCKED_EXTERNAL).
+Closed in round 9 (2026-10-23; `test/round9-hardening.test.ts` 8/8,
+`test/round9b-properties.test.ts` 6/6, axe 7/7, full E2E 81/81):
+
+- Retention sweeps for every unbounded table (audit, notifications,
+  email queue, idempotency) + manual super_admin trigger + data-retention doc.
+- Magic-byte upload verification (fuzzing caught a real MZ-as-image bypass),
+  zip-bomb ratio guard, bounded rate-limit map, strict boot secrets,
+  cron durations, status latency/storage, opt-in slow log, docs CSP,
+  audit-secret static rule.
+- Bench p99/concurrency/auto-boot + k6 shape; E2E helpers consolidated
+  (identical behavior, suite re-run green); warm-up kills cold-boot flakes.
+- Axe a11y suite: role=img previews, tag-pill, shared contrast.css for badge/
+  outline-button contrast; skip links, roving tablist, RTL visual baseline.
+
+1. Per-route browser CRUD: CLOSED (81/81 — incl. 7 axe a11y specs with
+   authenticated commerce, keyboard tablist nav; 6 visual baselines opt-in).
+   Deliberately un-automated:
+   vendor OAuth, live sends, live cron execution on a real deploy
+   (BLOCKED_EXTERNAL by design; now observable via `GET /system/cron-status`
+   and `npm run drill`).
 2. Live-provider credentials (Midtrans-live, SMTP, VAPID-send, OpenAI key,
    Zoom/Meet OAuth, R2/KV bindings, sandbox) — owner-supplied; adapters +
-   mock tests ship. The cron's production execution needs a real
-   `wrangler deploy` (in-repo handler is fully tested).
-3. Setup multi-instance first boot — atomic claim covers single-instance
-   concurrency; distributed lock still needs KV/DO or serialized deploy hook.
-4. Per-user upload quota granularity and restrictive defaults — org-level
-   mechanism ships default-off; needs product policy to enforce.
-5. Subscriptions: no auto-renewal/charge/cancel linkage — labeled
-   point-in-time records.
-6. SCORM 2004 sequencing, H5P runtime — documented gaps, no false claims.
-7. R2 restore undrilled on live bindings — local drill PASS only.
-8. LICENSE unresolved (owner decision; file is an explicit notice, not a
-   license grant) — flagged, never auto-chosen.
-9. Remaining hardcoded strings outside dicts + no full RTL pass — tracked.
-10. Perf numbers are local-dev only — no production capacity claims.
-11. Question-copy purge removes copies **and their answer rows** (cascade)
-    for finished attempts past the org's opt-in window — attempt scores and
-    totals are unaffected, but per-question review/answer history for
-    purged rows is gone BY POLICY; orgs must choose the retention days
-    consciously (default off = nothing is ever purged).
+   mock tests ship. Cron + drill tooling ships in-repo and is locally verified.
+3. Setup multi-instance first boot — CLOSED for code: KV distributed lock when
+   bound + DB atomic claim fallback (stale 5 min). Live multi-isolate race
+   still needs a real deploy to observe.
+4. Upload quotas — CLOSED for code: org-level + per-user
+   (`per_user_quota_bytes`), both default-off; needs product policy to enforce
+   restrictive defaults.
+5. Subscriptions — CLOSED for code: free auto-renew, paid past_due, buyer/
+   privileged cancel, renew-due trigger + daily cron. Live money movement
+   stays provider-driven by design.
+6. Order cancel — CLOSED: `POST /orders/:id/cancel` (pending → cancelled).
+7. xAPI retention — CLOSED for code: privileged purge endpoint + opt-in
+   `xapi_retention_days` cron (default off).
+8. R2 restore — CLOSED for tooling: `npm run drill` PASS locally
+   (integrity ok, 0 FK violations, inventory); R2-bound inventory path
+   documented for post-deploy runs.
+9. LICENSE — CLOSED: proprietary commercial (owner-selected 2026-10-22).
+10. SCORM 2004 sequencing, H5P runtime — CLOSED round 8: sequencing metadata
+    - linear-flow contract + detail endpoint; H5P minimal native runtime
+      (upload/serve/attempts/scores). Full ADL choice/jump/rollup sequencing
+      and the H5P editor suite stay documented roadmap (no false claims).
+11. RTL/Arabic — CLOSED round 8 for layout (`ar` dicts, `dir`/`lang`
+    switching, API `lang=ar` fallback, visual AR baseline); full long-form
+    Arabic copy stays incremental (chrome translated, content falls back).
+12. Perf numbers are local-dev only — no production capacity claims; budgets
+    - scale fixtures green, drill PASS.
+13. Question-copy purge removes copies **and their answer rows** (cascade)
+    for finished attempts past the org's opt-in window — by policy, default off.

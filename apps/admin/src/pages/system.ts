@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, t } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, pageHeader, t } from '../lib.js';
 
 export async function renderSystem(el: HTMLElement): Promise<void> {
   el.innerHTML = loadingHtml();
@@ -9,7 +9,9 @@ export async function renderSystem(el: HTMLElement): Promise<void> {
     >;
     const row = (k: string, v: unknown, good: boolean) =>
       `<div class="d-flex justify-content-between border-bottom py-1"><span>${k}</span><strong><span class="badge ${good ? 'bg-green' : 'bg-yellow'}">${String(v)}</span></strong></div>`;
-    el.innerHTML = `<div class="row row-cards"><div class="col-md-6"><div class="card">
+    el.innerHTML =
+      pageHeader({ title: 'System', desc: 'Kesehatan layanan, integrasi, dan scheduler.' }) +
+      `<div class="row row-cards"><div class="col-md-6"><div class="card">
       <div class="card-header"><h3 class="card-title">System</h3></div><div class="card-body">
       ${row('database', s.database, s.database === 'ok')}
       ${row('tables', s.tables, true)}
@@ -24,8 +26,29 @@ export async function renderSystem(el: HTMLElement): Promise<void> {
       ${row('payments', s.payments_configured ? 'configured' : 'not configured', !!s.payments_configured)}
       ${row('push', s.push_configured ? 'configured' : 'not configured', !!s.push_configured)}
       ${row('ai_organizations', s.ai_organizations, true)}
-      </div></div></div></div>
+      </div></div></div>
+      <div class="col-12"><div class="card mt-3">
+      <div class="card-header"><h3 class="card-title">Scheduler (cron)</h3></div><div class="card-body" id="cron-list">${loadingHtml()}</div>
+      </div></div></div>
       <p class="text-muted small mt-2">Unconfigured integrations report honestly and their features stay inert until keys are set. See docs/deployment.md.</p>`;
+    try {
+      const runs = (await call<{ action: string; at: string }[]>(
+        '/api/v1/system/cron-status'
+      ).catch(() => [])) as { action: string; at: string }[];
+      const box = el.querySelector('#cron-list') as HTMLElement | null;
+      if (box)
+        box.innerHTML = runs.length
+          ? `<div class="table-responsive"><table class="table card-table"><tbody>${runs
+              .slice(0, 10)
+              .map(
+                (r) =>
+                  `<tr><td>${r.action}</td><td class="text-muted small">${String(r.at).slice(0, 16).replace('T', ' ')}</td></tr>`
+              )
+              .join('')}</tbody></table></div>`
+          : `<p class="text-muted">No cron runs recorded yet — the native scheduler writes here after the first deploy.</p>`;
+    } catch {
+      /* status card already rendered; cron list keeps its loading state */
+    }
   } catch (e) {
     el.innerHTML = errorHtml(e);
   }

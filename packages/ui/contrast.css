@@ -1,0 +1,54 @@
+/* Contrast-safe overrides (axe-verified, WCAG AA): Tabler v1's lightened
+   OKLCH palette fails 4.5:1 for small text on several badge and
+   outline-button combos. These pair near-black text (#1d273b) with light
+   tints (all ≥ 10:1) and darken outline-button text/borders (≥ 5:1).
+   Loaded after tabler CSS in every portal; equal-or-higher specificity wins. */
+.badge.bg-green,
+.badge.bg-yellow,
+.badge.bg-red,
+.badge.bg-blue,
+.badge.bg-azure {
+  color: #1d273b !important;
+}
+.badge.bg-green {
+  background-color: #c9ecd6 !important;
+}
+.badge.bg-yellow {
+  background-color: #fce3b3 !important;
+}
+.badge.bg-red {
+  background-color: #f8d7d8 !important;
+}
+.badge.bg-blue,
+.badge.bg-azure {
+  background-color: #d3e3fa !important;
+}
+/* Solid danger badges (e.g. the notification counter): Tabler's danger
+   red with white text is ≈4:1 — darken the background to ≈6.5:1. */
+.badge.bg-danger {
+  color: #fff !important;
+  background-color: #c01a1a !important;
+}
+.btn-outline-green,
+.btn-ghost-green {
+  color: #1c7a3a !important;
+  border-color: #1c7a3a !important;
+}
+.btn-outline-danger,
+.btn-ghost-danger {
+  color: #c01a1a !important;
+  border-color: #c01a1a !important;
+}
+/* Inactive tab labels and secondary outline buttons use Tabler's gray-500
+   (≈4:1 on white, fails AA). Darkened to slate #495263 (≈7.9:1). */
+.nav-tabs .nav-link:not(.active) {
+  color: #495263 !important;
+}
+.nav-tabs .nav-link:not(.active):hover {
+  color: #1d273b !important;
+}
+.btn-outline-secondary,
+.btn-ghost-secondary {
+  color: #495263 !important;
+  border-color: #6b7686 !important;
+}

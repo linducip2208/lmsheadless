@@ -22,6 +22,8 @@ export const en = {
   notInCohort: 'Not in any cohort.',
   myNotifs: 'My notifications',
   loading: 'Loading…',
+  failed: 'Failed',
+  skip: 'Skip to content',
 };
 
 export type ParentDict = typeof en;
@@ -50,8 +52,27 @@ export const id: Record<keyof ParentDict, string> = {
   notInCohort: 'Tidak di kohor mana pun.',
   myNotifs: 'Notifikasi saya',
   loading: 'Memuat…',
+  failed: 'Gagal',
+  skip: 'Lewati ke konten',
 };
 
+export const ar: Record<keyof typeof en, string> = {
+  ...en,
+  loading: 'جارٍ التحميل…',
+  failed: 'فشل',
+};
+export function isRtl(locale: string): boolean {
+  return locale === 'ar';
+}
+export function applyLocaleDir(locale: string): void {
+  try {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+  } catch {
+    /* non-DOM (tests) */
+  }
+}
 export function getDict(l: string): ParentDict {
+  if (l === 'ar') return ar as unknown as typeof en;
   return l === 'id' ? id : en;
 }

@@ -1,8 +1,10 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, pageHeader, t, esc } from '../lib.js';
 
 export async function renderAssignments(el: HTMLElement): Promise<void> {
   const d = t();
-  el.innerHTML = `<div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
+  el.innerHTML =
+    pageHeader({ title: d.assignments, desc: 'Tugas, pengumpulan, penilaian, dan umpan balik.' }) +
+    `<div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
     <div><label class="form-label" for="a-course">${d.courses}</label><select id="a-course" class="form-select"></select></div>
     <button class="btn btn-primary" id="a-new">${d.new_} ${d.assignments}</button></div></div>
     <div id="a-list"></div><div id="a-detail" class="mt-3"></div>`;

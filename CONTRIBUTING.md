@@ -21,3 +21,6 @@
 - CI must be green (install, migrate, seed, typecheck, lint, test, build, audit).
 - Describe the tenant-isolation impact of any API change.
 - Screenshots for UI changes (desktop + mobile width).
+- New tests for every behavior change; update `docs/`, `PRODUCT.md`,
+  `CHANGELOG.md`. Intermittent failures follow the quarantine process
+  (`docs/architecture.md`): label, tracking note, then fix — not retries.

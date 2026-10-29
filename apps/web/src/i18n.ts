@@ -145,6 +145,8 @@ export const en = {
   issued: 'issued',
   view: 'View',
   loading: 'Loading…',
+  failed: 'Failed',
+  skip: 'Skip to content',
   courses: 'Courses',
 };
 
@@ -297,9 +299,60 @@ export const id: Record<keyof WebDict, string> = {
   issued: 'diterbitkan',
   view: 'Lihat',
   loading: 'Memuat…',
+  failed: 'Gagal',
+  skip: 'Lewati ke konten',
   courses: 'Kursus',
 };
 
+export const ar: Record<keyof typeof en, string> = {
+  ...en,
+  loading: 'جارٍ التحميل…',
+  failed: 'فشل',
+  skip: 'تخطَّ إلى المحتوى',
+  tagline: 'API-first · سحابي أصيل · PWA',
+  getStarted: 'ابدأ الآن',
+  apiDocs: 'توثيق API',
+  readDocs: 'اقرأ التوثيق',
+  features: 'المزايا',
+  solutions: 'الحلول',
+  pricing: 'الأسعار',
+  docs: 'التوثيق',
+  about: 'من نحن',
+  contact: 'اتصل بنا',
+  signIn: 'تسجيل الدخول',
+  catalog: 'الفهرس',
+  faq: 'الأسئلة الشائعة',
+  contactUs: 'اتصل بنا',
+  startFree: 'ابدأ مجانًا',
+  search: 'بحث',
+  noCourses: 'لا توجد دورات.',
+  noBundles: 'لا توجد حزم.',
+  createAccount: 'إنشاء حساب',
+  fullName: 'الاسم الكامل',
+  email: 'البريد الإلكتروني',
+  register: 'سجّل',
+  forgotPassword: 'نسيت كلمة المرور؟',
+  resetPassword: 'إعادة تعيين كلمة المرور',
+  sendResetLink: 'إرسال رابط التعيين',
+  setNewPassword: 'تعيين كلمة مرور جديدة',
+  home: 'الرئيسية',
+  admin: 'الإدارة',
+  teacher: 'المعلم',
+  student: 'الطالب',
+  parent: 'ولي الأمر',
+};
+export function isRtl(locale: string): boolean {
+  return locale === 'ar';
+}
+export function applyLocaleDir(locale: string): void {
+  try {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+  } catch {
+    /* non-DOM (tests) */
+  }
+}
 export function getDict(l: string): WebDict {
+  if (l === 'ar') return ar as unknown as typeof en;
   return l === 'id' ? id : en;
 }

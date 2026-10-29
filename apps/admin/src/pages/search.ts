@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, currentOrgId, t, esc } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, currentOrgId, pageHeader, t, esc } from '../lib.js';
 
 export async function renderSearch(el: HTMLElement, query: string): Promise<void> {
   const d = t();
@@ -25,7 +25,7 @@ export async function renderSearch(el: HTMLElement, query: string): Promise<void
     const section = (title: string, items: string) =>
       `<div class="card mb-3"><div class="card-header"><h3 class="card-title">${title}</h3></div><div class="list-group list-group-flush">${items || `<div class="list-group-item text-muted">${d.empty}</div>`}</div></div>`;
     el.innerHTML =
-      `<h2>${d.search}: “${esc(query.slice(0, 60))}”</h2>` +
+      pageHeader({ title: `${d.search}: “${esc(query.slice(0, 60))}”` }) +
       section(
         d.courses,
         r.courses

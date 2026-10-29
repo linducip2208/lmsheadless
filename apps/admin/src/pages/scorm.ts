@@ -5,6 +5,7 @@ import {
   toast,
   currentOrgId,
   getAccessToken,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -16,7 +17,9 @@ export async function renderScorm(el: HTMLElement): Promise<void> {
     el.innerHTML = `<div class="alert alert-warning">${d.selectOrg}</div>`;
     return;
   }
-  el.innerHTML = `<div class="card mb-3"><div class="card-body"><form id="sc-form" class="d-flex gap-2 flex-wrap align-items-end">
+  el.innerHTML =
+    pageHeader({ title: d.scorm, desc: 'Impor paket SCORM 1.2, player sandbox, tracking progres.' }) +
+    `<div class="card mb-3"><div class="card-body"><form id="sc-form" class="d-flex gap-2 flex-wrap align-items-end">
     <div><label class="form-label" for="sc-file">SCORM 1.2 .zip</label><input id="sc-file" type="file" accept=".zip" class="form-control" required></div>
     <div><label class="form-label" for="sc-course">${d.courses} ID</label><input id="sc-course" class="form-control"></div>
     <button class="btn btn-primary">${d.upload}</button></form>

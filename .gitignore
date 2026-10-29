@@ -5,6 +5,7 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+.stryker-tmp/
 *.db
 *.db-journal
 .env

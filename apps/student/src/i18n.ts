@@ -13,6 +13,9 @@ export const en = {
   upcoming: 'Upcoming work',
   continue: 'Open',
   loading: 'Loading...',
+  failed: 'Failed',
+  cancel: 'Cancel',
+  skip: 'Skip to content',
   empty: 'Nothing here yet.',
   shop: 'Course shop',
   live: 'Live classes',
@@ -97,6 +100,9 @@ export const id: Record<keyof typeof en, string> = {
   upcoming: 'Tugas mendatang',
   continue: 'Buka',
   loading: 'Memuat...',
+  failed: 'Gagal',
+  cancel: 'Batal',
+  skip: 'Lewati ke konten',
   empty: 'Belum ada apa-apa.',
   shop: 'Toko kursus',
   live: 'Kelas live',
@@ -166,6 +172,23 @@ export const id: Record<keyof typeof en, string> = {
   markAllRead: 'Tandai semua dibaca',
   invoice: 'Faktur',
 };
+export const ar: Record<keyof typeof en, string> = {
+  ...en,
+  loading: 'جارٍ التحميل…',
+  failed: 'فشل',
+};
+export function isRtl(locale: string): boolean {
+  return locale === 'ar';
+}
+export function applyLocaleDir(locale: string): void {
+  try {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+  } catch {
+    /* non-DOM (tests) */
+  }
+}
 export function getDict(l: string) {
+  if (l === 'ar') return ar as unknown as typeof en;
   return l === 'id' ? id : en;
 }

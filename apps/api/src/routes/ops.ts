@@ -10,9 +10,15 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { orgSetting, orgStorageExceeded, wantsNotification, canTeach } from '../access.js';
+import {
+  orgSetting,
+  orgStorageExceeded,
+  userStorageExceeded,
+  wantsNotification,
+  canTeach,
+} from '../access.js';
 import type { AppVars, AuthUser } from '../types.js';
-import { objectKey, putObject, validateUpload } from '../storage.js';
+import { objectKey, putObject, validateUpload, validateUploadBytes } from '../storage.js';
 import { t } from '../i18n.js';
 
 const ops = new Hono<{ Variables: AppVars }>();
@@ -939,8 +945,12 @@ ops.post('/api/v1/uploads', requireAuth(), async (c) => {
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   if (orgId && (await orgStorageExceeded(db, orgId, file.size)))
     return fail(c, 413, 'QUOTA_EXCEEDED', 'Organization storage quota exceeded');
+  if (orgId && (await userStorageExceeded(db, orgId, user.id, file.size)))
+    return fail(c, 413, 'QUOTA_EXCEEDED', 'Per-user storage quota exceeded');
   const key = objectKey(prefix || 'general', file.name);
   const buf = await file.arrayBuffer();
+  const sniffErr = validateUploadBytes(buf, file.name);
+  if (sniffErr) return fail(c, 400, 'INVALID_FILE', sniffErr);
   await putObject(c.get('env'), key, buf, file.type || 'application/octet-stream');
   const fileId = newId();
   await execute(

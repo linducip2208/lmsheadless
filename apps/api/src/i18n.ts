@@ -1,6 +1,6 @@
-export type Lang = 'en' | 'id';
+export type Lang = 'en' | 'id' | 'ar';
 
-const dict: Record<string, Record<Lang, string>> = {
+const dict: Record<string, Record<'en' | 'id', string>> = {
   unauthorized: { en: 'Unauthorized', id: 'Tidak terotorisasi' },
   forbidden: { en: 'Forbidden', id: 'Akses ditolak' },
   not_found: { en: 'Resource not found', id: 'Data tidak ditemukan' },
@@ -24,13 +24,17 @@ const dict: Record<string, Record<Lang, string>> = {
 export function t(key: string, lang: Lang): string {
   const entry = dict[key];
   if (!entry) return key;
+  // Arabic falls back to English server-side; portals render RTL from their
+  // own ar dicts (see apps/*/src/i18n.ts applyLocaleDir).
+  if (lang === 'ar') return entry.en;
   return entry[lang] ?? entry.en;
 }
 
 export function resolveLang(header: string | null, query: string | null): Lang {
   const q = (query ?? '').toLowerCase();
-  if (q === 'id' || q === 'en') return q;
+  if (q === 'id' || q === 'en' || q === 'ar') return q;
   const h = (header ?? '').toLowerCase();
   if (h.startsWith('id')) return 'id';
+  if (h.startsWith('ar')) return 'ar';
   return 'en';
 }

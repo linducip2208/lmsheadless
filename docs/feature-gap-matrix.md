@@ -41,8 +41,8 @@ Legend: ✅ implemented+tested · 🟡 implemented, thin tests · 🟠 partial �
 | Affiliates + anti-self-referral | ✅ | expiry + self-check + tests |
 | Gifts/bundles/entitlements | ✅ | grant flows + tests |
 | SCORM 1.2 | ✅ | import/validate/launch/track/resume + sandboxed player + tests |
-| SCORM 2004 | ⚪ | documented gap in `docs/scorm.md` |
-| H5P | ⚪ | embed extension point documented, no native runtime |
+| SCORM 2004 | ✅ | import + sequencing metadata (node count/control mode) + linear-flow player contract + detail endpoint + tests; full ADL choice/jump/rollup stays roadmap |
+| H5P | ✅ | minimal native runtime (025 tables, upload validation, sandboxed content, attempts/scores) + tests; full editor suite out of scope |
 | AI framework | ✅ | config/jobs/review gate/mocked provider tests; live provider pending |
 | Coding exercises | ✅ | static mode live; execution gated behind sandbox provider |
 | Email queue | ✅ | queue + status + notification-preference enforcement on all fan-out writes; HTTP-webhook driver only (no SMTP driver), creds pending |
@@ -53,5 +53,5 @@ Legend: ✅ implemented+tested · 🟡 implemented, thin tests · 🟠 partial �
 ## Platform
 
 Auth/RBAC/tenants/PWA/i18n(a11y pass)/CORS/rate-limit/audit — ✅ tested.
-RTL/Arabic — 🚫 deferred (i18n architecture ready, documented).
+RTL/Arabic — ✅ layout support in all portals (`ar` dict, `dir`/`lang` switching, API accepts `lang=ar` with en fallback); full Arabic copy for long-form content stays incremental (chrome translated, content falls back to en).
 Native mobile apps — 🚫 out of scope (Flutter-ready API + guide instead).

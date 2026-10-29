@@ -1,15 +1,31 @@
-# LMS Headless — License Notice
+LMS HEADLESS — COMMERCIAL LICENSE (PROPRIETARY)
 
-The final commercial licensing terms for this product have **not** been selected
-yet and must be chosen by the **product owner** before any sale or distribution.
+Copyright (c) 2026 Lindu Cipta. All rights reserved.
 
-Until then:
+1. GRANT. Lindu Cipta grants the purchasing customer ("Licensee") a
+non-exclusive, non-transferable license to install, run, and modify ONE
+production deployment of LMS Headless per purchased license seat/order,
+including the REST API, five web portals, PWA shell, and documentation.
 
-- No license is granted for redistribution, resale, or production use by third parties.
-- Internal development and evaluation use only.
-- Do not remove this file. Do not claim MIT/Apache/GPL/commercial rights that
-  have not been granted.
+2. PERMITTED. Internal business use; white-label branding per organization;
+configuration of roles, courses, and reports; minor source modifications for
+the Licensee's own deployment; backup copies.
 
-When ready, the product owner should replace this file with the chosen license
-text (e.g. a commercial EULA, subscription terms, or an OSI-approved license)
-and update `PRODUCT.md`, `README.md` and `package.json` accordingly.
+3. PROHIBITED. No redistribution, resale, sublicensing, SaaS multi-tenant
+resale, or public source disclosure without a written reseller agreement.
+No removal of license notices. No use of the software to compete with the
+licensor's marketplace offering using the licensor's own source.
+
+4. OWNERSHIP. All intellectual property remains with Lindu Cipta.
+This is a license, not a sale of the software.
+
+5. SUPPORT. Defect fixes in covered behavior per PRODUCT.md support
+boundaries. Custom features, migrations, and managed hosting are separate.
+
+6. WARRANTY. Provided "AS IS" to the maximum extent permitted by law.
+Liability is limited to the license fee paid in the preceding 12 months.
+
+7. TERM. Perpetual for the licensed version; updates require an active
+support/subscription plan.
+
+To purchase, extend, or transfer a license: contact the licensor.

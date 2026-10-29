@@ -39,6 +39,30 @@ export async function orgStorageExceeded(
   return used + Math.max(0, extraBytes) > quota;
 }
 
+// Per-user quota (bytes, set via organizations.settings
+// `per_user_quota_bytes`). Default-off like the org quota; when set, every
+// upload/SCORM import is checked against the uploader's own usage.
+export async function userStorageExceeded(
+  db: D1Like,
+  orgId: string,
+  userId: string,
+  extraBytes: number
+): Promise<boolean> {
+  const raw = await orgSetting(db, orgId, 'per_user_quota_bytes');
+  const quota = Number(raw);
+  if (!raw || !Number.isFinite(quota) || quota <= 0) return false;
+  const used =
+    (
+      await queryFirst<{ s: number | null }>(
+        db,
+        'SELECT SUM(size_bytes) as s FROM files WHERE organization_id = ? AND owner_id = ?',
+        orgId,
+        userId
+      )
+    )?.s ?? 0;
+  return used + Math.max(0, extraBytes) > quota;
+}
+
 export async function courseOrg(db: D1Like, courseId: string): Promise<string | null> {
   const row = await queryFirst<{ organization_id: string }>(
     db,

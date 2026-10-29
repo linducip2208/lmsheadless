@@ -6,6 +6,7 @@ import {
   modalForm,
   confirmDialog,
   currentOrgId,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -27,7 +28,12 @@ export async function renderCommerce(el: HTMLElement): Promise<void> {
     ['plans', d.plans],
     ['revenue', d.revenue],
   ];
-  el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
+  el.innerHTML =
+    pageHeader({
+      title: d.commerce,
+      desc: 'Bundel, kupon, order, pembayaran, komisi, afiliasi, dan langganan.',
+    }) +
+    `<ul class="nav nav-tabs mb-3" role="tablist">
     ${tabs.map(([k, label], i) => `<li class="nav-item" role="presentation"><button class="nav-link${i === 0 ? ' active' : ''}" data-tab="${k}" role="tab">${label}</button></li>`).join('')}
     </ul><div id="c-body"></div>`;
   const body = el.querySelector('#c-body') as HTMLElement;
@@ -48,6 +54,26 @@ export async function renderCommerce(el: HTMLElement): Promise<void> {
       show((b as HTMLElement).dataset.tab ?? 'bundles');
     })
   );
+  // Arrow-key navigation between tabs (roving tablist, WAI-ARIA practice).
+  el.querySelector('[role="tablist"]')?.addEventListener('keydown', (ev) => {
+    const e = ev as KeyboardEvent;
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'Home' && e.key !== 'End')
+      return;
+    const btns = [...el.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const cur = btns.indexOf(document.activeElement as HTMLButtonElement);
+    if (cur === -1) return;
+    e.preventDefault();
+    const rtl = document.documentElement.dir === 'rtl';
+    const fwd = (e.key === 'ArrowRight') !== rtl || e.key === 'End';
+    const next =
+      e.key === 'Home'
+        ? 0
+        : e.key === 'End'
+          ? btns.length - 1
+          : (cur + (fwd ? 1 : -1) + btns.length) % btns.length;
+    btns[next].focus();
+    btns[next].click();
+  });
   await renderBundles(body, orgId);
 }
 
@@ -218,7 +244,7 @@ async function renderOrders(el: HTMLElement, orgId: string): Promise<void> {
             o
           ) => `<tr><td class="text-truncate" style="max-width:140px">${esc(o.id.slice(0, 8))}…</td><td>${esc(o.kind)}</td><td>${Number(o.total)}</td>
       <td><span class="badge ${o.status === 'paid' ? 'bg-green' : o.status === 'refunded' ? 'bg-red' : 'bg-yellow'}">${esc(o.status)}</span></td>
-      <td class="text-end text-nowrap">${o.pending_payment_id ? `<button class="btn btn-sm btn-outline-green" data-confirm="${o.pending_payment_id}">${d.confirmPayment}</button> ` : ''}${o.status === 'paid' ? `<button class="btn btn-sm btn-outline-danger" data-refund="${o.id}">${d.refund}</button>` : ''}</td></tr>`
+      <td class="text-end text-nowrap">${o.pending_payment_id ? `<button class="btn btn-sm btn-outline-green" data-confirm="${o.pending_payment_id}">${d.confirmPayment}</button> ` : ''}${o.status === 'paid' ? `<button class="btn btn-sm btn-outline-danger" data-refund="${o.id}">${d.refund}</button>` : ''}${o.status === 'pending' ? ` <button class="btn btn-sm btn-outline-secondary" data-cancel-order="${o.id}">${d.cancel}</button>` : ''}</td></tr>`
         )
         .join('')}</tbody></table></div>`
       : `<p class="text-muted">${d.empty}</p>`;
@@ -242,6 +268,21 @@ async function renderOrders(el: HTMLElement, orgId: string): Promise<void> {
         if (!(await confirmDialog(d.refund, d.confirmDeleteBody, d.refund))) return;
         try {
           await call(`/api/v1/orders/${(b as HTMLElement).dataset.refund}/refund`, {
+            method: 'POST',
+            body: '{}',
+          });
+          toast(d.saved, 'success');
+          await renderOrders(el, orgId);
+        } catch (e) {
+          toast(e instanceof Error ? e.message : d.failed, 'danger');
+        }
+      })
+    );
+    box.querySelectorAll('[data-cancel-order]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        if (!(await confirmDialog(d.cancel, d.confirmDeleteBody, d.cancel))) return;
+        try {
+          await call(`/api/v1/orders/${(b as HTMLElement).dataset.cancelOrder}/cancel`, {
             method: 'POST',
             body: '{}',
           });

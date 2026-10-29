@@ -218,6 +218,47 @@ xapi.delete('/xapi/statements', requireAuth(), async (c) => {
   return ok(c, { deleted: count });
 });
 
+// Policy-based retention purge: orgs opt in via
+// organizations.settings.xapi_retention_days (no value = never purge).
+xapi.post('/xapi/retention/purge', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const body = (await c.req.json().catch(() => null)) as {
+    organization_id?: string;
+    days?: number;
+  } | null;
+  const orgId = body?.organization_id ?? new URL(c.req.url).searchParams.get('organization_id');
+  if (!orgId || !canAccessOrg(user, orgId))
+    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  const role = orgRole(user, orgId);
+  if (!user.isSuperAdmin && role !== 'organization_admin') {
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  }
+  const days = Number(body?.days ?? 0);
+  if (!Number.isInteger(days) || days < 1 || days > 3650)
+    return fail(c, 400, 'VALIDATION_ERROR', 'days must be an integer 1..3650');
+  const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+  const count =
+    (
+      await queryFirst<{ n: number }>(
+        c.get('db'),
+        'SELECT COUNT(*) as n FROM xapi_statements WHERE organization_id = ? AND stored_at < ?',
+        orgId,
+        cutoff
+      )
+    )?.n ?? 0;
+  await execute(
+    c.get('db'),
+    'DELETE FROM xapi_statements WHERE organization_id = ? AND stored_at < ?',
+    orgId,
+    cutoff
+  );
+  await audit(c, 'xapi.retention_purged', {
+    organizationId: orgId,
+    metadata: { deleted: count, days },
+  });
+  return ok(c, { deleted: count, days });
+});
+
 xapi.get('/xapi/export', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const orgId = new URL(c.req.url).searchParams.get('organization_id');

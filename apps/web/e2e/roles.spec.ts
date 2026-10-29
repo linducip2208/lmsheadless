@@ -1,22 +1,17 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { ADMIN, API, H, J, PASS, uniq } from './helpers.js';
 import { createHash } from 'node:crypto';
 
 // Full role journeys against the live API (no portal UI dependency).
 // API on :8787 (API_BASE env or direct), disposable fixtures with unique
 // timestamps in emails/codes/slugs so reruns never collide.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const PASS = 'Password123!';
-const ADMIN = 'admin@example.com';
 const TEACHER = 'teacher@example.com';
 const PARENT = 'parent@example.com';
 
 // Tests are independent (disposable fixtures); default file-level ordering applies.
 
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
 const email = (tag: string) => `e2e-${uniq()}-${tag}@example.com`;
 const code = (tag: string) => `E2E${uniq()}`.toUpperCase().slice(0, 32) + tag;
-const H = (token: string) => ({ Authorization: `Bearer ${token}` });
-const J = { 'content-type': 'application/json' };
 
 type Req = APIRequestContext;
 

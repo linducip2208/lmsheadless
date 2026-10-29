@@ -1,44 +1,24 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import {
+  ADMIN,
+  API,
+  H,
+  J,
+  PASS,
+  STUDENT_URL,
+  SUPER,
+  apiLogin,
+  studentLogin,
+  trackErrors,
+  uniq,
+} from './helpers.js';
 
 // Student portal workflows beyond free-enroll/lesson-complete (round 4):
 // discussion thread + reply through the Talk tab, and a PAID course bought
 // from the shop with a manual payment claim through the real buy dialogs.
 // Fixtures via API; every UI action re-verified server-side.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const STUDENT_URL = process.env.STUDENT_URL ?? 'http://localhost:5174';
-const PASS = 'Password123!';
-const ADMIN = 'admin@example.com';
-const SUPER = 'superadmin@example.com';
 
 test.setTimeout(120_000);
-
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-const J = { 'content-type': 'application/json' };
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
-
-async function studentLogin(page: Page, email: string) {
-  await page.goto(`${STUDENT_URL}/#/login`);
-  await page.locator('#f #e, #f input[type="email"]').first().fill(email);
-  await page.locator('#f #p, #f input[type="password"]').first().fill(PASS);
-  await page.locator('#f button[type="submit"], #f button').first().click();
-  await page.waitForURL('**#/', { timeout: 15000 });
-}
 
 test('student discussion: new thread + reply via Talk tab, server-verified', async ({
   page,

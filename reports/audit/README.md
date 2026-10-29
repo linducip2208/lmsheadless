@@ -13,7 +13,8 @@ not from documentation claims.
 | `role-access-matrix.md`          | Roles × capabilities with enforcement evidence         |
 | `security-findings.md`           | Findings with severity, repro, fix, regression test    |
 | `database-integrity.md`          | Migrations, FKs, indexes, money, seed, cascades        |
-| `browser-e2e-results.md`         | Playwright per-role results                            |
+| `browser-workflows.md`           | Playwright per-route results (73/73, current)          |
+| `archive/`                       | Superseded snapshots (e.g. 15/15 E2E from 2026-10-10)  |
 | `commerce-results.md`            | Money/commerce scenario evidence                       |
 | `provider-integration-status.md` | Honest per-provider status                             |
 | `backup-restore-results.md`      | Drill procedure + measured outcome                     |

@@ -8,6 +8,9 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,8 +23,12 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
-      - run: npm test
+      - run: npm --workspace apps/api run test -- --shard=${{ matrix.shard }}/2
       - run: npm run build
       - run: npm run audit
       - run: npm run contract
+      - run: npm run contract:breaking
+      - run: npm run contract:gaps
       - run: npm run static-audit
+      - run: npm run drill
+      - uses: gitleaks/gitleaks-action@v2

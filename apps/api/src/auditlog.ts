@@ -19,7 +19,7 @@ export async function audit(
   try {
     await execute(
       c.get('db'),
-      'INSERT INTO audit_logs (id, actor_id, organization_id, action, entity, entity_id, metadata, ip, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO audit_logs (id, actor_id, organization_id, action, entity, entity_id, metadata, ip, request_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       newId(),
       user?.id ?? null,
       opts.organizationId ?? null,
@@ -28,6 +28,7 @@ export async function audit(
       opts.entityId ?? null,
       opts.metadata ? JSON.stringify(opts.metadata).slice(0, 4000) : null,
       c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null,
+      (c.get('requestId') as string | undefined) ?? null,
       nowIso()
     );
   } catch {

@@ -129,18 +129,20 @@ documented in `docs/white-label.md`). Tenant isolation is tested
 ## Testing
 
 ```bash
-npm test            # 87+ tests: auth, RBAC matrix, tenant isolation, IDOR,
+npm test            # 191 tests: auth, RBAC matrix, tenant isolation, IDOR,
                     # courses, quiz (scoring/expiry/limits/pools/manual),
                     # assignments, attendance, certificates, files, setup, search,
                     # idempotency, CORS, rate limiting, authoring, banks, cohorts,
-                    # live, commerce, webhooks, SCORM, AI-mock, imports, reuse,
+                    # live, commerce, webhooks, SCORM (+2004 sequencing), H5P,
+                    # AI-mock, imports, reuse, retention sweeps, upload sniffing,
                     # journey E2E, PWA assets, OpenAPI honesty
 npm run typecheck
 npm run lint
 npm run build
 npm run audit       # migrations, FK/indexes, secrets, CDN, envelope, RBAC, PWA, guards
-npm run contract    # every frontend API path resolves to a backend route
-npm run test:e2e    # Playwright browser tests (needs seeded dev DB)
+npm run contract    # every frontend API path resolves to a backend route (182 refs)
+npm run drill       # R2/D1 restore drill (inventory + integrity_check)
+npm run test:e2e    # 81 Playwright browser tests (incl. 7 axe a11y; seeded DB, auto-boot servers) + 6 visual baselines (opt-in)
 ```
 
 ## Security

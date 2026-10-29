@@ -1,6 +1,6 @@
 {
   "name": "lms-headless",
-  "version": "1.11.0",
+  "version": "1.14.0",
   "private": true,
   "description": "Production-ready headless LMS (Cloudflare-native: Workers + D1 + R2 + KV)",
   "workspaces": [
@@ -28,12 +28,20 @@
     "static-audit": "node scripts/static-audit.mjs",
     "bench": "node scripts/bench.mjs",
     "scale": "tsx scripts/scale-check.mts",
+    "drill": "node scripts/r2-restore-drill.mjs",
+    "contract:breaking": "node scripts/check-breaking.mjs",
+    "contract:gaps": "node scripts/check-coverage-gaps.mjs",
+    "gen:error-catalog": "node scripts/gen-error-catalog.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "eslint": "^9.12.0",
     "prettier": "^3.3.3",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.71.1"
+    "typescript-eslint": "^8.71.1",
+    "vite-plugin-purgecss": "^0.2.13"
   }
 }

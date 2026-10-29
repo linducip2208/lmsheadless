@@ -6,6 +6,7 @@ import {
   modalForm,
   currentOrgId,
   getAccessToken,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -24,7 +25,9 @@ export async function renderData(el: HTMLElement): Promise<void> {
     ['email', d.email],
     ['invites', d.invites],
   ];
-  el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
+  el.innerHTML =
+    pageHeader({ title: d.dataAi, desc: 'Impor CSV, draf AI (BYOK), latihan, email, dan undangan.' }) +
+    `<ul class="nav nav-tabs mb-3" role="tablist">
     ${tabs.map(([k, label], i) => `<li class="nav-item" role="presentation"><button class="nav-link${i === 0 ? ' active' : ''}" data-tab="${k}" role="tab">${label}</button></li>`).join('')}
     </ul><div id="d-body"></div>`;
   const body = el.querySelector('#d-body') as HTMLElement;

@@ -1,9 +1,11 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, pageHeader, t, esc } from '../lib.js';
 
 export async function renderSocial(el: HTMLElement): Promise<void> {
   const d = t();
   const orgId = currentOrgId();
-  el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
+  el.innerHTML =
+    pageHeader({ title: d.community, desc: 'Pengumuman organisasi dan diskusi kursus.' }) +
+    `<ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item" role="presentation"><button class="nav-link active" data-tab="ann" role="tab">${d.announcements}</button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" data-tab="dis" role="tab">${d.discussion}</button></li></ul>
     <div id="social-body"></div>`;

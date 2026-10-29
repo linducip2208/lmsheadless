@@ -1,6 +1,7 @@
 import '@tabler/core/dist/css/tabler.min.css';
+import '@lms/ui/contrast.css';
 import './style.css';
-import { getDict, type WebDict } from './i18n.js';
+import { getDict, applyLocaleDir, type WebDict } from './i18n.js';
 import { esc } from '@lms/ui';
 
 // Portal origins: localhost defaults are for development only. Production
@@ -27,6 +28,7 @@ try {
 function lang(): string {
   return localStorage.getItem('web-locale') ?? 'en';
 }
+applyLocaleDir(lang());
 let t: WebDict = getDict(lang());
 
 const META: Record<string, [string, string]> = {
@@ -54,56 +56,53 @@ function setMeta(path: string): void {
 function header(active = ''): string {
   const link = (href: string, label: string) =>
     `<li class="nav-item"><a class="nav-link${active === href ? ' active' : ''}" href="#${href}">${label}</a></li>`;
-  return `<header class="navbar navbar-expand-md sticky-top bg-white border-bottom"><div class="container-xl">
+  return `<header class="site-nav"><div class="navbar navbar-expand-md"><div class="container-xl">
+    <a href="#main" class="visually-hidden-focusable">${t.skip}</a>
     <a class="navbar-brand" href="#/"><span class="brand-mark">L</span> LMS Headless</a>
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Menu"><span class="navbar-toggler-icon"></span></button>
-    <div class="collapse navbar-collapse" id="nav"><ul class="navbar-nav ms-auto">
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="nav"><ul class="navbar-nav ms-auto align-items-md-center">
     ${link('/features', t.features)}${link('/catalog', t.catalog)}${link('/solutions', t.solutions)}${link('/pricing', t.pricing)}${link('/documentation', t.docs)}${link('/about', t.about)}${link('/contact', t.contact)}
-    <li class="nav-item ms-2"><select id="lang-sel" class="form-select form-select-sm" aria-label="Language"><option value="en"${lang() === 'en' ? ' selected' : ''}>EN</option><option value="id"${lang() === 'id' ? ' selected' : ''}>ID</option></select></li>
-    <li class="nav-item ms-2"><a class="btn btn-outline-primary" href="#/login">${t.signIn}</a></li>
-    <li class="nav-item ms-2"><a class="btn btn-primary" href="#/register">${t.getStarted}</a></li>
-    </ul></div></div></header>`;
+    <li class="nav-item ms-md-2"><select id="lang-sel" class="form-select form-select-sm" aria-label="Language"><option value="en"${lang() === 'en' ? ' selected' : ''}>EN</option><option value="id"${lang() === 'id' ? ' selected' : ''}>ID</option><option value="ar"${lang() === 'ar' ? ' selected' : ''}>AR</option></select></li>
+    <li class="nav-item ms-md-2"><a class="btn btn-outline-primary" href="#/login">${t.signIn}</a></li>
+    <li class="nav-item ms-md-2 mt-2 mt-md-0"><a class="btn btn-primary" href="#/register">${t.getStarted}</a></li>
+    </ul></div></div></div></header>`;
 }
 
 function footer(): string {
-  return `<footer class="footer footer-transparent mt-5 border-top"><div class="container-xl"><div class="row">
-    <div class="col-md-4"><h4>LMS Headless</h4><p class="text-muted">${t.footerTag}</p></div>
-    <div class="col-md-2"><h4>${t.product}</h4><ul class="list-unstyled"><li><a href="#/features">${t.features}</a></li><li><a href="#/pricing">${t.pricing}</a></li><li><a href="#/documentation">${t.documentation}</a></li></ul></div>
-    <div class="col-md-2"><h4>${t.solutions}</h4><ul class="list-unstyled"><li><a href="#/schools">${t.schools}</a></li><li><a href="#/training">${t.training}</a></li><li><a href="#/corporate">${t.corporate}</a></li></ul></div>
-    <div class="col-md-2"><h4>${t.company}</h4><ul class="list-unstyled"><li><a href="#/about">${t.about}</a></li><li><a href="#/contact">${t.contact}</a></li><li><a href="#/verify/DEMO">${t.verifyNumber}</a></li></ul></div>
-    <div class="col-md-2"><h4>${t.portals}</h4><ul class="list-unstyled"><li><a href="${PORTALS.admin}">${t.admin}</a></li><li><a href="${PORTALS.teacher}">${t.teacher}</a></li><li><a href="${PORTALS.student}">${t.student}</a></li><li><a href="${PORTALS.parent}">${t.parent}</a></li></ul></div>
+  return `<footer class="site-footer"><div class="container-xl"><div class="row">
+    <div class="col-md-4 mb-3"><a class="navbar-brand" href="#/"><span class="brand-mark">L</span> LMS Headless</a><p class="text-muted mt-2">${t.footerTag}</p></div>
+    <div class="col-6 col-md-2"><h4>${t.product}</h4><ul class="list-unstyled"><li><a href="#/features">${t.features}</a></li><li><a href="#/pricing">${t.pricing}</a></li><li><a href="#/documentation">${t.documentation}</a></li></ul></div>
+    <div class="col-6 col-md-2"><h4>${t.solutions}</h4><ul class="list-unstyled"><li><a href="#/schools">${t.schools}</a></li><li><a href="#/training">${t.training}</a></li><li><a href="#/corporate">${t.corporate}</a></li></ul></div>
+    <div class="col-6 col-md-2"><h4>${t.company}</h4><ul class="list-unstyled"><li><a href="#/about">${t.about}</a></li><li><a href="#/contact">${t.contact}</a></li><li><a href="#/verify/DEMO">${t.verifyNumber}</a></li></ul></div>
+    <div class="col-6 col-md-2"><h4>${t.portals}</h4><ul class="list-unstyled"><li><a href="${PORTALS.admin}">${t.admin}</a></li><li><a href="${PORTALS.teacher}">${t.teacher}</a></li><li><a href="${PORTALS.student}">${t.student}</a></li><li><a href="${PORTALS.parent}">${t.parent}</a></li></ul></div>
   </div><div class="text-muted small mt-3">${t.footerNote}</div></div></footer>`;
 }
 
 function cta(): string {
-  return `<section class="cta-band"><div class="container-xl text-center py-5">
+  return `<div class="container-xl"><section class="cta-band"><div class="text-center py-5 px-3">
     <h2>${t.ctaTitle}</h2>
-    <p class="text-muted">${t.ctaSub}</p>
+    <p>${t.ctaSub}</p>
     <a class="btn btn-primary btn-lg" href="#/register">${t.getStarted}</a>
-    <a class="btn btn-outline-primary btn-lg ms-2" href="#/documentation">${t.readDocs}</a></div></section>`;
+    <a class="btn btn-outline-primary btn-lg ms-2" href="#/documentation">${t.readDocs}</a></div></section></div>`;
 }
 
-function previewDashboard(): string {
-  return `<div class="preview" aria-label="Product preview">
-    <div class="preview-bar"><span></span><span></span><span></span></div>
-    <div class="preview-body"><div class="preview-side"><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="preview-main"><div class="preview-cards"><b></b><b></b><b></b></div><div class="preview-chart"><i style="height:60%"></i><i style="height:85%"></i><i style="height:45%"></i><i style="height:70%"></i><i style="height:95%"></i></div>
-    <div class="preview-rows"><u></u><u></u><u></u></div></div></div></div>`;
+/* Real product captures (demo data) — no mockups, no fake players. */
+function shotDashboard(): string {
+  return `<figure class="shot"><div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+    <img src="/showcase-dashboard.png" alt="Admin dashboard with real statistics, course completion, activity and quick actions" loading="lazy">
+    <figcaption>Panel admin — statistik, penyelesaian kursus, dan aksi cepat (data demo).</figcaption></figure>`;
 }
 
-function previewCourse(): string {
-  return `<div class="preview" aria-label="Product preview">
-    <div class="preview-bar"><span></span><span></span><span></span></div>
-    <div class="preview-body"><div class="preview-main"><div class="preview-video"></div>
-    <div class="preview-rows"><u></u><u></u></div>
-    <div class="preview-progress"><i style="width:64%"></i></div></div></div></div>`;
+function shotOrgs(): string {
+  return `<figure class="shot"><div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+    <img src="/showcase-orgs.png" alt="Organizations management with branding and domain settings" loading="lazy">
+    <figcaption>Manajemen organisasi — anggota, branding white-label, domain (data demo).</figcaption></figure>`;
 }
 
-function previewMobile(): string {
-  return `<div class="preview phone" aria-label="Product preview">
-    <div class="preview-notch"></div><div class="preview-cards col"><b></b><b></b></div>
-    <div class="preview-progress"><i style="width:42%"></i></div>
-    <div class="preview-rows"><u></u><u></u></div><div class="preview-nav"><i></i><i></i><i></i><i></i></div></div>`;
+function shotMobile(): string {
+  return `<figure class="shot" style="max-width:300px;margin-inline:auto"><div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+    <img src="/showcase-mobile.png" alt="Admin dashboard on a mobile phone" loading="lazy">
+    <figcaption>Responsif penuh di layar ponsel (data demo).</figcaption></figure>`;
 }
 
 function home(): string {
@@ -175,46 +174,53 @@ function home(): string {
           ],
         ];
   return `
-  <section class="hero"><div class="container-xl row align-items-center">
-    <div class="col-md-6"><span class="badge bg-blue mb-2">${t.tagline}</span>
+  <section class="hero"><div class="container-xl"><div class="row align-items-center g-4">
+    <div class="col-lg-6"><span class="tag-pill mb-2">${t.tagline}</span>
     <h1 class="display-4">${t.heroTitle}</h1>
     <p class="lead text-muted">${t.heroSub}</p>
+    <div class="hero-ctas">
     <a class="btn btn-primary btn-lg" href="#/register">${t.getStarted}</a>
-    <a class="btn btn-outline-primary btn-lg ms-2" href="#/documentation">${t.apiDocs}</a>
-    <div class="mt-3 small text-muted">${t.rolesNote}</div></div>
-    <div class="col-md-6">${previewDashboard()}</div></div></section>
-  <section class="container-xl py-4"><div class="row row-cards">
-    ${features.map(([x, y]) => `<div class="col-sm-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="card-title">${x}</h3><p class="text-muted">${y}</p></div></div></div>`).join('')}
-  </div></section>
-  <section class="container-xl py-4"><h2>${t.fiveExperiences}</h2>
-  <p class="text-muted">${t.fiveExperiencesSub}</p>
-  <div class="row row-cards">${roles.map(([x, y]) => `<div class="col-md-4"><div class="card"><div class="card-body"><h3 class="card-title">${x}</h3><p class="text-muted">${y}</p></div></div></div>`).join('')}</div></section>
-  <section class="container-xl py-4"><h2>${t.seeProduct}</h2><div class="row">${`<div class="col-md-6">${previewCourse()}</div><div class="col-md-6">${previewMobile()}</div>`}</div></section>
-  <section class="container-xl py-4"><h2>${t.architecture}</h2>
-  <div class="arch"><span>${t.archLine}</span></div>
-  <p class="text-muted">${t.architectureSub}</p></section>
-  <section class="container-xl py-4"><h2>${t.pricing}</h2>
-  <div class="row row-cards">
-    ${[
-      [t.startFree, t.pricingLead, ['Full source', 'SQLite + local files', 'Community docs']],
+    <a class="btn btn-outline-primary btn-lg" href="#/documentation">${t.apiDocs}</a></div>
+    <div class="hero-trust small text-muted mt-3"><span>✔ ${t.rolesNote}</span></div></div>
+    <div class="col-lg-6">${shotDashboard()}</div></div></div></section>
+  <section class="section"><div class="container-xl"><span class="eyebrow">${t.product}</span>
+    <h2 class="stitle">${t.features}</h2>
+    <p class="ssub">${t.featuresLead}</p>
+    <div class="bento">
+    ${features.map(([x, y]) => `<div><div class="bcard h-100"><h3>${x}</h3><p>${y}</p></div></div>`).join('')}
+  </div></div></section>
+  <section class="section alt"><div class="container-xl"><span class="eyebrow">${t.portals}</span>
+    <h2 class="stitle">${t.fiveExperiences}</h2>
+    <p class="ssub">${t.fiveExperiencesSub}</p>
+    <div class="portal-grid">${roles.map(([x, y], i) => `<div class="portal-card"><h3>${x}</h3><p>${y}</p><a class="go" href="${[PORTALS.admin, PORTALS.teacher, PORTALS.student, PORTALS.parent, PORTALS.admin][i] ?? PORTALS.student}">${t.openPortal} →</a></div>`).join('')}</div></div></section>
+  <section class="section"><div class="container-xl"><span class="eyebrow">${t.catalog}</span>
+    <h2 class="stitle">${t.seeProduct}</h2>
+    <div class="shot-row two mt-3">${shotOrgs()}${shotMobile()}</div></div></section>
+  <section class="section alt"><div class="container-xl"><span class="eyebrow">Headless API</span>
+    <h2 class="stitle">${t.architecture}</h2>
+    <div class="pipe" role="list"><span role="listitem">Web + PWA</span><span class="arrow" aria-hidden="true">→</span><span role="listitem">REST /api/v1</span><span class="arrow" aria-hidden="true">→</span><span role="listitem">Hono on Workers</span><span class="arrow" aria-hidden="true">→</span><span role="listitem">D1 · R2 · KV</span></div>
+    <p class="ssub">${t.architectureSub}</p>
+    <p><a class="btn btn-outline-primary" href="/api/v1/docs">${t.apiDocs}</a>
+    <a class="btn btn-outline-primary btn-sm ms-2" href="/api/v1/openapi.json">OpenAPI JSON</a></p></div></section>
+  <section class="section"><div class="container-xl"><span class="eyebrow">${t.pricing}</span>
+    <h2 class="stitle">${t.pricing}</h2>
+    <p class="ssub">${t.pricingLead}</p>
+    <div class="price-grid">
+    ${(
       [
-        'Cloud',
-        'Managed hosting',
-        ['Workers + D1 + R2', 'White-label onboarding', 'Email support'],
-      ],
-      [
-        'Enterprise',
-        'Groups & companies',
-        ['SSO & integrations', 'SLA & training', 'Flutter delivery'],
-      ],
-    ]
+        [t.startFree, t.pricingLead, ['Full source', 'SQLite + local files', 'Community docs'], false],
+        ['Cloud', 'Managed hosting', ['Workers + D1 + R2', 'White-label onboarding', 'Email support'], true],
+        ['Enterprise', 'Groups & companies', ['Custom domains', 'SSO & integrations', 'SLA & training'], false],
+      ] as [string, string, string[], boolean][]
+    )
       .map(
-        ([x, s, pts]) =>
-          `<div class="col-md-4"><div class="card h-100"><div class="card-body text-center"><h3>${x}</h3><p class="text-muted">${s}</p><ul class="list-unstyled text-start">${(pts as string[]).map((p) => `<li>✓ ${p}</li>`).join('')}</ul><a class="btn btn-primary" href="#/contact">${t.contactUs}</a></div></div></div>`
+        ([x, s, pts, hot]) =>
+          `<div class="price-card${hot ? ' featured' : ''}"><h3>${x}</h3><p class="text-muted">${s}</p><ul>${pts.map((p) => `<li>${p}</li>`).join('')}</ul><a class="btn ${hot ? 'btn-primary' : 'btn-outline-primary'}" href="#/contact">${t.contactUs}</a></div>`
       )
       .join('')}
-  </div><p class="text-muted small mt-2">${t.pricingNote}</p></section>
-  <section class="container-xl py-4"><h2>${t.faq}</h2>
+  </div><p class="text-muted small mt-3">${t.pricingNote}</p></div></section>
+  <section class="section alt faq"><div class="container-xl"><span class="eyebrow">FAQ</span>
+    <h2 class="stitle">${t.faq}</h2>
   ${faqs.map(([q, a]) => `<details class="mb-2"><summary><strong>${q}</strong></summary><p class="text-muted mt-1">${a}</p></details>`).join('')}</section>
   ${cta()}`;
 }
@@ -378,9 +384,10 @@ function solutionPage(kind: string): string {
           ],
         };
   const [x, s, items] = data[kind] ?? data.solutions;
-  return `<div class="container-xl py-4"><h1>${x}</h1><p class="lead text-muted">${s}</p>
-  <ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>
-  <div class="row mt-4"><div class="col-md-6">${previewDashboard()}</div><div class="col-md-6">${previewCourse()}</div></div></div>${cta()}`;
+  return `<div class="container-xl py-5"><span class="eyebrow">${t.solutions}</span><h1>${x}</h1><p class="lead text-muted">${s}</p>
+  <div class="split"><div><ul class="checklist">${items.map((i) => `<li>${i}</li>`).join('')}</ul>
+  <p class="mt-3"><a class="btn btn-primary" href="#/register">${t.getStarted}</a> <a class="btn btn-outline-primary" href="#/pricing">${t.pricing}</a></p></div>
+  <div>${shotDashboard()}</div></div></div>${cta()}`;
 }
 
 function pricingPage(): string {
@@ -447,13 +454,13 @@ function contactPage(): string {
 }
 
 function loginPage(): string {
-  return `<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-md-5"><div class="card"><div class="card-body">
+  return `<div class="container-xl py-5"><div class="row justify-content-center"><div class="col-md-5 auth-wrap"><div class="card"><div class="card-body">
   <h1>${t.signIn}</h1><p class="text-muted">${t.authenticate}</p>
-  <form id="lform"><label class="form-label" for="le">${t.email}</label><input id="le" type="email" class="form-control mb-2" required>
-  <label class="form-label" for="lp">${t.password}</label><input id="lp" type="password" class="form-control mb-3" required>
-  <div id="lerr"></div><button class="btn btn-primary w-100">${t.signIn}</button></form>
+  <form id="lform" novalidate><label class="form-label" for="le">${t.email}</label><input id="le" type="email" class="form-control mb-2" required autocomplete="username">
+  <label class="form-label" for="lp">${t.password}</label><input id="lp" type="password" class="form-control mb-3" required autocomplete="current-password">
+  <div id="lerr" aria-live="assertive"></div><button class="btn btn-primary w-100" id="lbtn">${t.signIn}</button></form>
   <div id="roles" class="mt-3"></div>
-  <p class="mt-3">${t.noAccount} <a href="#/register">${t.register}</a> · <a href="#/forgot">${t.forgotPassword}</a> · ${t.loginDemo}</p></div></div></div></div></div>`;
+  <p class="mt-3">${t.noAccount} <a href="#/register">${t.register}</a> · <a href="#/forgot">${t.forgotPassword}</a></p></div></div></div></div></div>`;
 }
 
 function forgotPage(): string {
@@ -520,9 +527,9 @@ function registerPage(): string {
 }
 
 function catalogPage(): string {
-  return `<div class="container-xl py-4"><h1>${t.catalog}</h1>
+  return `<div class="container-xl py-5"><span class="eyebrow">${t.catalog}</span><h1>${t.catalog}</h1>
   <p class="text-muted">${t.publishedCatalog}</p>
-  <form id="cat-q" class="d-flex gap-2 mb-3"><input id="cat-input" class="form-control" placeholder="${t.search}…"><button class="btn btn-primary">${t.search}</button></form>
+  <form id="cat-q" class="d-flex gap-2 mb-3" role="search"><input id="cat-input" class="form-control" placeholder="${t.search}…" aria-label="${t.search}"><button class="btn btn-primary">${t.search}</button></form>
   <div id="cat-list"><p>${t.loading ?? 'Loading…'}</p></div>
   <h2 class="mt-4">${t.bundlesTitle}</h2><div id="cat-bundles"><p>…</p></div></div>`;
 }
@@ -618,12 +625,14 @@ async function router(): Promise<void> {
     setMeta('/verify');
   } else
     body = `<div class="container-xl py-5"><div class="alert alert-warning">${t.pageNotFound} <a href="#/">${t.home}</a></div></div>`;
-  app.innerHTML = `${header(path)}${body}${footer()}`;
+  app.innerHTML = `${header(path)}<main id="main">${body}</main>${footer()}`;
   window.scrollTo(0, 0);
   (document.getElementById('lang-sel') as HTMLSelectElement | null)?.addEventListener(
     'change',
     (e) => {
-      localStorage.setItem('web-locale', (e.target as HTMLSelectElement).value);
+      const v = (e.target as HTMLSelectElement).value;
+      localStorage.setItem('web-locale', v);
+      applyLocaleDir(v);
       t = getDict(lang());
       void router();
     }
@@ -699,6 +708,9 @@ async function router(): Promise<void> {
   const lform = document.getElementById('lform') as HTMLFormElement | null;
   lform?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = document.getElementById('lbtn') as HTMLButtonElement | null;
+    if (btn?.disabled) return;
+    if (btn) btn.disabled = true;
     const email = (document.getElementById('le') as HTMLInputElement).value;
     const password = (document.getElementById('lp') as HTMLInputElement).value;
     try {
@@ -729,6 +741,7 @@ async function router(): Promise<void> {
     } catch (err) {
       (document.getElementById('lerr') as HTMLElement).innerHTML =
         `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : 'Login failed')}</div>`;
+      if (btn) btn.disabled = false;
     }
   });
   const fform = document.getElementById('fform') as HTMLFormElement | null;

@@ -1,5 +1,38 @@
 # Implementation status (October 2026)
 
+## Round 9 no-new-features hardening (in-repo, 2026-10-23)
+
+- Storage: retention sweeps (audit/notifications/email/idempotency, opt-in),
+  request_id audit column (026), magic-byte + zip-ratio upload guards,
+  bounded rate-limit map, strict boot secrets, cron durations, status
+  latency/storage, slow-log, docs CSP, audit-secret static rule.
+- Toolchain: bench p99/concurrency/auto-boot + k6, e2e helpers consolidation,
+  warm-up global setup, CI sharding + drill + gitleaks, dependabot,
+  coverage thresholds, 5 ADRs, onboarding, data-retention, quarantine,
+  diagrams, troubleshooting, error catalog, breaking detector, gaps gate,
+  changesets, capability refresh. Prettier whole-repo green.
+- Accessibility: axe suite 7/7 (role=img, tag-pill, shared contrast.css),
+  skip links, roving tablist, RTL baseline.
+- Evidence: 191 API tests, E2E 81 + 6 visual, all gates green, 100/100 held.
+
+## Round 8 beyond-100 hardening (in-repo, 2026-10-22)
+
+- H5P minimal native runtime (migration 025, upload/serve/attempts/scores).
+- SCORM 2004 sequencing metadata + linear-flow contract + detail endpoint.
+- RTL/Arabic layout in all portals; API `lang=ar` accepted with en fallback.
+- Round-7 lifecycle portal wiring (admin/student order cancel, cron card)
+  - E2E `e2e/round7-lifecycle.spec.ts` (3 browser specs, 73/73 with the prior 70).
+- Evidence: 177 API tests, 73/73 E2E, toolchain green, drill PASS, scorecard 100/100 held.
+
+## Round 7 push to 100/100 (in-repo, 2026-10-22)
+
+- Functional: duplicate preserves windows/capacity; expired attempts never
+  burn quota. New: order cancel, subscription renew-due/cancel + cron
+  lifecycle, xAPI retention purge + cron, cron-status observability,
+  KV-distributed setup lock, per-user quota. LICENSE proprietary.
+- Evidence: 175 API tests, 70/70 E2E held, toolchain green, drill PASS,
+  scorecard 100/100, verdict READY.
+
 ## Round 6 audit additions (in-repo, 2026-10-18)
 
 - Residue E2E closure: 12 new specs / 28 tests covering every remaining

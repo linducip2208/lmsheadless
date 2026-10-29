@@ -1,4 +1,4 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, t, esc } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, pageHeader, t, esc } from '../lib.js';
 
 export async function renderRoles(el: HTMLElement): Promise<void> {
   const d = t();
@@ -8,7 +8,12 @@ export async function renderRoles(el: HTMLElement): Promise<void> {
       call<{ role: string; permissions: string[] }[]>('/api/v1/roles'),
       call<{ key: string; description: string }[]>('/api/v1/permissions'),
     ]);
-    el.innerHTML = `<div class="card"><div class="card-header"><h3 class="card-title">${d.roles}</h3>
+    el.innerHTML =
+      pageHeader({
+        title: d.roles,
+        desc: 'Enam peran, 29 permission granular — ditegakkan server-side di setiap request.',
+      }) +
+      `<div class="card"><div class="card-header"><h3 class="card-title">${d.roles}</h3>
       <span class="ms-2 text-muted">Enforced server-side on every request</span></div>
       <div class="card-body p-0"><div class="table-responsive"><table class="table card-table table-hover">
       <thead><tr><th scope="col">Permission</th>${roles.map((r) => `<th scope="col">${esc(r.role)}<br><button class="btn btn-sm btn-outline-primary mt-1" data-editrole="${r.role}">${d.edit}</button></th>`).join('')}</tr></thead>

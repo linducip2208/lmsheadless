@@ -6,6 +6,7 @@ import {
   modalForm,
   currentOrgId,
   downloadFile,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -17,7 +18,9 @@ export async function renderLive(el: HTMLElement): Promise<void> {
     el.innerHTML = `<div class="alert alert-warning">${d.selectOrg}</div>`;
     return;
   }
-  el.innerHTML = `<button class="btn btn-primary mb-2" id="lv-new">${d.schedule}</button>
+  el.innerHTML =
+    pageHeader({ title: d.live, desc: 'Kelas live multi-provider, registrasi, dan absensi.' }) +
+    `<button class="btn btn-primary mb-2" id="lv-new">${d.schedule}</button>
     <button class="btn btn-outline-secondary mb-2 ms-2" id="lv-ics">.ics</button>
     <div id="lv-list">${loadingHtml()}</div>`;
   (el.querySelector('#lv-ics') as HTMLButtonElement).addEventListener('click', async () => {

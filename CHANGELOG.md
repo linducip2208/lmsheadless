@@ -1,5 +1,110 @@
 # Changelog
 
+## 1.14.0 — No-new-features hardening (2026-10-23; 191 API tests, 80 + 6 visual E2E)
+
+Correctness & storage (no behavior change for callers, only tighter guarantees):
+
+- Retention sweeps for unbounded tables (`audit_logs`, read `notifications`,
+  terminal `email_queue`, 7-day `idempotency_keys`), opt-in via global
+  settings (default off); daily cron + `POST /system/retention/purge`
+  (super_admin) + `docs/data-retention.md` policy table. New 026 migration
+  (`audit_logs.request_id`); audit rows now carry the request id (idea 99).
+- Upload hardening: magic-byte sniffing vs extension (idea 33; fuzzing caught
+  a real MZ-executable-as-image bypass, now rejected), zip-bomb ratio guard
+  (100x) on SCORM/H5P extraction (idea 34). New `round9`/`round9b` suites
+  (property round-trips, manifest fuzz never-500, cron edges, envelope shape).
+- Rate-limit memory map bounded with expiry sweep (idea 23); boot fails fast
+  on weak/explicit-short JWT secrets and logs applied migrations (ideas 53/54).
+- Cron observability: `duration_ms` in every `sys.cron.*` audit row (idea 97);
+  `GET /system/status` gains `db_latency_ms` + storage health (idea 98);
+  opt-in slow-request JSON log via `SLOW_LOG_MS` (idea 96).
+- `Content-Security-Policy` on `/api/v1/docs` (idea 42); static-audit now
+  rejects secrets in audit metadata (idea 43, PASS).
+
+Toolchain & docs (no product change):
+
+- Bench: p99 + 8-way concurrency + auto-boot disposable DB + k6 smoke shape
+  (`scripts/load/k6-smoke.js`); measured table refreshed in `docs/performance.md`.
+- E2E: shared `e2e/helpers.ts` (idea 73, ~400 dup lines removed, full suite
+  still 80/80), `global-setup.ts` warm-up (idea 2, suite 2.8m → 1.7m, zero
+  flakes), vitest sharding + E2E sharding + drill + gitleaks in CI, dependabot,
+  coverage thresholds enforced (83.9/88.4/63.0 measured, idea 61).
+- Docs: 5 ADRs, onboarding, data-retention, quarantine process, arch diagram,
+  troubleshooting cold-boot note, error catalog generator
+  (`docs/api-error-catalog.md`, 48 codes), breaking-change detector +
+  snapshot, uncalled-endpoint CI gate, changesets, capability refresh.
+- Prettier whole repo green (`format:check` PASS, idea 46).
+
+Accessibility (WCAG AA, axe-gated in CI):
+
+- Axe suite (`e2e/a11y-axe.spec.ts`, 7 tests): fixed `aria-label` on plain
+  divs (→ `role="img"`), low-contrast tagline badge + CTA copy (new
+  `.tag-pill`), and a systemic Tabler v1 palette gap — new shared
+  `packages/ui/contrast.css` (badges + outline buttons, all axe-verified).
+- Skip-to-content links in all 5 portals, arrow-key roving tablist in admin
+  commerce (browser-tested), RTL visual baseline (`web-home-ar`).
+
+Deferred honestly: Stryker dry-run finds no tests in this workspace layout
+(Windows path handling in vitest-runner 10); config + deps ship, property +
+fuzz tests are the executable sample. Native RTL stylesheet swap
+(`tabler.rtl`) not needed — logical utilities already mirror, verified by the
+AR screenshot.
+
+Evidence: 191/191 API tests, E2E 81 passed + 6 visual baselines, contract 182,
+breaking/gaps/audit/static-audit green, build green, drill PASS,
+`npm run format:check` PASS, score 100/100 held.
+
+## 1.13.0 — Beyond-100 hardening (2026-10-22; regression tests: `test/round8-h5p-scorm.test.ts` 2/2, E2E `e2e/round7-lifecycle.spec.ts` 3 specs)
+
+- H5P native minimal runtime: migration 025 (`h5p_packages`, `h5p_attempts`),
+  `POST /h5p/upload` (`.h5p` + `h5p.json` validation, zip-slip neutralized,
+  sandboxed content, quota-enforced, file row persisted), tenant-checked
+  content serving, attempt start/resume + score commit. OpenAPI registered.
+- SCORM 2004 sequencing: parser counts `<sequencing>` nodes + control mode,
+  stored in `manifest_json`, exposed via `GET /scorm/packages/:id`
+  (`sequencing: { nodes, enforced: 'linear-flow' | 'none' }`); player
+  contract is linear flow when nodes exist. Full ADL choice/jump/rollup stays
+  documented roadmap.
+- RTL + Arabic: `ar` dict + `isRtl`/`applyLocaleDir` in all five portals
+  (`document.dir/lang` switching, AR option in every locale selector, boot
+  wiring), API accepts `?lang=ar`/`Accept-Language: ar` with en fallback at
+  the message layer. `failed` key added where missing; student/teacher
+  hardcoded `'Failed'` fallbacks replaced with dict lookups (29 sites).
+- Portal wiring for round-7 lifecycle: admin commerce order-cancel button
+  (in-app confirm), student shop order-cancel button, admin system page
+  scheduler card backed by `GET /system/cron-status`.
+- Evidence: 177/177 API tests, E2E 73/73 (70 held + 3 new lifecycle specs,
+  re-run green), typecheck/lint/contract (182)/static-audit/
+  audit green, build green, drill PASS.
+
+## 1.12.0 — Push to 100/100 (2026-10-22; regression tests: `test/round7-100.test.ts` 7/7)
+
+- Functional 19→20: course duplicate now preserves `capacity`, `access_days`,
+  `enrollment_start/end`, `start_at/end_at`; expired quiz attempts no longer
+  burn `max_attempts` (`COUNT` excludes `expired`).
+- Subscriptions lifecycle: free plans auto-renew each period, paid plans go
+  `past_due`, cancel endpoint for buyer/privileged; manual trigger
+  `POST /subscriptions/renew-due` + daily cron (`runSubscriptionMaintenance`).
+- Orders: `POST /orders/:id/cancel` (buyer or privileged, conditional
+  `pending → cancelled`, 409 on races).
+- xAPI: `POST /xapi/retention/purge` (org-admin, bounded `days` 1..3650) +
+  daily cron `runXapiRetentionPurge` honoring opt-in
+  `organizations.settings.xapi_retention_days`.
+- Cron observability: `GET /system/cron-status` (super_admin, last 50
+  `sys.cron.*` runs) — verify scheduler post-deploy without dashboard access.
+- Setup distributed lock: KV `setup:lock` (TTL 5 min, `done` marker) when
+  bound, DB atomic claim as fallback; KV errors never fail setup.
+- Quotas: per-user `per_user_quota_bytes` enforced on uploads + SCORM
+  alongside the org quota (both default-off).
+- Data 9→10: FK-cascade verification test (direct org DELETE cascades;
+  `PRAGMA foreign_keys=ON`); no migration needed.
+- Reliability 8→10: `npm run drill` (`scripts/r2-restore-drill.mjs`, no
+  sqlite3 CLI needed) PASS — inventory + `integrity_check ok` + 0 FK
+  violations; docs updated with 2026-10-22 drill log.
+- Commercial 9→10: `LICENSE` is now proprietary commercial (owner-selected).
+- Evidence: 175/175 API tests, typecheck/lint/contract/static-audit/audit
+  green, build green, drill PASS. Score 100/100, verdict READY.
+
 ## Unreleased — finalization audit fixes (HEAD d73c6b9 + tree)
 
 ### Round 6 (2026-10-18; regression tests: 12 new Playwright specs, 28 tests)

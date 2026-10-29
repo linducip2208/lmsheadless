@@ -34,6 +34,7 @@ export const en = {
   name: 'Name',
   created: 'Created',
   failed: 'Failed',
+  skip: 'Skip to content',
   type: 'Type',
   prompt: 'Prompt',
   points: 'Points',
@@ -143,6 +144,7 @@ export const id: Record<keyof typeof en, string> = {
   name: 'Nama',
   created: 'Dibuat',
   failed: 'Gagal',
+  skip: 'Lewati ke konten',
   type: 'Tipe',
   prompt: 'Pertanyaan',
   points: 'Poin',
@@ -216,6 +218,23 @@ export const id: Record<keyof typeof en, string> = {
   body: 'Isi',
   noEnrolledStudents: 'Belum ada siswa terdaftar.',
 };
+export const ar: Record<keyof typeof en, string> = {
+  ...en,
+  loading: 'جارٍ التحميل…',
+  failed: 'فشل',
+};
+export function isRtl(locale: string): boolean {
+  return locale === 'ar';
+}
+export function applyLocaleDir(locale: string): void {
+  try {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+  } catch {
+    /* non-DOM (tests) */
+  }
+}
 export function getDict(l: string) {
+  if (l === 'ar') return ar as unknown as typeof en;
   return l === 'id' ? id : en;
 }

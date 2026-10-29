@@ -5,10 +5,11 @@ forgot/reset UI, admin status editing, payout decide buttons, AI quota-reset
 mechanism + procedure, blocking native dialogs (all replaced), teacher i18n
 worst-offenders.
 
-1. Per-portal browser CRUD: CLOSED in round 6 — 24 spec files / 70 tests
-   cover every portal route with server re-verification; only vendor
-   OAuth, live sends, and live cron execution stay un-automated
-   (BLOCKED_EXTERNAL by design).
+1. Per-portal browser CRUD: CLOSED in round 6, extended rounds 8–9 — 27 spec
+   files / 81 tests + 6 visual baselines cover every portal route, the
+   round-7 lifecycle, and WCAG AA (axe incl. authenticated commerce) with
+   server re-verification; only vendor OAuth, live sends, and live cron
+   execution stay un-automated (BLOCKED_EXTERNAL by design).
 2. Live provider verification pending: Midtrans merchant, SMTP/HTTP email
    delivery, web-push send, openai-compatible key, Zoom/Meet OAuth, code
    sandbox (refused by design until configured).

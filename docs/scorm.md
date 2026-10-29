@@ -24,20 +24,23 @@
 
 ## Gaps (documented, not advertised)
 
-- **SCORM 2004**: accepted at import and stored with `version: '2004'`, but the
-  sequencing/navigation model is NOT interpreted (`sequencing:
-'not-interpreted'`) — only the same 1.2-style launch/track/commit subset
-  applies. Full 2004 RTE/sequencing is roadmap, not claimed.
+- **SCORM 2004**: accepted at import and stored with `version: '2004'`.
+  Sequencing metadata is parsed (`<sequencing>` node count + control mode,
+  see `GET /scorm/packages/:id` → `sequencing: { nodes, enforced }`) and the
+  player enforces linear flow when sequencing nodes are present. Full ADL
+  choice/jump/rollup sequencing and the RTE `window.API` bridge stay roadmap —
+  only the 1.2-style launch/track/commit subset is claimed.
 - **Full RTE adapter** (`window.API` bridge): roadmap — current player uses
   manual sync; runtime data model fields beyond the commit subset are not mapped.
-- **H5P**: no native runtime and no URL-allowlist enforcement — external
-  URLs are stored, never fetched or embedded by the server. Treat `external`
-  lessons as plain links; do not paste untrusted URLs expecting sandboxing.
-  Native support deferred.
+- **H5P**: native minimal runtime ships (upload `.h5p` with `h5p.json`
+  validation, sandboxed content serving, attempt + score tracking via
+  `POST /h5p/attempts` + `/commit`). The full H5P editor/authoring suite stays
+  out of scope. External `external`-type lessons remain plain links.
 
 ## Testing
 
 `test/growth.test.ts` covers invalid zips, missing manifests, 2004 import
-(stored, sequencing not interpreted), launch/resume/commit validation,
+(stored, sequencing metadata recorded), launch/resume/commit validation,
 completion mapping, tenant isolation on content serving, and traversal
-rejection.
+rejection. `test/round8-h5p-scorm.test.ts` covers H5P upload validation,
+listing, attempt + score commit, and 2004 sequencing linear-flow exposure.

@@ -7,13 +7,16 @@ import {
   currentOrgId,
   getAccessToken,
   downloadFile,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
 
 export async function renderCerts(el: HTMLElement): Promise<void> {
   const d = t();
-  el.innerHTML = `<div class="row row-cards">
+  el.innerHTML =
+    pageHeader({ title: d.certificates, desc: 'Terbitkan, verifikasi publik, cabut, dan unduh PDF.' }) +
+    `<div class="row row-cards">
     <div class="col-md-5"><div class="card"><div class="card-header"><h3 class="card-title">${d.issue} ${d.certificates}</h3></div>
     <div class="card-body"><form id="cert-form">
       <label class="form-label" for="cert-course">${d.courses}</label><select id="cert-course" class="form-select mb-2"></select>

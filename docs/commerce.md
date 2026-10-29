@@ -50,8 +50,13 @@ Commissions are refund-aware; **payouts are manual bank transfers** tracked
 through request → approve/reject (the system never moves money). Gifts,
 bundles, cohorts (gift redemption grants cohort + membership + courses),
 subscriptions and revenue reports included. Refund flows
-tested (course/bundle/cohort revocation, commission reversal). There is no
-order-cancel endpoint: `cancelled` appears only as a fulfillment guard — do
-not advertise cancellation. Subscription records are point-in-time
-(active/pending) with no automated renewal, charge, or cancel linkage;
-recurring billing is provider-driven.
+tested (course/bundle/cohort revocation, commission reversal).
+Pending orders are cancellable via `POST /orders/:id/cancel` (buyer or
+privileged org actor; conditional `pending → cancelled`, paid/refunded
+orders cannot be cancelled). Subscriptions have a real lifecycle:
+free plans auto-renew each period via the daily cron
+(`runSubscriptionMaintenance`, manual trigger
+`POST /subscriptions/renew-due`), paid plans past period end move to
+`past_due` for provider collection, and buyers/privileged actors can cancel
+via `POST /subscriptions/:id/cancel`. Live money movement stays
+provider-driven; payouts remain manual by design.

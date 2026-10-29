@@ -7,9 +7,30 @@ import { t } from '../i18n.js';
 export function requestId() {
   return createMiddleware<{ Variables: AppVars }>(async (c, next) => {
     const id = crypto.randomUUID();
+    const t0 = Date.now();
     c.set('requestId', id);
     c.header('X-Request-Id', id);
     await next();
+    // Slow-request log (idea 96): opt-in via SLOW_LOG_MS, JSON for log tail.
+    // Off by default so tests stay quiet; set SLOW_LOG_MS=1000 in production.
+    const threshold = c.get('env').SLOW_LOG_MS;
+    if (threshold !== undefined) {
+      const ms = Date.now() - t0;
+      if (ms >= threshold) {
+        // eslint-disable-next-line no-console
+        console.log(
+          JSON.stringify({
+            level: 'warn',
+            scope: 'http',
+            method: c.req.method,
+            path: new URL(c.req.url).pathname,
+            status: c.res.status,
+            ms,
+            requestId: id,
+          })
+        );
+      }
+    }
   });
 }
 
@@ -18,16 +39,40 @@ export function language() {
     const url = new URL(c.req.url);
     const q = url.searchParams.get('lang');
     const h = c.req.header('accept-language');
-    const lang = (
-      q === 'id' || q === 'en' ? q : (h ?? '').toLowerCase().startsWith('id') ? 'id' : 'en'
-    ) as 'en' | 'id';
-    c.set('lang', lang);
+    // Server messages ship in en/id; 'ar' is accepted and falls back to en
+    // at the message layer (t()), while portals render full RTL from their
+    // own ar dicts. Accepting the tag here keeps ?lang=ar / Accept-Language
+    // honest instead of silently downgrading to en.
+    const lang =
+      q === 'id' || q === 'ar' || q === 'en'
+        ? q
+        : (h ?? '').toLowerCase().startsWith('id')
+          ? 'id'
+          : (h ?? '').toLowerCase().startsWith('ar')
+            ? 'ar'
+            : 'en';
+    c.set('lang', lang as 'en' | 'id' | 'ar');
     await next();
   });
 }
 
 // In-memory fallback rate limiter. In production with KV binding, counts are stored in KV.
+// The map is bounded: every write sweeps expired windows, and a hard cap
+// drops the oldest entries first so a cardinality flood cannot OOM the worker.
 const buckets = new Map<string, { count: number; reset: number }>();
+const BUCKET_HARD_CAP = 5000;
+
+function sweepBuckets(now: number): void {
+  if (buckets.size <= BUCKET_HARD_CAP) {
+    for (const [k, b] of buckets) if (b.reset < now) buckets.delete(k);
+    return;
+  }
+  const entries = [...buckets.entries()].sort((a, b) => a[1].reset - b[1].reset);
+  for (const [k, b] of entries) {
+    if (b.reset < now || buckets.size > BUCKET_HARD_CAP) buckets.delete(k);
+    else break;
+  }
+}
 
 export function rateLimit(opts: { prefix?: string; max?: number; windowMs?: number } = {}) {
   const prefix = opts.prefix ?? 'rl';
@@ -54,6 +99,7 @@ export function rateLimit(opts: { prefix?: string; max?: number; windowMs?: numb
       }
     } else {
       const now = Date.now();
+      sweepBuckets(now);
       const b = buckets.get(key);
       if (!b || b.reset < now) buckets.set(key, { count: 1, reset: now + win });
       else {

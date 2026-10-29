@@ -1,37 +1,24 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import {
+  ADMIN,
+  API,
+  H,
+  J,
+  PASS,
+  SUPER,
+  TEACHER_URL,
+  apiLogin,
+  trackErrors,
+  uniq,
+} from './helpers.js';
 
 // Teacher portal workflows beyond section-building (round 4): question bank
 // build + delete, manual grading via the grading queue click path, and an
 // attendance session created, taken (records saved) and deleted through the
 // real UI. Fixtures via API; every UI action re-verified server-side.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const TEACHER_URL = process.env.TEACHER_URL ?? 'http://localhost:5175';
-const PASS = 'Password123!';
-const ADMIN = 'admin@example.com';
-const SUPER = 'superadmin@example.com';
 const TEACHER = 'teacher@example.com';
 
 test.setTimeout(120_000);
-
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-const J = { 'content-type': 'application/json' };
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
 
 async function teacherLogin(page: Page, email = TEACHER) {
   await page.goto(`${TEACHER_URL}/#/login`);

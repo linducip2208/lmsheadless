@@ -40,6 +40,7 @@ export const en = {
   roles: 'Roles',
   cancel: 'Cancel',
   close: 'Close',
+  skip: 'Skip to content',
   actions: 'Actions',
   status: 'Status',
   title: 'Title',
@@ -196,6 +197,7 @@ export const id: Record<keyof typeof en, string> = {
   roles: 'Peran',
   cancel: 'Batal',
   close: 'Tutup',
+  skip: 'Lewati ke konten',
   actions: 'Aksi',
   status: 'Status',
   title: 'Judul',
@@ -310,7 +312,66 @@ export const id: Record<keyof typeof en, string> = {
   avgScore: 'Rata-rata nilai',
   passRate: 'Tingkat lulus',
 };
+export const ar = {
+  ...en,
+  dashboard: 'لوحة التحكم',
+  users: 'المستخدمون',
+  organizations: 'المؤسسات',
+  courses: 'الدورات',
+  quizzes: 'الاختبارات',
+  assignments: 'الواجبات',
+  grades: 'الدرجات',
+  attendance: 'الحضور',
+  certificates: 'الشهادات',
+  announcements: 'الإعلانات',
+  discussion: 'النقاش',
+  reports: 'التقارير',
+  settings: 'الإعدادات',
+  login: 'تسجيل الدخول',
+  logout: 'تسجيل الخروج',
+  email: 'البريد الإلكتروني',
+  password: 'كلمة المرور',
+  search: 'بحث…',
+  create: 'إنشاء',
+  save: 'حفظ',
+  delete: 'حذف',
+  edit: 'تعديل',
+  cancel: 'إلغاء',
+  close: 'إغلاق',
+  loading: 'جارٍ التحميل…',
+  empty: 'لا توجد بيانات بعد.',
+  error: 'حدث خطأ ما.',
+  failed: 'فشل',
+  skip: 'تخطَّ إلى المحتوى',
+  cohorts: 'الدفعات',
+  live: 'الحصص المباشرة',
+  scorm: 'سكورم',
+  commerce: 'التجارة',
+  files: 'الملفات',
+  roles: 'الأدوار',
+  status: 'الحالة',
+  title: 'العنوان',
+  name: 'الاسم',
+  bundles: 'الحزم',
+  coupons: 'الكوبونات',
+  orders: 'الطلبات',
+  payouts: 'المدفوعات',
+  plans: 'الخطط',
+};
+export function isRtl(locale: string): boolean {
+  return locale === 'ar';
+}
+export function applyLocaleDir(locale: string): void {
+  try {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+  } catch {
+    /* non-DOM (tests) */
+  }
+}
 export type Dict = typeof en;
 export function getDict(locale: string): Dict {
-  return locale === 'id' ? id : en;
+  if (locale === 'id') return id as unknown as typeof en;
+  if (locale === 'ar') return ar as unknown as typeof en;
+  return en;
 }

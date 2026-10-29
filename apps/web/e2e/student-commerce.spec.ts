@@ -1,50 +1,29 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect, type APIRequestContext } from '@playwright/test';
+import {
+  ADMIN,
+  API,
+  H,
+  J,
+  PASS,
+  STUDENT_URL,
+  SUPER,
+  apiLogin,
+  studentLogin,
+  trackErrors,
+  uniq,
+} from './helpers.js';
 
 // Student shop edges (round 6 micro-gaps): paid bundle buy with manual
 // claim, subscription-plan buy, and the full gift loop (paid order → gift
 // code → redeem grants enrollment). Fixtures via API; server re-verified.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const STUDENT_URL = process.env.STUDENT_URL ?? 'http://localhost:5174';
-const PASS = 'Password123!';
-const ADMIN = 'admin@example.com';
-const SUPER = 'superadmin@example.com';
 
 test.setTimeout(120_000);
 
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-const J = { 'content-type': 'application/json' };
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
-
-async function studentLogin(page: Page, email: string) {
-  await page.goto(`${STUDENT_URL}/#/login`);
-  await page.locator('#f #e, #f input[type="email"]').first().fill(email);
-  await page.locator('#f #p, #f input[type="password"]').first().fill(PASS);
-  await page.locator('#f button[type="submit"], #f button').first().click();
-  await page.waitForURL('**#/', { timeout: 15000 });
-}
-
 async function orgId(req: APIRequestContext, tok: string) {
-  return (
-    (await (await req.get(`${API}/api/v1/organizations`, { headers: H(tok) })).json()) as {
-      data: { id: string }[];
-    }
-  ).data[0].id;
+  const orgs = (await (
+    await req.get(`${API}/api/v1/organizations`, { headers: H(tok) })
+  ).json()) as { data: { id: string }[] };
+  return orgs.data[0].id;
 }
 
 async function freshStudent(req: APIRequestContext, org: string, tag: string, prefix: string) {

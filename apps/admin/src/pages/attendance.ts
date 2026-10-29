@@ -1,8 +1,10 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, t, esc } from '../lib.js';
+import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, pageHeader, t, esc } from '../lib.js';
 
 export async function renderAttendance(el: HTMLElement): Promise<void> {
   const d = t();
-  el.innerHTML = `<div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
+  el.innerHTML =
+    pageHeader({ title: d.attendance, desc: 'Sesi kehadiran, pencatatan, dan rekap per siswa.' }) +
+    `<div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
     <button class="btn btn-primary" id="sess-new">${d.new_} ${d.sessions}</button></div></div>
     <div id="sess-list"></div><div id="sess-detail" class="mt-3"></div>`;
   const list = el.querySelector('#sess-list') as HTMLElement;

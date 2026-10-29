@@ -36,3 +36,9 @@ Record the drill date and result in the ops log.
   `foreign_key_check` 0 violations, `integrity_check ok`, migration re-run
   clean. Result: **PASS**. R2 restore not drilled (no live binding; local
   uploads covered by host backups only).
+- **2026-10-22 (automated drill, `npm run drill`)**: `scripts/r2-restore-drill.mjs`
+  inventories `STORAGE_LOCAL_DIR` (or documents the R2-API path on R2-only
+  deploys) and checks the live DB via `node:sqlite` (`integrity_check ok`,
+  `foreign_key_check` 0 violations, `files` row count). Local run 2026-10-22:
+  **PASS** (`integrity_check: ok`, 0 FK violations). Run quarterly and after
+  every storage-config change; record the result here.

@@ -7,6 +7,7 @@ import {
   confirmDialog,
   getMe,
   currentOrgId,
+  pageHeader,
   t,
 } from '../lib.js';
 import { subscribePush } from '@lms/ui';
@@ -16,7 +17,9 @@ let orgSettingsGen = 0;
 export async function renderSettings(el: HTMLElement): Promise<void> {
   const me = getMe();
   const d = t();
-  el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
+  el.innerHTML =
+    pageHeader({ title: d.settings, desc: 'Akun, organisasi, audit log, dan preferensi.' }) +
+    `<ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item" role="presentation"><button class="nav-link active" data-tab="acct" role="tab">${d.account}</button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" data-tab="org" role="tab">${d.organizations}</button></li>
     ${me?.isSuperAdmin ? `<li class="nav-item" role="presentation"><button class="nav-link" data-tab="global" role="tab">${d.settings}</button></li><li class="nav-item" role="presentation"><button class="nav-link" data-tab="audit" role="tab">${d.auditLog}</button></li>` : ''}

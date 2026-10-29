@@ -8,6 +8,7 @@
     "start": "node dist/dev.js",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:mutation": "stryker run",
     "lint": "eslint src test --max-warnings=0",
     "format": "prettier --write src test",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -27,6 +28,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
     "@types/node": "^22.7.4",
     "@vitest/coverage-v8": "^3.2.7",
     "tsx": "^4.19.1",

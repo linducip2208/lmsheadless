@@ -22,6 +22,20 @@ PASS GET /api/v1/reports/organization-summary p50=2.3ms p95=3.7ms budget=400ms
 PASS GET /api/v1/catalog/courses p50=1.2ms p95=1.6ms budget=250ms
 ```
 
+Re-measured 2026-10-23 (bench auto-boots a disposable seeded copy; p99 + 8-way concurrency reported):
+
+```
+PASS GET /health p50=1.0ms p95=2.2ms p99=3.1ms conc8=8ms budget=50ms
+PASS GET /api/v1/openapi.json p50=2.4ms p95=3.1ms p99=3.1ms conc8=13ms budget=120ms
+PASS POST /api/v1/auth/login p50=27.2ms p95=32.4ms p99=35.6ms conc8=111ms budget=400ms
+PASS GET /api/v1/courses p50=2.0ms p95=3.3ms p99=3.4ms conc8=12ms budget=250ms
+PASS GET /api/v1/reports/organization-summary p50=2.3ms p95=4.0ms p99=4.2ms conc8=13ms budget=400ms
+PASS GET /api/v1/catalog/courses p50=1.1ms p95=1.9ms p99=2.6ms conc8=14ms budget=250ms
+```
+
+k6 shape for heavier runs (docs-only, no server change):
+`k6 run scripts/load/k6-smoke.js` (10 VUs, 1 min; thresholds mirror budgets).
+
 ## Scale check (`npx tsx scripts/scale-check.mts`, 2026-10-09)
 
 1500 students / 20 courses / 4500 enrollments (in-memory SQLite):

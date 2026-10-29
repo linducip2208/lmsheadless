@@ -43,14 +43,94 @@ platform.get('/api/v1/system/health', async (c) => {
   return ok(c, { status: 'ok', time: nowIso(), version: '2.0.0' });
 });
 
+// Cron observability: last sys.cron.* audit rows (global, newest first).
+// Lets owners verify the native Workers scheduler fired post-deploy without
+// Cloudflare dashboard access. Super_admin only; never leaks secrets.
+platform.get('/api/v1/system/cron-status', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  if (!user.isSuperAdmin) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const db = c.get('db');
+  const rows = await queryAll<{
+    action: string;
+    organization_id: string;
+    metadata: string | null;
+    created_at: string;
+  }>(
+    db,
+    "SELECT action, organization_id, metadata, created_at FROM audit_logs WHERE action LIKE 'sys.cron.%' ORDER BY created_at DESC, rowid DESC LIMIT 50"
+  );
+  const url = new URL(c.req.url);
+  const since = url.searchParams.get('since');
+  const filtered = since ? rows.filter((r) => r.created_at >= since) : rows;
+  return ok(
+    c,
+    filtered.map((r) => {
+      let meta: unknown = null;
+      try {
+        meta = r.metadata ? JSON.parse(r.metadata) : null;
+      } catch {
+        meta = r.metadata;
+      }
+      return {
+        action: r.action,
+        organization_id: r.organization_id,
+        metadata: meta,
+        at: r.created_at,
+      };
+    })
+  );
+});
+
+// Manual retention trigger: super_admin runs any subset of the storage
+// retention sweeps on demand (for hosts without cron, or before backups).
+// Same semantics as the daily cron; bounded days; audited per scope.
+platform.post('/api/v1/system/retention/purge', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  if (!user.isSuperAdmin) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  const body = (await c.req.json().catch(() => null)) as {
+    scope?: string;
+    days?: number;
+  } | null;
+  const scope = body?.scope ?? 'all';
+  const days = Number(body?.days ?? 0);
+  if (!['all', 'audit', 'notifications', 'email', 'idempotency'].includes(scope))
+    return fail(
+      c,
+      400,
+      'VALIDATION_ERROR',
+      'scope must be all|audit|notifications|email|idempotency'
+    );
+  if (scope !== 'idempotency' && (!Number.isInteger(days) || days < 1 || days > 3650))
+    return fail(c, 400, 'VALIDATION_ERROR', 'days must be an integer 1..3650');
+  const { purgeAuditLogs, purgeNotifications, purgeEmailQueue, purgeIdempotencyKeys } =
+    await import('../maintenance.js');
+  const out: Record<string, number> = {};
+  if (scope === 'all' || scope === 'audit')
+    out.audit = (await purgeAuditLogs(c.get('db'), days)).deleted;
+  if (scope === 'all' || scope === 'notifications')
+    out.notifications = (await purgeNotifications(c.get('db'), days)).deleted;
+  if (scope === 'all' || scope === 'email')
+    out.email = (await purgeEmailQueue(c.get('db'), days)).deleted;
+  if (scope === 'all' || scope === 'idempotency')
+    out.idempotency = (await purgeIdempotencyKeys(c.get('db'))).deleted;
+  await audit(c, 'system.retention_purged', {
+    organizationId: user.memberships[0]?.organization_id ?? 'global',
+    metadata: { scope, days, ...out },
+  });
+  return ok(c, out);
+});
+
 platform.get('/api/v1/system/status', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   if (!user.isSuperAdmin) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const db = c.get('db');
   let database = 'ok';
   let migrations = 0;
+  let dbLatencyMs = -1;
   try {
+    const t0 = Date.now();
     await queryFirst(db, 'SELECT 1 as ok');
+    dbLatencyMs = Date.now() - t0;
     const files = await queryAll<{ name: string }>(
       db,
       "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
@@ -72,10 +152,27 @@ platform.get('/api/v1/system/status', requireAuth(), async (c) => {
     )
   );
   const env = c.get('env');
+  // Storage probe: local driver checks directory writability; R2 reports
+  // binding presence (a full R2 round-trip on every status poll would be
+  // wasteful — use `npm run drill` for inventory depth).
+  let storage: Record<string, unknown> = { driver: env.STORAGE_DRIVER };
+  if (env.STORAGE_DRIVER === 'local') {
+    try {
+      const { accessSync, constants } = await import('node:fs');
+      accessSync(env.STORAGE_LOCAL_DIR, constants.R_OK | constants.W_OK);
+      storage = { ...storage, ok: true, path: env.STORAGE_LOCAL_DIR };
+    } catch {
+      storage = { ...storage, ok: false, path: env.STORAGE_LOCAL_DIR };
+    }
+  } else {
+    storage = { ...storage, ok: !!env.R2, bound: !!env.R2 };
+  }
   return ok(c, {
     database,
+    db_latency_ms: dbLatencyMs,
     tables: migrations,
     storage_driver: env.STORAGE_DRIVER,
+    storage,
     email_configured: !!settings.email_api_url,
     payments_configured: Object.keys(settings).some((k) => k.startsWith('payment_') && settings[k]),
     push_configured: !!settings.vapid_public_key,
@@ -128,6 +225,20 @@ platform.post('/api/v1/setup', async (c) => {
     return fail(c, 400, 'VALIDATION_ERROR', 'Invalid email');
   const existing = await queryFirst(db, 'SELECT id FROM users WHERE email = ?', email);
   if (existing) return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
+  // Distributed first-boot lock: KV (multi-instance) wins when bound,
+  // DB atomic claim is the fallback (single-instance / local dev).
+  const kv = c.get('env')?.KV;
+  if (kv) {
+    try {
+      const held = await kv.get('setup:lock');
+      if (held === 'done') return fail(c, 403, 'SETUP_LOCKED', 'Setup is already completed');
+      if (held && Date.now() - Number(held) < 5 * 60000)
+        return fail(c, 409, 'SETUP_IN_PROGRESS', 'Setup is already in progress');
+      await kv.put('setup:lock', String(Date.now()), { expirationTtl: 300 });
+    } catch {
+      // KV errors fall through to the DB claim below (never fail setup on KV).
+    }
+  }
   // Atomic claim against concurrent fresh-DB setups: a single statement wins;
   // losers observe the winner's marker instead of double-provisioning.
   const claimed = await execute(
@@ -219,6 +330,11 @@ platform.post('/api/v1/setup', async (c) => {
     entityId: orgId,
     organizationId: orgId,
   });
+  try {
+    await c.get('env')?.KV?.put('setup:lock', 'done');
+  } catch {
+    // ignore KV write errors post-setup
+  }
   return created(c, { organization_id: orgId, admin_id: adminId });
 });
 

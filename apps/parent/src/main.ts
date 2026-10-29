@@ -1,4 +1,5 @@
 import '@tabler/core/dist/css/tabler.min.css';
+import '@lms/ui/contrast.css';
 import {
   createClient,
   applyTheme,
@@ -8,16 +9,17 @@ import {
   esc,
   type ApiClient,
 } from '@lms/ui';
-import { getDict, type ParentDict } from './i18n.js';
+import { getDict, applyLocaleDir, type ParentDict } from './i18n.js';
 
 const THEME_KEY = 'parent-theme';
 applyTheme(THEME_KEY);
+applyLocaleDir(localStorage.getItem('parent-locale') ?? 'en');
 let d: ParentDict = getDict(localStorage.getItem('parent-locale') ?? 'en');
 const client: ApiClient = createClient({ orgKey: 'parent-org', loginRedirect: '#/login' });
 const { call, login, logout, ensureMe, getMe } = client;
 
 function errHtml(e: unknown): string {
-  return `<div class="alert alert-danger">${e instanceof Error ? e.message : 'Error'}</div>`;
+  return `<div class="alert alert-danger">${esc(e instanceof Error ? e.message : d.failed)}</div>`;
 }
 
 async function loginPage(root: HTMLElement): Promise<void> {
@@ -27,10 +29,13 @@ async function loginPage(root: HTMLElement): Promise<void> {
     <label class="form-label" for="p">${d.password}</label><input id="p" type="password" class="form-control mb-3" required>
     <div id="err"></div><button class="btn btn-primary w-100">${d.signIn}</button></form>
     <div class="mt-2"><select id="login-lang" class="form-select form-select-sm w-auto" aria-label="Language">
-    <option value="en"${localStorage.getItem('parent-locale') !== 'id' ? ' selected' : ''}>EN</option>
-    <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option></select></div></div></div></div></div>`;
+    <option value="en"${(localStorage.getItem('parent-locale') ?? 'en') === 'en' ? ' selected' : ''}>EN</option>
+    <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option>
+    <option value="ar"${localStorage.getItem('parent-locale') === 'ar' ? ' selected' : ''}>AR</option></select></div></div></div></div></div>`;
   (root.querySelector('#login-lang') as HTMLSelectElement).addEventListener('change', (e) => {
-    localStorage.setItem('parent-locale', (e.target as HTMLSelectElement).value);
+    const v = (e.target as HTMLSelectElement).value;
+    localStorage.setItem('parent-locale', v);
+    applyLocaleDir(v);
     d = getDict(localStorage.getItem('parent-locale') ?? 'en');
     void loginPage(root);
   });
@@ -44,7 +49,7 @@ async function loginPage(root: HTMLElement): Promise<void> {
       location.hash = '#/';
     } catch (err) {
       (root.querySelector('#err') as HTMLElement).innerHTML =
-        `<div class="alert alert-danger">${err instanceof Error ? err.message : 'Error'}</div>`;
+        `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : d.failed)}</div>`;
     }
   });
 }
@@ -180,7 +185,9 @@ async function home(el: HTMLElement): Promise<void> {
 }
 
 async function router(): Promise<void> {
-  d = getDict(localStorage.getItem('parent-locale') ?? 'en');
+  const loc = localStorage.getItem('parent-locale') ?? 'en';
+  applyLocaleDir(loc);
+  d = getDict(loc);
   const app = document.getElementById('app') as HTMLElement;
   const hash = location.hash || '#/';
   if (hash === '#/login') {
@@ -192,18 +199,21 @@ async function router(): Promise<void> {
     location.hash = '#/login';
     return;
   }
-  app.innerHTML = `<div class="page"><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
+  app.innerHTML = `<div class="page"><a href="#view" class="visually-hidden-focusable">${d.skip}</a><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
     <a class="navbar-brand" href="#/">${d.title}</a>
     <div class="ms-auto d-flex gap-2 align-items-center"><span class="text-muted small">${esc(me.name)}</span>${themeToggleHtml(THEME_KEY)}
     <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language">
-    <option value="en"${localStorage.getItem('parent-locale') !== 'id' ? ' selected' : ''}>EN</option>
-    <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option></select>
+    <option value="en"${(localStorage.getItem('parent-locale') ?? 'en') === 'en' ? ' selected' : ''}>EN</option>
+    <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option>
+    <option value="ar"${localStorage.getItem('parent-locale') === 'ar' ? ' selected' : ''}>AR</option></select>
     <button id="out" class="btn btn-sm btn-outline-danger">${d.logout}</button></div></div></header>
     <div class="page-wrapper"><div class="page-body"><div class="container-xl py-3" id="view"></div></div></div></div>`;
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
   (document.getElementById('lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
-    localStorage.setItem('parent-locale', (e.target as HTMLSelectElement).value);
+    const v = (e.target as HTMLSelectElement).value;
+    localStorage.setItem('parent-locale', v);
+    applyLocaleDir(v);
     void router();
   });
   (document.getElementById('out') as HTMLButtonElement).addEventListener(

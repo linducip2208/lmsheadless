@@ -12,6 +12,7 @@ import cohorts from './routes/cohorts.js';
 import live from './routes/live.js';
 import commerce from './routes/commerce.js';
 import scorm from './routes/scorm.js';
+import h5p from './routes/h5p.js';
 import growth from './routes/growth.js';
 import xapi from './routes/xapi.js';
 import { authOptional, language, rateLimit, requestId } from './middleware/common.js';
@@ -69,11 +70,13 @@ export function createApp(env: AppEnv, db: D1Like) {
     c.json({ success: true, data: { status: 'ok', time: new Date().toISOString() } })
   );
   app.get('/api/v1/openapi.json', (c) => c.json(openApiDocument()));
-  app.get('/api/v1/docs', (c) =>
-    c.html(
+  app.get('/api/v1/docs', (c) => {
+    c.header('Content-Security-Policy', "default-src 'self'; style-src 'unsafe-inline'");
+    c.header('X-Content-Type-Options', 'nosniff');
+    return c.html(
       `<!doctype html><html><head><meta charset="utf-8"><title>LMS API Docs</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;line-height:1.6}</style></head><body><h1>LMS Headless API v1</h1><p>OpenAPI JSON: <a href="/api/v1/openapi.json">/api/v1/openapi.json</a></p><p>Auth: Bearer access token from <code>POST /api/v1/auth/login</code>. Base path: <code>/api/v1</code>.</p><ul><li>auth: register/login/refresh/logout/me/password</li><li>users, organizations, academic years/terms/classes/subjects</li><li>courses, sections, lessons, enrollments, progress</li><li>quizzes, questions, attempts, assignments, submissions, grades</li><li>attendance, certificates (+public verify), announcements, notifications, discussions, reports, uploads</li></ul></body></html>`
-    )
-  );
+    );
+  });
 
   app.route('/api/v1/auth', auth);
   app.route('/api/v1/users', users);
@@ -88,6 +91,7 @@ export function createApp(env: AppEnv, db: D1Like) {
   app.route('/api/v1', live);
   app.route('/api/v1', commerce);
   app.route('/api/v1', scorm);
+  app.route('/api/v1', h5p);
   app.route('/api/v1', growth);
   app.route('/api/v1', xapi);
   app.route('/', ops);

@@ -1,37 +1,24 @@
 import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import {
+  ADMIN,
+  API,
+  H,
+  J,
+  PASS,
+  SUPER,
+  TEACHER_URL,
+  apiLogin,
+  trackErrors,
+  uniq,
+} from './helpers.js';
 
 // Teacher portal, second wave (round 5): students roster with per-student
 // progress detail, live-class scheduling (Jitsi, no external creds), and
 // static-mode exercise creation. Fixtures via API; server re-verification
 // after every UI action.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const TEACHER_URL = process.env.TEACHER_URL ?? 'http://localhost:5175';
-const PASS = 'Password123!';
-const ADMIN = 'admin@example.com';
-const SUPER = 'superadmin@example.com';
 const TEACHER = 'teacher@example.com';
 
 test.setTimeout(120_000);
-
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-const J = { 'content-type': 'application/json' };
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
 
 async function teacherLogin(page: Page) {
   await page.goto(`${TEACHER_URL}/#/login`);

@@ -412,7 +412,7 @@ authoring.post('/courses/:id/duplicate', requireAuth(), async (c) => {
   try {
     await execute(
       db,
-      'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, price, price_minor, created_by, created_at, updated_at, slug, visibility, enrollment_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO courses (id, organization_id, category_id, code, title, description, status, price, price_minor, created_by, created_at, updated_at, slug, visibility, enrollment_mode, capacity, access_days, enrollment_start, enrollment_end, start_at, end_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       newCourseId,
       orgId,
       (src.category_id as string | null) ?? null,
@@ -427,7 +427,13 @@ authoring.post('/courses/:id/duplicate', requireAuth(), async (c) => {
       now,
       null,
       (src.visibility as string | null) ?? 'private',
-      (src.enrollment_mode as string | null) ?? 'open'
+      (src.enrollment_mode as string | null) ?? 'open',
+      (src.capacity as number | null) ?? null,
+      (src.access_days as number | null) ?? null,
+      (src.enrollment_start as string | null) ?? null,
+      (src.enrollment_end as string | null) ?? null,
+      (src.start_at as string | null) ?? null,
+      (src.end_at as string | null) ?? null
     );
   } catch {
     return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));

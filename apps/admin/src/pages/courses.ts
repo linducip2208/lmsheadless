@@ -7,6 +7,7 @@ import {
   modalForm,
   confirmDialog,
   currentOrgId,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -14,7 +15,13 @@ import {
 export async function renderCourses(el: HTMLElement): Promise<void> {
   const orgId = currentOrgId();
   const d = t();
-  el.innerHTML = `<div id="approvals" class="mb-3"></div><div id="course-list"></div><div id="builder" class="mt-3"></div>`;
+  el.innerHTML =
+    pageHeader({
+      title: d.courses,
+      desc: 'Buat dan kelola kursus, kurikulum, visibilitas, dan persetujuan publikasi.',
+      actions: `<a class="btn btn-outline-primary btn-sm" href="#/scorm">SCORM</a>`,
+    }) +
+    `<div id="approvals" class="mb-3"></div><div id="course-list"></div><div id="builder" class="mt-3"></div>`;
   await renderApprovals(el.querySelector('#approvals') as HTMLElement, orgId);
   const list = el.querySelector('#course-list') as HTMLElement;
   const builder = el.querySelector('#builder') as HTMLElement;

@@ -6,6 +6,7 @@ import {
   modalForm,
   downloadFile,
   toast,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -17,7 +18,12 @@ export async function renderReports(el: HTMLElement): Promise<void> {
     el.innerHTML = '<div class="alert alert-warning">Select an organization first.</div>';
     return;
   }
-  el.innerHTML = `<div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap">
+  el.innerHTML =
+    pageHeader({
+      title: d.reports,
+      desc: 'Ringkasan organisasi, penyelesaian, kehadiran, aktivitas pengajar, dan ekspor CSV.',
+    }) +
+    `<div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap">
     <button class="btn btn-outline-primary" id="exp-grades">Export enrollments CSV</button>
     <button class="btn btn-outline-primary" id="exp-att">Export attendance CSV</button>
     <span class="text-muted small">Exports are injection-safe (formula cells neutralized).</span></div></div>

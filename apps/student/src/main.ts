@@ -1,4 +1,5 @@
 import '@tabler/core/dist/css/tabler.min.css';
+import '@lms/ui/contrast.css';
 import {
   createClient,
   applyTheme,
@@ -16,17 +17,18 @@ import {
   esc,
   type ApiClient,
 } from '@lms/ui';
-import { getDict } from './i18n.js';
+import { getDict, applyLocaleDir } from './i18n.js';
 
 const THEME_KEY = 'student-theme';
 applyTheme(THEME_KEY);
 const locale = localStorage.getItem('student-locale') ?? 'en';
+applyLocaleDir(locale);
 const d = getDict(locale);
 const client: ApiClient = createClient({ orgKey: 'student-org', loginRedirect: '#/login' });
 const { call, login, logout, ensureMe, getMe, currentOrg, setCurrentOrg, myOrgs } = client;
 
 function errHtml(e: unknown): string {
-  return `<div class="alert alert-danger" role="alert">${esc(e instanceof Error ? e.message : 'Error')}</div>`;
+  return `<div class="alert alert-danger" role="alert">${esc(e instanceof Error ? e.message : d.failed)}</div>`;
 }
 function loading(msg = d.loading): string {
   return `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status"></div><span>${msg}</span></div>`;
@@ -42,7 +44,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 async function loginPage(root: HTMLElement): Promise<void> {
   root.innerHTML = `<div class="row justify-content-center"><div class="col-md-4"><div class="card"><div class="card-body">
-    <h2 class="card-title">${d.login}</h2><p class="text-muted">Demo: student@example.com / Password123!</p>
+    <h2 class="card-title">${d.login}</h2><p class="text-muted">Student portal — use your organization account.</p>
     <form id="f"><label class="form-label" for="e">${d.email}</label><input id="e" type="email" class="form-control mb-2" required>
     <label class="form-label" for="p">${d.password}</label><input id="p" type="password" class="form-control mb-3" required>
     <div id="err"></div><button class="btn btn-primary w-100">${d.login}</button></form></div></div></div></div>`;
@@ -62,8 +64,8 @@ async function loginPage(root: HTMLElement): Promise<void> {
 
 function shell(): void {
   const app = document.getElementById('app') as HTMLElement;
-  app.innerHTML = `<div class="page"><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
-    <a class="navbar-brand" href="#/">LMS Student</a>
+  app.innerHTML = `<div class="page"><a href="#view" class="visually-hidden-focusable">${d.skip}</a><header class="navbar sticky-top bg-white border-bottom"><div class="container-xl d-flex gap-2 align-items-center">
+    <a class="navbar-brand" href="#/"><span class="brand-mark" style="display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;color:#fff;font-weight:800;background:linear-gradient(135deg,#206bc4,#4263eb);margin-inline-end:8px">L</span>LMS Student</a>
     <div class="ms-auto d-flex gap-2 align-items-center">${onlineIndicatorHtml()}
     <button id="install-btn" class="btn btn-sm btn-outline-primary d-none">Install app</button>
     ${themeToggleHtml(THEME_KEY)}
@@ -258,7 +260,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
             toast(d.lessonCompleted, 'success');
             await courseDetail(el, courseId);
           } catch (err) {
-            toast(err instanceof Error ? err.message : 'Failed', 'danger');
+            toast(err instanceof Error ? err.message : d.failed, 'danger');
           }
         })
       );
@@ -539,7 +541,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
             toast(d.quizSubmitted, 'success');
             await renderTasks();
           } catch (err) {
-            toast(err instanceof Error ? err.message : 'Failed', 'danger');
+            toast(err instanceof Error ? err.message : d.failed, 'danger');
           }
         })
       );
@@ -583,7 +585,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
           toast(d.quizSubmitted, 'success');
           await renderTalk();
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       });
       body.querySelectorAll('[data-rform]').forEach((f) =>
@@ -600,7 +602,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
             toast(d.quizSubmitted, 'success');
             await renderTalk();
           } catch (err) {
-            toast(err instanceof Error ? err.message : 'Failed', 'danger');
+            toast(err instanceof Error ? err.message : d.failed, 'danger');
           }
         })
       );
@@ -703,7 +705,7 @@ async function shopView(el: HTMLElement): Promise<void> {
           )
           .join('') || `<p>${d.empty}</p>`
       }</div>
-      <h3 class="mt-3">${d.orders}</h3>    <div id="ord">${(orders as { id: string; kind: string; total: number; status: string }[]).map((o) => `<div class="card card-body mb-2 py-2">${esc(o.kind)} · ${Number(o.total)} · <span class="badge ${o.status === 'paid' ? 'bg-green' : 'bg-yellow'}">${esc(o.status)}</span>${o.status === 'pending' ? `<div class="small text-muted">${d.pendingPayment}</div>` : ''}${o.status === 'paid' ? ` <button class="btn btn-sm btn-outline-primary ms-2" data-inv="${o.id}">${d.invoice}</button>` : ''}<div data-invbox="${o.id}"></div></div>`).join('') || `<p>${d.empty}</p>`}</div>
+      <h3 class="mt-3">${d.orders}</h3>    <div id="ord">${(orders as { id: string; kind: string; total: number; status: string }[]).map((o) => `<div class="card card-body mb-2 py-2">${esc(o.kind)} · ${Number(o.total)} · <span class="badge ${o.status === 'paid' ? 'bg-green' : 'bg-yellow'}">${esc(o.status)}</span>${o.status === 'pending' ? `<div class="small text-muted">${d.pendingPayment}</div> <button class="btn btn-sm btn-outline-secondary" data-cancel-order="${o.id}">${d.cancel}</button>` : ''}${o.status === 'paid' ? ` <button class="btn btn-sm btn-outline-primary ms-2" data-inv="${o.id}">${d.invoice}</button>` : ''}<div data-invbox="${o.id}"></div></div>`).join('') || `<p>${d.empty}</p>`}</div>
       ${
         plans.length
           ? `<h3 class="mt-3">${d.plans}</h3><div class="row row-cards">${plans
@@ -726,7 +728,7 @@ async function shopView(el: HTMLElement): Promise<void> {
           });
           toast(d.enrolled2, 'success');
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -743,7 +745,7 @@ async function shopView(el: HTMLElement): Promise<void> {
           );
           await shopView(el);
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -778,7 +780,7 @@ async function shopView(el: HTMLElement): Promise<void> {
             await shopView(el);
           }
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -794,7 +796,7 @@ async function shopView(el: HTMLElement): Promise<void> {
         toast(d.enrolled2, 'success');
         await shopView(el);
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
     el.querySelectorAll('[data-inv]').forEach((b) =>
@@ -811,7 +813,22 @@ async function shopView(el: HTMLElement): Promise<void> {
           const lines = (JSON.parse(inv.lines) as { title: string; amount: number }[]) ?? [];
           box.innerHTML = `<div class="alert alert-info mt-1"><strong>${d.invoice} ${esc(inv.number)}</strong> — ${Number(inv.total)} · ${esc(String(inv.issued_at).slice(0, 10))}<br>${lines.map((l) => `${esc(l.title)}: ${Number(l.amount)}`).join('<br>')}</div>`;
         } catch (err) {
-          box.innerHTML = `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : 'Failed')}</div>`;
+          box.innerHTML = `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : d.failed)}</div>`;
+        }
+      })
+    );
+    el.querySelectorAll('[data-cancel-order]').forEach((b) =>
+      b.addEventListener('click', async () => {
+        try {
+          if (!(await confirmDialog(d.cancel, d.confirm, d.cancel))) return;
+          await call(`/api/v1/orders/${(b as HTMLElement).dataset.cancelOrder}/cancel`, {
+            method: 'POST',
+            body: '{}',
+          });
+          toast(d.cancel, 'success');
+          await shopView(el);
+        } catch (err) {
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -855,7 +872,7 @@ async function liveView(el: HTMLElement): Promise<void> {
           });
           toast(d.registered, 'success');
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -916,12 +933,12 @@ async function programsView(el: HTMLElement): Promise<void> {
                 });
                 toast(d.enrolled2, 'success');
               } catch (err) {
-                toast(err instanceof Error ? err.message : 'Failed', 'danger');
+                toast(err instanceof Error ? err.message : d.failed, 'danger');
               }
             })
           );
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -956,7 +973,7 @@ async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
         });
         toast(d.bookmark, 'success');
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
     (el.querySelector('#sc-done') as HTMLButtonElement).addEventListener('click', async () => {
@@ -968,7 +985,7 @@ async function scormPlayer(el: HTMLElement, pkgId: string): Promise<void> {
         (el.querySelector('#sc-out') as HTMLElement).innerHTML =
           `<div class="alert alert-success">${d.markSynced} ✓</div>`;
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
   } catch (e) {
@@ -1051,7 +1068,7 @@ async function exercisesView(el: HTMLElement, courseId: string): Promise<void> {
         });
         toast(d.submit, 'success');
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     })
   );
@@ -1120,7 +1137,7 @@ async function moreView(el: HTMLElement): Promise<void> {
         });
         toast(d.changePassword, 'success');
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
     (el.querySelector('#push-btn') as HTMLButtonElement).addEventListener('click', async () => {
@@ -1134,7 +1151,7 @@ async function moreView(el: HTMLElement): Promise<void> {
         await call('/api/v1/notifications/read-all', { method: 'POST', body: '{}' });
         await reloadMore();
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
     el.querySelectorAll('[data-nread]').forEach((b) =>
@@ -1146,7 +1163,7 @@ async function moreView(el: HTMLElement): Promise<void> {
           });
           await reloadMore();
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );

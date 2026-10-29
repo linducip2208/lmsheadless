@@ -8,6 +8,9 @@ on:
 jobs:
   browser:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,4 +22,4 @@ jobs:
       - run: npm run db:seed
       - run: npx playwright install --only-shell chromium --with-deps
         working-directory: apps/web
-      - run: npm run test:e2e
+      - run: npm run test:e2e -- --shard=${{ matrix.shard }}/2

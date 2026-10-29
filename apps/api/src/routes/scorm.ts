@@ -4,8 +4,8 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { courseOrg, canTeach, orgStorageExceeded } from '../access.js';
-import { putObject, getObject } from '../storage.js';
+import { courseOrg, canTeach, orgStorageExceeded, userStorageExceeded } from '../access.js';
+import { putObject, getObject, sniffKind, zipRatioExceeded } from '../storage.js';
 import type { AppVars, AuthUser } from '../types.js';
 import type { D1Like } from '../db.js';
 import { t } from '../i18n.js';
@@ -34,6 +34,8 @@ interface ParsedManifest {
   entry: string;
   version: string;
   resourceCount: number;
+  sequencingCount: number;
+  sequencingMode: string | null;
 }
 
 async function parseManifest(xml: string): Promise<ParsedManifest> {
@@ -94,11 +96,20 @@ async function parseManifest(xml: string): Promise<ParsedManifest> {
   const schemaVersion =
     ((manifest.metadata as Record<string, unknown> | undefined)?.schemaversion as
       string | undefined) ?? '1.2';
+  // SCORM 2004 sequencing: count <sequencing> nodes anywhere in the manifest
+  // and capture the first control mode. The player enforces linear flow when
+  // sequencing is present (previous/next gating); full ADL navigation-request
+  // sequencing (choice/jump/rollup rules) stays out of scope and is labeled.
+  const rawXml = xml;
+  const sequencingCount = (rawXml.match(/<sequencing[\s>]/gi) ?? []).length;
+  const modeMatch = rawXml.match(/<controlMode[^>]*>/i)?.[0] ?? null;
   return {
     title: String(title).slice(0, 200),
     entry: href,
     version: /2004|4th/i.test(schemaVersion) ? '2004' : '1.2',
     resourceCount: resArray.length,
+    sequencingCount,
+    sequencingMode: modeMatch ? modeMatch.slice(0, 300) : null,
   };
 }
 
@@ -167,9 +178,13 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
   if (file.size > MAX_TOTAL) return fail(c, 400, 'INVALID_PACKAGE', 'Package exceeds 100MB');
   if (await orgStorageExceeded(c.get('db'), orgId, file.size))
     return fail(c, 413, 'QUOTA_EXCEEDED', 'Organization storage quota exceeded');
+  if (await userStorageExceeded(c.get('db'), orgId, user.id, file.size))
+    return fail(c, 413, 'QUOTA_EXCEEDED', 'Per-user storage quota exceeded');
   if (courseId && (await courseOrg(c.get('db'), courseId)) !== orgId)
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
   const buf = await file.arrayBuffer();
+  if (sniffKind(buf) !== 'zip')
+    return fail(c, 400, 'INVALID_PACKAGE', 'File content is not a ZIP archive');
   let zip: {
     file: (name: string) => { async: (k: 'uint8array') => Promise<Uint8Array> } | null;
     fileNames: string[];
@@ -223,6 +238,13 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
     if (!data) continue;
     if (stored + data.byteLength > MAX_TOTAL)
       return fail(c, 400, 'INVALID_PACKAGE', 'Unpacked size exceeds 100MB');
+    if (zipRatioExceeded(file.size, stored + data.byteLength))
+      return fail(
+        c,
+        400,
+        'INVALID_PACKAGE',
+        'Archive compression ratio exceeded (possible zip bomb)'
+      );
     stored += data.byteLength;
     const key = `scorm/${pkgId}/${safe}`;
     const ext = safe.split('.').pop()?.toLowerCase() ?? '';
@@ -254,7 +276,16 @@ scorm.post('/scorm/upload', requireAuth(), async (c) => {
     JSON.stringify({
       resources: manifest.resourceCount,
       files: stored,
-      sequencing: manifest.version === '2004' ? 'not-interpreted' : 'n/a',
+      sequencing:
+        manifest.version === '2004'
+          ? {
+              nodes: manifest.sequencingCount,
+              controlMode: manifest.sequencingMode,
+              // Linear flow enforced by the player when nodes > 0; full ADL
+              // choice/jump/rollup sequencing is not interpreted (see docs).
+              enforced: manifest.sequencingCount > 0 ? 'linear-flow' : 'none',
+            }
+          : 'n/a',
     }),
     user.id,
     now,
@@ -307,6 +338,30 @@ scorm.get('/scorm/packages', requireAuth(), async (c) => {
     orgId
   );
   return ok(c, rows);
+});
+
+// Package detail including 2004 sequencing metadata (linear-flow enforced
+// by the player when sequencing nodes are present).
+scorm.get('/scorm/packages/:id', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const pkg = await queryFirst<Record<string, unknown>>(
+    db,
+    'SELECT id, organization_id, course_id, lesson_id, title, version, entry_url, manifest_json, created_at FROM scorm_packages WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!pkg) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  if (!canAccessOrg(user, pkg.organization_id as string))
+    return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  let sequencing: unknown = null;
+  try {
+    sequencing =
+      (JSON.parse((pkg.manifest_json as string) ?? '{}') as Record<string, unknown>).sequencing ??
+      null;
+  } catch {
+    sequencing = null;
+  }
+  return ok(c, { ...pkg, manifest_json: undefined, sequencing });
 });
 
 // Serve extracted package content. Tenant-checked; safe MIME; sandboxed by the

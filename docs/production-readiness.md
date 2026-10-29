@@ -12,7 +12,8 @@
   students/parents see only their own uploads; owners always).
 - Uploads validated; org storage quota enforced when
   `organizations.settings.storage_quota_bytes` is set (unset = unlimited);
-  SCORM zips sandboxed (opaque-origin iframe).
+  per-user quota enforced when `organizations.settings.per_user_quota_bytes`
+  is set (unset = unlimited); SCORM zips sandboxed (opaque-origin iframe).
 - Webhooks signature-verified + idempotent; money stored and computed in
   integer minor units (`*_minor` columns are the source of truth, half-up
   rounding; legacy REAL columns stay synced for compatibility and pre-017
@@ -33,10 +34,14 @@
    (the API also asserts it per request; D1 enforces by default).
 3. R2 bucket + KV namespace bound; uncomment wrangler blocks.
 4. Run `POST /setup` once, then confirm `setup/status.locked`. Setup is
-   single-winner under concurrency (atomic claim; stale claims recoverable
-   after 5 minutes).
+   single-winner under concurrency (KV distributed lock when bound, DB
+   atomic claim otherwise; stale claims recoverable after 5 minutes).
+   Verify the native cron after deploy via `GET /system/cron-status`
+   (super_admin) — it lists the last 50 `sys.cron.*` runs.
 5. Configure email HTTP webhook (`email_api_url` + `email_api_key` — there is
    no SMTP driver), VAPID/payment provider keys to activate those paths
    (features report “not configured” until then — by design).
 6. Set up D1 backups + R2 lifecycle per `docs/backup-recovery.md`.
-7. Review `LICENSE` selection before any sale/distribution.
+   Run `npm run drill` quarterly and record the result in the drill log.
+7. License: proprietary commercial (see `LICENSE`). One license per
+   production deployment.

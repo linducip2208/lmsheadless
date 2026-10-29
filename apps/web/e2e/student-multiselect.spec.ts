@@ -1,35 +1,22 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import {
+  ADMIN,
+  API,
+  H,
+  J,
+  PASS,
+  STUDENT_URL,
+  SUPER,
+  apiLogin,
+  trackErrors,
+  uniq,
+} from './helpers.js';
 
 // Real-browser proof for the multi-select quiz flow (option_ids exact-set
 // scoring + checkbox UI): fixtures via API, submit via real student portal
 // clicks, score asserted from the rendered result AND the API re-read.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const STUDENT_URL = process.env.STUDENT_URL ?? 'http://localhost:5174';
-const PASS = 'Password123!';
-const ADMIN = 'admin@example.com';
-const SUPER = 'superadmin@example.com';
 
 test.setTimeout(120_000);
-
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-const J = { 'content-type': 'application/json' };
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
 
 test('student: multi-select quiz via UI checks exact set and scores 100', async ({
   page,

@@ -6,6 +6,7 @@ import {
   modalForm,
   confirmDialog,
   currentOrgId,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -36,7 +37,9 @@ const TYPES = [
 
 export async function renderQuizzes(el: HTMLElement): Promise<void> {
   const d = t();
-  el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
+  el.innerHTML =
+    pageHeader({ title: d.quizzes, desc: 'Bank soal, kuis, upaya, penilaian otomatis & manual.' }) +
+    `<ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item" role="presentation"><button class="nav-link active" data-tab="quiz" role="tab">${d.quizzes}</button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" data-tab="banks" role="tab">${d.questions}</button></li></ul>
     <div id="qz-body"></div>`;

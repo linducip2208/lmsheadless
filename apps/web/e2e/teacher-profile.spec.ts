@@ -1,35 +1,12 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { ADMIN, API, H, PASS, SUPER, TEACHER_URL, apiLogin, trackErrors, uniq } from './helpers.js';
 
 // Teacher profile (round 6 micro-gap): password change through the UI using
 // a disposable fixture teacher (seed credentials are never touched).
 // New password proven via API login; old password proven dead.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const TEACHER_URL = process.env.TEACHER_URL ?? 'http://localhost:5175';
-const PASS = 'Password123!';
 const NEWPASS = 'NewPass456!';
-const ADMIN = 'admin@example.com';
-const SUPER = 'superadmin@example.com';
 
 test.setTimeout(120_000);
-
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string, password = PASS) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
 
 test('teacher profile: password change via UI, new works, old dead', async ({ page, request }) => {
   const { pageErrors, badResponses } = await trackErrors(page);

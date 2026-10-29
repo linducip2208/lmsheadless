@@ -270,6 +270,9 @@ export function toast(
   btn.addEventListener('click', () => el.remove());
   el.append(text, btn);
   container.appendChild(el);
+  // Cap concurrent toasts: storms (e.g. offline sync errors) drop the oldest
+  // instead of covering the viewport.
+  while (container.children.length > 3) container.firstElementChild?.remove();
   window.setTimeout(() => el.remove(), 5000);
 }
 

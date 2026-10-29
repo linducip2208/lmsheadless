@@ -15,6 +15,13 @@ export default defineConfig({
         'src/audit.ts',
         'src/types.ts',
       ],
+      // Enforced floor (idea 61): measured 83.9 lines / 88.4 functions /
+      // 63.0 branches (round 9). CI fails on regression below these.
+      thresholds: {
+        lines: 80,
+        functions: 85,
+        branches: 60,
+      },
     },
   },
 });

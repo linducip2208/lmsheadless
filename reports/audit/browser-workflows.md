@@ -178,9 +178,10 @@ interop fix. Zero page errors / 5xx.
 
 Nothing in LMS scope remains API-only at route/action level: every portal
 route listed in each app's router/nav has at least one real-browser flow
-with server re-verification (24 spec files, 70 tests). Deliberately
-un-automated: live vendor OAuth and live-send paths (BLOCKED_EXTERNAL —
-no credentials by design), production cron execution (needs real deploy).
+with server re-verification (26 spec files, 80 tests after rounds 8–9, plus
+6 opt-in visual baselines). Deliberately un-automated: live vendor OAuth and live-send paths
+(BLOCKED_EXTERNAL — no credentials by design), production cron execution
+(needs real deploy; observable via the system page cron card).
 Flake record: one transient API single-failure (round 4, unidentified,
 never recurred); one E2E flaky-retry in an intermediate round-6 run
 (full re-runs green); cold-load class documented, never suppressed.

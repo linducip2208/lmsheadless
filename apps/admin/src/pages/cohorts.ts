@@ -6,6 +6,7 @@ import {
   modalForm,
   confirmDialog,
   currentOrgId,
+  pageHeader,
   t,
   esc,
 } from '../lib.js';
@@ -22,7 +23,12 @@ export async function renderCohorts(el: HTMLElement): Promise<void> {
     ['programs', d.programs],
     ['competencies', d.competencies],
   ];
-  el.innerHTML = `<ul class="nav nav-tabs mb-3" role="tablist">
+  el.innerHTML =
+    pageHeader({
+      title: d.cohorts,
+      desc: 'Angkatan/batch, learning path, dan kompetensi.',
+    }) +
+    `<ul class="nav nav-tabs mb-3" role="tablist">
     ${tabs.map(([k, label], i) => `<li class="nav-item" role="presentation"><button class="nav-link${i === 0 ? ' active' : ''}" data-tab="${k}" role="tab">${label}</button></li>`).join('')}
     </ul><div id="co-body"></div>`;
   const body = el.querySelector('#co-body') as HTMLElement;

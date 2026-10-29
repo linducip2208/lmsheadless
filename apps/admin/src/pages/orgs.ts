@@ -1,11 +1,15 @@
-import { call, crud, loadingHtml, errorHtml, toast, modalForm, getMe, t, esc } from '../lib.js';
+import { call, crud, loadingHtml, errorHtml, toast, modalForm, getMe, pageHeader, t, esc } from '../lib.js';
 
 let orgDetailGen = 0;
 
 export async function renderOrgs(el: HTMLElement): Promise<void> {
   const me = getMe();
   const d = t();
-  el.innerHTML = `<div id="org-list"></div><div id="org-detail" class="mt-3"></div>`;
+  el.innerHTML =
+    pageHeader({
+      title: d.organizations,
+      desc: 'Multi-tenant: kelola organisasi, anggota, branding white-label, dan domain kustom.',
+    }) + `<div id="org-list"></div><div id="org-detail" class="mt-3"></div>`;
   const list = el.querySelector('#org-list') as HTMLElement;
   const detail = el.querySelector('#org-detail') as HTMLElement;
   await crud(list, {

@@ -71,6 +71,18 @@ for (const f of tsFiles(join(root, 'apps', 'api', 'src', 'routes'))) {
   }
 }
 
+// ---- 3. audit metadata must never carry secrets ----
+for (const f of tsFiles(join(root, 'apps', 'api', 'src', 'routes'))) {
+  const src = readFileSync(f, 'utf8');
+  for (const m of src.matchAll(/audit\(c,\s*['"][^'"]+['"],\s*\{[^}]*metadata:\s*\{([^}]*)\}/g)) {
+    const meta = m[1];
+    if (/password|passwd|secret|token|api[_-]?key/i.test(meta)) {
+      const line = src.slice(0, m.index).split('\n').length;
+      issues.push(`api/${f.split('routes')[1]}:${line}: audit metadata may contain a secret`);
+    }
+  }
+}
+
 if (issues.length) {
   console.log(`STATIC-AUDIT: ${issues.length} issue(s)\n- ${issues.join('\n- ')}`);
   process.exit(1);

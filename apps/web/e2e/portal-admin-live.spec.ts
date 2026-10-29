@@ -1,43 +1,12 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { ADMIN, API, H, PASS, SUPER, adminLogin, apiLogin, trackErrors, uniq } from './helpers.js';
 import { readFileSync } from 'node:fs';
 
 // Admin live tab (round 6, final residue): schedule → reschedule → record
 // attendance → cancel, plus the .ics export link. Fixtures via API; every
 // UI action re-verified server-side.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const ADMIN_URL = process.env.ADMIN_URL ?? 'http://localhost:5173';
-const PASS = 'Password123!';
-const ADMIN = 'admin@example.com';
-const SUPER = 'superadmin@example.com';
 
 test.setTimeout(120_000);
-
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
-
-async function adminLogin(page: Page) {
-  await page.goto(`${ADMIN_URL}/#/login`);
-  await page.locator('#email').fill(ADMIN);
-  await page.locator('#password').fill(PASS);
-  await page.locator('#login-form button[type="submit"], #login-form button.w-100').first().click();
-  await page.waitForURL('**#/', { timeout: 15000 });
-}
 
 test('admin live: schedule, reschedule, record attendance, cancel', async ({ page, request }) => {
   const { pageErrors, badResponses } = await trackErrors(page);

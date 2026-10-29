@@ -7,6 +7,9 @@ import {
   runAiRetentionPurge,
   runQuizCopyPurge,
   runScheduledPublishing,
+  runStorageRetention,
+  runSubscriptionMaintenance,
+  runXapiRetentionPurge,
 } from './maintenance.js';
 
 // Cloudflare Workers entry. `DB`, `STORAGE` (R2), `KV` bindings come from wrangler.toml.
@@ -85,6 +88,9 @@ export default {
     summary.retention = await runAiRetentionPurge(db);
     summary.publish = await runScheduledPublishing(db);
     summary.copies = await runQuizCopyPurge(db);
+    summary.subscriptions = await runSubscriptionMaintenance(db);
+    summary.xapi = await runXapiRetentionPurge(db);
+    summary.storage = await runStorageRetention(db);
     // eslint-disable-next-line no-console -- Cloudflare Workers structured logging: console.log is the info/tail channel
     console.log(JSON.stringify({ level: 'info', scope: 'cron', event: 'maintenance', ...summary }));
   },

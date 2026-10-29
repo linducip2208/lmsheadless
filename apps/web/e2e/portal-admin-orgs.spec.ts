@@ -1,35 +1,12 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { ADMIN_URL, API, H, J, PASS, SUPER, apiLogin, trackErrors, uniq } from './helpers.js';
 
 // Admin setup area (round 6, final residue): organizations manage (create +
 // member add + brand edit via the generic crud), role permission remap with
 // guaranteed restore, and dashboard numbers matching the server summary.
 // Super_admin flows use SUPER login.
-const API = process.env.API_BASE ?? 'http://localhost:8787';
-const ADMIN_URL = process.env.ADMIN_URL ?? 'http://localhost:5173';
-const PASS = 'Password123!';
-const SUPER = 'superadmin@example.com';
 
 test.setTimeout(120_000);
-
-const uniq = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-const H = (t: string) => ({ Authorization: `Bearer ${t}` });
-const J = { 'content-type': 'application/json' };
-
-async function trackErrors(page: Page) {
-  const pageErrors: string[] = [];
-  const badResponses: string[] = [];
-  page.on('pageerror', (e) => pageErrors.push(String(e)));
-  page.on('response', (r) => {
-    if (r.status() >= 500) badResponses.push(`${r.status()} ${r.url()}`);
-  });
-  return { pageErrors, badResponses };
-}
-
-async function apiLogin(req: APIRequestContext, email: string) {
-  const r = await req.post(`${API}/api/v1/auth/login`, { data: { email, password: PASS } });
-  expect(r.status()).toBe(200);
-  return ((await r.json()) as { data: { access_token: string; user: { id: string } } }).data;
-}
 
 async function superLogin(page: Page) {
   await page.goto(`${ADMIN_URL}/#/login`);

@@ -391,11 +391,13 @@ assess.post('/quizzes/:id/attempts', requireAuth(), async (c) => {
     user.id
   );
   if (active) return ok(c, { id: active.id, resumed: true });
+  // Expired attempts never burn quota: only submitted/in-progress rows count
+  // against max_attempts. An expired row is a timeout marker, not a used try.
   const count =
     (
       await queryFirst<{ n: number }>(
         db,
-        'SELECT COUNT(*) as n FROM quiz_attempts WHERE quiz_id = ? AND student_id = ?',
+        "SELECT COUNT(*) as n FROM quiz_attempts WHERE quiz_id = ? AND student_id = ? AND status != 'expired'",
         quiz.id,
         user.id
       )

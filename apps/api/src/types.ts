@@ -25,6 +25,8 @@ export interface AppEnv {
   AUTH_RATE_LIMIT_MAX?: number;
   ALLOWED_ORIGINS?: string;
   COOKIE_SECURE?: boolean;
+  /** Opt-in slow-request logging threshold in ms (idea 96). Unset = off. */
+  SLOW_LOG_MS?: number;
   R2?: {
     put(key: string, body: ArrayBuffer, opts?: { contentType?: string }): Promise<unknown>;
     get(key: string): Promise<{ body: ReadableStream | null; contentType?: string } | null>;
@@ -37,7 +39,7 @@ export interface AppEnv {
 
 export type AppVars = {
   requestId: string;
-  lang: 'en' | 'id';
+  lang: 'en' | 'id' | 'ar';
   user: AuthUser | null;
   db: D1Like;
   env: AppEnv;

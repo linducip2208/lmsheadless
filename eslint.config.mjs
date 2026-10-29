@@ -9,6 +9,8 @@ export default tseslint.config(
       '**/dev-dist/**',
       '**/.data/**',
       '**/coverage/**',
+      '**/.stryker-tmp/**',
+      '**/test-results/**',
     ],
   },
   ...tseslint.configs.recommended,

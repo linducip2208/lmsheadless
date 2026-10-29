@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
   retries: 1,
+  globalSetup: './e2e/global-setup.ts',
   // Single worker: all specs share one dev API + SQLite file and cold vite
   // transforms; parallel workers starve the servers and flake timing asserts.
   workers: 1,

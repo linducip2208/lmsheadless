@@ -1,4 +1,5 @@
 import '@tabler/core/dist/css/tabler.min.css';
+import '@lms/ui/contrast.css';
 import {
   createClient,
   applyTheme,
@@ -13,12 +14,13 @@ import {
   confirmDialog,
   type ApiClient,
 } from '@lms/ui';
-import { getDict } from './i18n.js';
+import { getDict, applyLocaleDir } from './i18n.js';
 import { banksView, liveView, cohortsView, aiView, exercisesView } from './panels.js';
 
 const THEME_KEY = 'teacher-theme';
 applyTheme(THEME_KEY);
 const locale = localStorage.getItem('teacher-locale') ?? 'en';
+applyLocaleDir(locale);
 const d = getDict(locale);
 const client: ApiClient = createClient({ orgKey: 'teacher-org', loginRedirect: '#/login' });
 const { call, login, logout, ensureMe, getMe, currentOrg, setCurrentOrg, myOrgs } = client;
@@ -27,7 +29,7 @@ function loading(msg = d.loading): string {
   return `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status"></div><span>${msg}</span></div>`;
 }
 function errHtml(e: unknown): string {
-  return `<div class="alert alert-danger" role="alert">${esc(e instanceof Error ? e.message : 'Error')}</div>`;
+  return `<div class="alert alert-danger" role="alert">${esc(e instanceof Error ? e.message : d.failed)}</div>`;
 }
 
 interface NavEntry {
@@ -71,7 +73,7 @@ function navFlat(): NavEntry[] {
 
 async function loginPage(root: HTMLElement): Promise<void> {
   root.innerHTML = `<div class="row justify-content-center"><div class="col-md-4"><div class="card"><div class="card-body">
-    <h2 class="card-title">LMS Teacher</h2><p class="text-muted">${d.login} — teacher@example.com / Password123!</p>
+    <h2 class="card-title">LMS Teacher</h2><p class="text-muted">${d.login} — use your teacher account.</p>
     <form id="f"><label class="form-label" for="e">${d.email}</label><input id="e" type="email" class="form-control mb-2" required>
     <label class="form-label" for="p">${d.password}</label><input id="p" type="password" class="form-control mb-3" required>
     <div id="err"></div><button class="btn btn-primary w-100">${d.login}</button></form></div></div></div></div>`;
@@ -91,7 +93,7 @@ async function loginPage(root: HTMLElement): Promise<void> {
 
 function shell(): void {
   const app = document.getElementById('app') as HTMLElement;
-  app.innerHTML = `<div class="page"><aside class="navbar navbar-vertical navbar-expand-lg"><div class="container-fluid">
+  app.innerHTML = `<div class="page"><a href="#view" class="visually-hidden-focusable">${d.skip}</a><aside class="navbar navbar-vertical navbar-expand-lg"><div class="container-fluid">
     <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#m" aria-label="Menu"><span class="navbar-toggler-icon"></span></button>
     <h1 class="navbar-brand">LMS Teacher</h1>
     <div class="collapse navbar-collapse" id="m"><ul class="navbar-nav pt-lg-3">
@@ -218,7 +220,7 @@ async function renderCourseExercises(el: HTMLElement, courseId: string): Promise
               );
               toast(d.feedbackSent, 'success');
             } catch (err) {
-              toast(err instanceof Error ? err.message : 'Failed', 'danger');
+              toast(err instanceof Error ? err.message : d.failed, 'danger');
             }
           })
         );
@@ -291,7 +293,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
         toast(d.added, 'success');
         await courseDetail(el, courseId);
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
     el.querySelectorAll('[data-ladd]').forEach((b) =>
@@ -317,7 +319,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
           toast(d.added, 'success');
           await courseDetail(el, courseId);
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -342,7 +344,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
         toast(d.created, 'success');
         await courseDetail(el, courseId);
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
   } catch (e) {
@@ -461,7 +463,7 @@ async function grading(el: HTMLElement): Promise<void> {
                 delete box.dataset.loaded;
                 (b as HTMLElement).click();
               } catch (err) {
-                toast(err instanceof Error ? err.message : 'Failed', 'danger');
+                toast(err instanceof Error ? err.message : d.failed, 'danger');
               }
             })
           );
@@ -496,7 +498,7 @@ async function grading(el: HTMLElement): Promise<void> {
           toast(d.graded, 'success');
           await grading(el);
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -558,7 +560,7 @@ async function studentsView(el: HTMLElement): Promise<void> {
           if (box)
             box.innerHTML = `<div class="alert alert-info">Progress ${Number(rep.progress?.percent ?? 0)}% — ${rep.lessons.filter((l) => l.is_completed).length}/${rep.lessons.length} lessons done.</div>`;
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
       })
     );
@@ -625,7 +627,7 @@ async function attendanceView(el: HTMLElement): Promise<void> {
         toast(d.sessionCreated, 'success');
         await load();
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
     (el.querySelector('#at-course') as HTMLSelectElement).addEventListener(
@@ -642,7 +644,7 @@ async function attendanceView(el: HTMLElement): Promise<void> {
           toast(d.saved, 'success');
           await load();
         } catch (err) {
-          toast(err instanceof Error ? err.message : 'Failed', 'danger');
+          toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
         return;
       }
@@ -678,11 +680,11 @@ async function attendanceView(el: HTMLElement): Promise<void> {
             });
             toast(`${d.recorded} ${records.length}`, 'success');
           } catch (err) {
-            toast(err instanceof Error ? err.message : 'Failed', 'danger');
+            toast(err instanceof Error ? err.message : d.failed, 'danger');
           }
         });
       } catch (err) {
-        toast(err instanceof Error ? err.message : 'Failed', 'danger');
+        toast(err instanceof Error ? err.message : d.failed, 'danger');
       }
     });
     await load();
@@ -709,7 +711,7 @@ async function profile(el: HTMLElement): Promise<void> {
       });
       toast(d.passwordChanged, 'success');
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Failed', 'danger');
+      toast(err instanceof Error ? err.message : d.failed, 'danger');
     }
   });
 }

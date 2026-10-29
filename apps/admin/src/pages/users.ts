@@ -1,4 +1,4 @@
-import { crud, currentOrgId, myOrgs, setCurrentOrgId, getMe, t } from '../lib.js';
+import { crud, currentOrgId, myOrgs, setCurrentOrgId, getMe, pageHeader, t } from '../lib.js';
 
 export async function renderUsers(el: HTMLElement): Promise<void> {
   const me = getMe();
@@ -6,7 +6,10 @@ export async function renderUsers(el: HTMLElement): Promise<void> {
   const orgs = await myOrgs().catch(() => []);
   const fallback = currentOrgId() ?? me?.memberships[0]?.organization_id ?? orgs[0]?.id ?? '';
   if (fallback && !currentOrgId()) setCurrentOrgId(fallback);
-  await crud(el, {
+  el.innerHTML =
+    pageHeader({ title: d.users, desc: 'Kelola akun, peran, dan status pengguna organisasi.' }) +
+    `<div id="users-list"></div>`;
+  await crud(el.querySelector('#users-list') as HTMLElement, {
     endpoint: '/api/v1/users',
     query: fallback ? { organization_id: fallback } : {},
     cols: [

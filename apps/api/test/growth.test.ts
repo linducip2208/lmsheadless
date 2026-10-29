@@ -88,7 +88,7 @@ describe('SCORM 1.2', () => {
     // zip without manifest rejected
     const noManifest = await upload(await makeZip({ 'index.html': '<h1>hi</h1>' }), 'a.zip');
     expect(noManifest.status).toBe(400);
-    // SCORM 2004 imports (sequencing documented as not interpreted)
+    // SCORM 2004 imports (sequencing metadata recorded; linear flow enforced)
     const v2004 = await upload(
       await makeZip({ 'imsmanifest.xml': MANIFEST_2004, 'index.html': '<h1>hi</h1>' }),
       'b.zip'
@@ -101,7 +101,7 @@ describe('SCORM 1.2', () => {
       pkg2004.data.id
     );
     expect(row2004?.version).toBe('2004');
-    expect(row2004?.manifest_json).toContain('not-interpreted');
+    expect(row2004?.manifest_json).toContain('sequencing');
     // valid 1.2 package
     const good = await upload(
       await makeZip({ 'imsmanifest.xml': MANIFEST_12, 'index.html': '<h1>lesson</h1>' }),

@@ -1101,6 +1101,42 @@ commerce.post('/orders/:id/refund', requireAuth(), async (c) => {
   return ok(c, { refunded: true });
 });
 
+// Cancel a still-pending order. Buyer or privileged org actor; paid/refunded/
+// cancelled orders cannot be cancelled (fulfillment already ran or closed).
+commerce.post('/orders/:id/cancel', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const order = await queryFirst<{ organization_id: string; status: string; buyer_id: string }>(
+    db,
+    'SELECT organization_id, status, buyer_id FROM orders WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!order) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const privileged = isPrivileged(user, order.organization_id);
+  if (order.buyer_id !== user.id && !privileged)
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (order.status !== 'pending')
+    return fail(
+      c,
+      400,
+      'VALIDATION_ERROR',
+      `Only pending orders can be cancelled (status: ${order.status})`
+    );
+  const moved = await execute(
+    db,
+    "UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ? AND status = 'pending'",
+    nowIso(),
+    c.req.param('id')
+  );
+  if (!moved.changes) return fail(c, 409, 'CONFLICT', t('conflict', c.get('lang')));
+  await audit(c, 'order.cancelled', {
+    entity: 'order',
+    entityId: c.req.param('id'),
+    organizationId: order.organization_id,
+  });
+  return ok(c, { cancelled: true });
+});
+
 commerce.get('/subscription-plans', requireAuth(), async (c) => {
   const user = c.get('user') as AuthUser;
   const orgId = new URL(c.req.url).searchParams.get('organization_id');
@@ -1209,6 +1245,62 @@ commerce.post('/subscriptions', requireAuth(), async (c) => {
     status: planMinor === 0 ? 'active' : 'pending',
     note: 'Recurring charges are collected by the configured payment provider',
   });
+});
+
+// Subscription lifecycle maintenance: free plans auto-renew, paid plans past
+// period end move to past_due. Privileged caller, audited per subscription.
+commerce.post('/subscriptions/renew-due', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  if (!user.isSuperAdmin) {
+    // At least one privileged membership required.
+    const anyPriv = user.memberships.some(
+      (m) => m.role === 'organization_admin' || m.role === 'staff'
+    );
+    if (!anyPriv) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  }
+  const { runSubscriptionMaintenance } = await import('../maintenance.js');
+  const res = await runSubscriptionMaintenance(c.get('db'));
+  await audit(c, 'subscriptions.renew_due', {
+    organizationId: user.memberships[0]?.organization_id ?? 'global',
+    metadata: res as unknown as Record<string, unknown>,
+  });
+  return ok(c, res);
+});
+
+// Buyer cancels their own subscription; privileged org actors may cancel any
+// subscription in their org. Active/past_due -> cancelled (idempotent 404 on repeat).
+commerce.post('/subscriptions/:id/cancel', requireAuth(), async (c) => {
+  const user = c.get('user') as AuthUser;
+  const db = c.get('db');
+  const sub = await queryFirst<{ plan_id: string; buyer_id: string; status: string }>(
+    db,
+    'SELECT plan_id, buyer_id, status FROM subscriptions WHERE id = ?',
+    c.req.param('id')
+  );
+  if (!sub) return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  const plan = await queryFirst<{ organization_id: string }>(
+    db,
+    'SELECT organization_id FROM subscription_plans WHERE id = ?',
+    sub.plan_id
+  );
+  const privileged = user.isSuperAdmin || (plan ? isPrivileged(user, plan.organization_id) : false);
+  if (sub.buyer_id !== user.id && !privileged)
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+  if (sub.status === 'cancelled') return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
+  if (sub.status !== 'active' && sub.status !== 'past_due' && sub.status !== 'pending')
+    return fail(c, 400, 'VALIDATION_ERROR', `Cannot cancel subscription in status: ${sub.status}`);
+  await execute(
+    db,
+    "UPDATE subscriptions SET status = 'cancelled', updated_at = ? WHERE id = ?",
+    nowIso(),
+    c.req.param('id')
+  );
+  await audit(c, 'subscription.cancelled', {
+    entity: 'subscription',
+    entityId: c.req.param('id'),
+    organizationId: plan?.organization_id ?? 'global',
+  });
+  return ok(c, { cancelled: true });
 });
 
 // ---------- Commissions & payouts (manual) ----------
