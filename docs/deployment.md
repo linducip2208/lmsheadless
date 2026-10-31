@@ -31,6 +31,30 @@ npm run dev:admin    # :5173 · dev:teacher :5175 · dev:student :5174 · dev:pa
    runtime via the `localStorage.portal-urls` override
    (`{admin,teacher,student,parent}`) — otherwise portal links are dead.
 
+## Pages deploy (Cloudflare)
+
+Deploy each portal **from its own directory** so `functions/` (the
+same-origin `/api/*` proxy) is uploaded alongside `dist/`. Deploying from
+the repo root silently drops Functions and breaks login/refresh:
+
+```powershell
+cd apps/web; npx wrangler pages deploy dist --project-name lmsheadless-web --commit-dirty=true
+cd ../admin; npx wrangler pages deploy dist --project-name lmsheadless-admin --commit-dirty=true
+cd ../student; npx wrangler pages deploy dist --project-name lmsheadless-student --commit-dirty=true
+cd ../teacher; npx wrangler pages deploy dist --project-name lmsheadless-teacher --commit-dirty=true
+cd ../parent; npx wrangler pages deploy dist --project-name lmsheadless-parent --commit-dirty=true
+```
+
+Verify after every deploy (JSON = proxy alive, HTML = broken):
+
+```powershell
+curl.exe -s https://<project>.pages.dev/api/v1/setup/status
+curl.exe -s -o NUL -w '%{http_code}\n' https://<custom-domain>/health
+```
+
+Custom domains (`Workers & Pages → project → Custom domains`) require the
+matching DNS CNAME first; Pages shows `initializing` until DNS resolves.
+
 ## Native maintenance scheduler (cron)
 
 `apps/api/wrangler.toml` declares
