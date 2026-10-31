@@ -9,21 +9,21 @@ ALLOWED_ORIGINS = ""
 COOKIE_SECURE = "1"
 
 # Local D1 (create with: wrangler d1 create lms-headless)
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "lms-headless"
-# database_id = "replace-with-real-id"
-# migrations_dir = "../../migrations"
+[[d1_databases]]
+binding = "DB"
+database_name = "lms-headless"
+database_id = "c7e909d7-7c6e-45c0-8a5c-818802253925"
+migrations_dir = "../../migrations"
 
 # Production file storage
-# [[r2_buckets]]
-# binding = "STORAGE"
-# bucket_name = "lms-storage"
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "lms-storage"
 
 # Cache / rate-limit backing store
-# [[kv_namespaces]]
-# binding = "KV"
-# id = "replace-with-real-id"
+[[kv_namespaces]]
+binding = "KV"
+id = "0feb57497ded4d4bb501e27dd740a34a"
 
 [dev]
 port = 8787

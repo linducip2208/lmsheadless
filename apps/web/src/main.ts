@@ -411,6 +411,10 @@ function docsPage(): string {
   <div class="row row-cards">
   ${[
     ['API', '/api/v1/docs'],
+    ['Panduan Admin', '/docs/panduan-admin.md'],
+    ['Panduan Guru', '/docs/panduan-guru.md'],
+    ['Panduan Siswa', '/docs/panduan-siswa.md'],
+    ['Panduan Orang Tua', '/docs/panduan-ortu.md'],
     ['Flutter', '/docs/flutter.md'],
     ['White-label', '/docs/white-label.md'],
     ['PWA', '/docs/pwa.md'],
