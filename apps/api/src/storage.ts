@@ -116,7 +116,8 @@ export function validateUploadBytes(buf: ArrayBuffer, fileName: string): string 
     zip: ['zip', 'h5p'],
   };
   const ok = map[kind] ?? [];
-  if (ok.length && !ok.includes(ext)) return `File content (${kind}) does not match extension .${ext}`;
+  if (ok.length && !ok.includes(ext))
+    return `File content (${kind}) does not match extension .${ext}`;
   return null;
 }
 

@@ -128,11 +128,7 @@ test('superadmin roles: remap staff permission with guaranteed restore', async (
   }
   expect(staffIdx).toBeGreaterThan(0);
   const staffCell = () =>
-    page
-      .locator('#view table tbody tr', { hasText: removed })
-      .first()
-      .locator('td')
-      .nth(staffIdx);
+    page.locator('#view table tbody tr', { hasText: removed }).first().locator('td').nth(staffIdx);
   await expect(staffCell().locator('span[aria-label="allowed"]')).toBeVisible({
     timeout: 15000,
   });
@@ -169,7 +165,9 @@ test('admin dashboard: cards match server organization summary', async ({ page, 
   const { pageErrors, badResponses } = await trackErrors(page);
   const sup = await apiLogin(request, SUPER);
   await superLogin(page);
-  await expect(page.locator('#view', { hasText: /Students|Siswa/ })).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#view', { hasText: /Students|Siswa/ })).toBeVisible({
+    timeout: 15000,
+  });
   const orgs = (await (
     await request.get(`${API}/api/v1/organizations`, { headers: H(sup.access_token) })
   ).json()) as { data: { id: string }[] };

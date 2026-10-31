@@ -27,6 +27,7 @@ export const en = {
   session: 'Session',
   date: 'Date',
   status: 'Status',
+  installApp: 'Install app',
 };
 
 export type ParentDict = typeof en;
@@ -60,6 +61,7 @@ export const id: Record<keyof ParentDict, string> = {
   session: 'Sesi',
   date: 'Tanggal',
   status: 'Status',
+  installApp: 'Pasang aplikasi',
 };
 
 export const ar: Record<keyof typeof en, string> = {

@@ -62,7 +62,6 @@ if (WITH_GATEWAY) JOBS.push(['gateway', process.execPath, ['scripts/gateway.mjs'
 
 if (DRY_RUN) {
   for (const [name, cmd, cmdArgs] of JOBS) {
-     
     console.log(`[dry-run] ${name}: ${cmd} ${cmdArgs.join(' ')}`);
   }
   process.exit(0);
@@ -95,11 +94,10 @@ for (const [name, cmd, cmdArgs, jobOpts] of JOBS) {
   child.stdout.on('data', (d) => prefix(name, d, process.stdout));
   child.stderr.on('data', (d) => prefix(name, d, process.stderr));
   child.on('exit', (code, signal) => {
-     
     console.log(`[${name}] exited (code=${code} signal=${signal})`);
   });
 }
- 
+
 console.log(
   `[dev-all] ${JOBS.length} processes running. Ctrl+C to stop. Hub: http://localhost:8080/`
 );

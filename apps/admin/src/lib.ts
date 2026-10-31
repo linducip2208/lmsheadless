@@ -46,11 +46,7 @@ export function emptyHtml(msg?: string, hint?: string): string {
 }
 
 /** Consistent enterprise page header. Purely presentational — no route/API change. */
-export function pageHeader(opts: {
-  title: string;
-  desc?: string;
-  actions?: string;
-}): string {
+export function pageHeader(opts: { title: string; desc?: string; actions?: string }): string {
   return `<div class="lms-page-head d-flex align-items-start gap-3 flex-wrap"><div class="flex-grow-1"><h2>${opts.title}</h2>${opts.desc ? `<p>${opts.desc}</p>` : ''}</div>${opts.actions ? `<div class="lms-actions">${opts.actions}</div>` : ''}</div>`;
 }
 

@@ -160,6 +160,7 @@ export const en = {
   syncFailed: 'Sync failed, will retry',
   home: 'Home',
   failedLoadPage: 'Failed to load page.',
+  installApp: 'Install app',
 };
 export const id: Record<keyof typeof en, string> = {
   dashboard: 'Dasbor',
@@ -323,6 +324,7 @@ export const id: Record<keyof typeof en, string> = {
   syncFailed: 'Sinkronisasi gagal, akan dicoba lagi',
   home: 'Beranda',
   failedLoadPage: 'Gagal memuat halaman.',
+  installApp: 'Pasang aplikasi',
 };
 export const ar = {
   ...en,

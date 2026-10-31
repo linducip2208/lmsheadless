@@ -1,4 +1,15 @@
-import { call, crud, loadingHtml, errorHtml, toast, modalForm, getMe, pageHeader, t, esc } from '../lib.js';
+import {
+  call,
+  crud,
+  loadingHtml,
+  errorHtml,
+  toast,
+  modalForm,
+  getMe,
+  pageHeader,
+  t,
+  esc,
+} from '../lib.js';
 
 let orgDetailGen = 0;
 

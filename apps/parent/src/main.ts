@@ -19,6 +19,13 @@ let d: ParentDict = getDict(localStorage.getItem('parent-locale') ?? 'id');
 const client: ApiClient = createClient({ orgKey: 'parent-org', loginRedirect: '#/login' });
 const { call, login, logout, ensureMe, getMe } = client;
 
+let deferredPrompt: { prompt: () => void } | null = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e as unknown as { prompt: () => void };
+  document.getElementById('install-btn')?.classList.remove('d-none');
+});
+
 function errHtml(e: unknown): string {
   return `<div class="alert alert-danger">${esc(e instanceof Error ? e.message : d.failed)}</div>`;
 }
@@ -200,9 +207,9 @@ async function router(): Promise<void> {
     location.hash = '#/login';
     return;
   }
-  app.innerHTML = `<div class="page"><a href="#view" class="visually-hidden-focusable">${d.skip}</a><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
+  app.innerHTML = `<div class="page"><a href="#view" class="visually-hidden-focusable">${d.skip}</a><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center flex-wrap">
     <a class="navbar-brand" href="#/">${d.title}</a>
-    <div class="ms-auto d-flex gap-2 align-items-center"><span class="text-muted small">${esc(me.name)}</span>${themeToggleHtml(THEME_KEY)}
+    <div class="ms-auto d-flex gap-2 align-items-center flex-wrap"><span class="text-muted small d-none d-sm-inline">${esc(me.name)}</span><button id="install-btn" class="btn btn-sm btn-outline-primary d-none">${d.installApp}</button>${themeToggleHtml(THEME_KEY)}
     <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language">
     <option value="en"${(localStorage.getItem('parent-locale') ?? 'id') === 'en' ? ' selected' : ''}>EN</option>
     <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option>
@@ -211,6 +218,10 @@ async function router(): Promise<void> {
     <div class="page-wrapper"><div class="page-body"><div class="container-xl py-3" id="view"></div></div></div></div>`;
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
+  (document.getElementById('install-btn') as HTMLButtonElement | null)?.addEventListener(
+    'click',
+    () => deferredPrompt?.prompt()
+  );
   (document.getElementById('lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
     const v = (e.target as HTMLSelectElement).value;
     localStorage.setItem('parent-locale', v);

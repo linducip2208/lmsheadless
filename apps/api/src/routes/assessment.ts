@@ -1334,9 +1334,7 @@ assess.get('/grades', requireAuth(), async (c) => {
     const allowed = victimOrgIds.filter(
       (o) =>
         linkOrgIds.includes(o) ||
-        (['teacher', 'organization_admin', 'staff'] as string[]).includes(
-          orgRole(user, o) ?? ''
-        )
+        (['teacher', 'organization_admin', 'staff'] as string[]).includes(orgRole(user, o) ?? '')
     );
     if (!allowed.length) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
     const rows = await queryAll(

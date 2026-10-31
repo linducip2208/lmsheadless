@@ -92,23 +92,28 @@ export async function renderDashboard(el: HTMLElement): Promise<void> {
         <div class="col-md-7"><div class="card h-100"><div class="card-header d-flex align-items-center"><h3 class="card-title">Penyelesaian per kursus</h3><a href="#/courses" class="btn btn-sm btn-outline-primary ms-auto">Kelola</a></div>
         <div class="card-body">${
           completion.length
-            ? completion.slice(0, 8).map(
-                (c) => `
+            ? completion
+                .slice(0, 8)
+                .map(
+                  (c) => `
           <div class="mb-3"><div class="d-flex justify-content-between gap-2"><strong>${esc(c.title)}</strong>
           <span class="text-muted text-nowrap">${Number(c.completed)}/${Number(c.enrolled)} · ${Number(c.completion_rate)}%</span></div>
           <div class="progress" role="progressbar" aria-label="${esc(c.title)} progress" aria-valuenow="${Number(c.avg_progress)}" aria-valuemin="0" aria-valuemax="100">
           <div class="progress-bar" style="width:${Math.min(100, Number(c.avg_progress))}%"></div></div></div>`
-              )
-              .join('')
+                )
+                .join('')
             : `<p class="text-muted mb-0">${d.empty} Buat kursus pertama dari halaman Courses.</p>`
         }
         </div></div></div>
         <div class="col-md-5"><div class="card mb-3"><div class="card-header"><h3 class="card-title">Aktivitas 7 hari</h3></div>
         <div class="card-body">${
           last7.length
-            ? last7.map(
-                (x) => `<div class="d-flex align-items-center gap-2 mb-1"><span class="text-muted small" style="width:4.5rem">${esc(String(x.day).slice(5))}</span><div class="progress flex-grow-1"><div class="progress-bar" style="width:${Math.round((Number(x.dau) / maxDau) * 100)}%"></div></div><span class="small text-nowrap">${Number(x.dau)} user</span></div>`
-              ).join('')
+            ? last7
+                .map(
+                  (x) =>
+                    `<div class="d-flex align-items-center gap-2 mb-1"><span class="text-muted small" style="width:4.5rem">${esc(String(x.day).slice(5))}</span><div class="progress flex-grow-1"><div class="progress-bar" style="width:${Math.round((Number(x.dau) / maxDau) * 100)}%"></div></div><span class="small text-nowrap">${Number(x.dau)} user</span></div>`
+                )
+                .join('')
             : `<p class="text-muted mb-0">Belum ada aktivitas tercatat.</p>`
         }</div></div>
         <div class="card"><div class="card-header"><h3 class="card-title">Aksi cepat</h3></div>

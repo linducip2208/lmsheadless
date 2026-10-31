@@ -158,6 +158,7 @@ export const en = {
   pricingPageSelfBullets: '3 organizations|White-label|PWA portals',
   pricingPageGrowthBullets: 'Unlimited courses*|Certificates|Reports',
   pricingPageEntBullets: 'Custom domains|SSO|SLA',
+  installApp: 'Install app',
 };
 
 export type WebDict = typeof en;
@@ -322,6 +323,7 @@ export const id: Record<keyof WebDict, string> = {
   pricingPageSelfBullets: '3 organisasi|White-label|Portal PWA',
   pricingPageGrowthBullets: 'Kursus tanpa batas*|Sertifikat|Laporan',
   pricingPageEntBullets: 'Domain kustom|SSO|SLA',
+  installApp: 'Pasang aplikasi',
 };
 
 export const ar: Record<keyof typeof en, string> = {

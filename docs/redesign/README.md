@@ -19,7 +19,7 @@ yang benar adalah API Hono di `apps/api`).
 - Halaman `orgs.ts`: daftar + detail tanpa header/deskripsi (kotak kecil di
   ruang kosong — sesuai keluhan).
 - Kendala E2E: selector `#email #password #login-form #crud-q #crud-new
-  #crud-body .modal-dialog [name] [data-manage] [data-editrole] #view`
+#crud-body .modal-dialog [name] [data-manage] [data-editrole] #view`
   dikunci oleh `apps/web/e2e/*.spec.ts` — semua dipertahankan.
 
 ## 2. Design system (`apps/admin/src/theme.css`, baru)
@@ -27,12 +27,13 @@ yang benar adalah API Hono di `apps/api`).
 Token: `--lms-primary #206bc4`, aksen indigo `#4263eb`, bg `#f4f6fb`,
 surface putih, border `#e6e9f0`, radius 12/8, shadow-sm/md, sidebar 264px /
 collapsed 76px, topbar 60px. Komponen: sidebar (ikon + section + active pill
-+ collapse + mobile drawer via Tabler), topbar blur sticky, `.lms-page-head`,
-`.lms-stat`, tabel (header uppercase, hover), badge pill, tombol gradient,
-form focus ring, `.lms-toolbar` (search pill + counter), `.lms-empty`,
-`.lms-skeleton` shimmer, `.lms-login-*` split layout, progress, modal,
-focus-visible, breakpoint 768px & 380px. Dark mode mengikuti Tabler
-(`data-bs-theme`); contrast badge mengikuti `packages/ui/contrast.css`.
+
+- collapse + mobile drawer via Tabler), topbar blur sticky, `.lms-page-head`,
+  `.lms-stat`, tabel (header uppercase, hover), badge pill, tombol gradient,
+  form focus ring, `.lms-toolbar` (search pill + counter), `.lms-empty`,
+  `.lms-skeleton` shimmer, `.lms-login-*` split layout, progress, modal,
+  focus-visible, breakpoint 768px & 380px. Dark mode mengikuti Tabler
+  (`data-bs-theme`); contrast badge mengikuti `packages/ui/contrast.css`.
 
 ## 3. App shell & login (`main.ts`)
 
@@ -151,25 +152,26 @@ Portal: admin :5173, teacher :5175, student :5174, parent :5176
 
 ## Hasil test & build FINAL (terverifikasi 2026-10-29)
 
-| Gate | Hasil |
-|---|---|
-| `typecheck` semua workspace | OK |
-| `lint` root | OK |
-| `build` 6 workspace | OK |
-| API `npm test` | **191/191** |
-| `contract` | PASS (182 refs) |
-| `contract:breaking` | PASS (277 rute, no removal) |
-| `contract:gaps` | PASS (280 endpoint) |
-| `static-audit` | PASS |
-| `audit` | PASS |
-| `drill` (R2 restore) | PASS |
-| `scale` | PASS (1500 siswa) |
-| E2E penuh (87 test) | **81 passed, 0 failed, 0 flaky, 6 skipped** |
+| Gate                        | Hasil                                       |
+| --------------------------- | ------------------------------------------- |
+| `typecheck` semua workspace | OK                                          |
+| `lint` root                 | OK                                          |
+| `build` 6 workspace         | OK                                          |
+| API `npm test`              | **191/191**                                 |
+| `contract`                  | PASS (182 refs)                             |
+| `contract:breaking`         | PASS (277 rute, no removal)                 |
+| `contract:gaps`             | PASS (280 endpoint)                         |
+| `static-audit`              | PASS                                        |
+| `audit`                     | PASS                                        |
+| `drill` (R2 restore)        | PASS                                        |
+| `scale`                     | PASS (1500 siswa)                           |
+| E2E penuh (87 test)         | **81 passed, 0 failed, 0 flaky, 6 skipped** |
 
 6 skip = `visual.spec.ts` opt-in (`VISUAL=1`); sebagai ganti ada 9
 screenshot bukti di `docs/redesign/`.
 
 Jalan menuju 100/100 (jujur, semua tercatat):
+
 - Run E2E #1: 47 gagal — semuanya HTTP 429 karena server dev lokal
   tanpa env uji (`reuseExistingServer`). Salah prosedur, bukan bug.
 - Run E2E #3: 31 gagal `ERR_CONNECTION_REFUSED :5173` — server mati

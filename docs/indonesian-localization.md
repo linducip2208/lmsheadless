@@ -5,13 +5,13 @@ penuh; Arab parsial (RTL didukung, sebagian dict masih stub).
 
 ## Default & penyimpanan
 
-| Portal | Kunci `localStorage` | Default |
-|---|---|---|
-| Admin | `admin-locale` | `id` |
-| Teacher | `teacher-locale` | `id` |
-| Student | `student-locale` | `id` |
-| Parent | `parent-locale` | `id` |
-| Web | `web-locale` | `id` |
+| Portal  | Kunci `localStorage` | Default |
+| ------- | -------------------- | ------- |
+| Admin   | `admin-locale`       | `id`    |
+| Teacher | `teacher-locale`     | `id`    |
+| Student | `student-locale`     | `id`    |
+| Parent  | `parent-locale`      | `id`    |
+| Web     | `web-locale`         | `id`    |
 
 Pemilih bahasa (ID/EN/AR) ada di halaman login + header semua portal.
 Teacher/student memakai pola reload (dict `const`), admin/parent/web

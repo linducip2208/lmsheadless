@@ -890,9 +890,17 @@ ops.get('/api/v1/reports/student-progress', requireAuth(), async (c) => {
     scopeOrgs = null;
   } else {
     scopeOrgs = user.memberships.map((m) => m.organization_id);
-    if (!scopeOrgs.length) return ok(c, { enrollments: [], grades: [], quiz_attempts: [], upcoming_assignments: [], upcoming_quizzes: [] });
+    if (!scopeOrgs.length)
+      return ok(c, {
+        enrollments: [],
+        grades: [],
+        quiz_attempts: [],
+        upcoming_assignments: [],
+        upcoming_quizzes: [],
+      });
   }
-  const orgFilter = scopeOrgs === null ? '' : ` AND co.organization_id IN (${scopeOrgs.map(() => '?').join(',')})`;
+  const orgFilter =
+    scopeOrgs === null ? '' : ` AND co.organization_id IN (${scopeOrgs.map(() => '?').join(',')})`;
   const orgParams: string[] = scopeOrgs ?? [];
   // Row-level tenant scope: the org gate above is mandatory, but child rows
   // live in other tables without their own organization_id, so every query

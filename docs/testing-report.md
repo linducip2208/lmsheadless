@@ -19,16 +19,16 @@
 
 ## Gates otomatis
 
-| Gate | Hasil |
-|---|---|
-| `typecheck` (semua workspace) | ✓ |
-| `lint` (`--max-warnings=0`) | ✓ (2 error + 10 warning diperbaiki, termasuk HUB_IPS gateway) |
-| `contract` (182 ref frontend→backend) | ✓ PASS |
-| `audit` (migrasi, FK/index, secrets, CDN, envelope, RBAC, PWA) | ✓ PASS |
-| `static-audit` (hash links, envelope) | ✓ PASS |
-| `build` (api + 5 portal) | ✓ |
-| `db:migrate` rerun (28 file, 2x) | ✓ + `foreign_key_check` kosong |
-| `db:seed` fresh | ✓ (attempt, submission, cert, forum, bank terisi) |
+| Gate                                                           | Hasil                                                         |
+| -------------------------------------------------------------- | ------------------------------------------------------------- |
+| `typecheck` (semua workspace)                                  | ✓                                                             |
+| `lint` (`--max-warnings=0`)                                    | ✓ (2 error + 10 warning diperbaiki, termasuk HUB_IPS gateway) |
+| `contract` (182 ref frontend→backend)                          | ✓ PASS                                                        |
+| `audit` (migrasi, FK/index, secrets, CDN, envelope, RBAC, PWA) | ✓ PASS                                                        |
+| `static-audit` (hash links, envelope)                          | ✓ PASS                                                        |
+| `build` (api + 5 portal)                                       | ✓                                                             |
+| `db:migrate` rerun (28 file, 2x)                               | ✓ + `foreign_key_check` kosong                                |
+| `db:seed` fresh                                                | ✓ (attempt, submission, cert, forum, bank terisi)             |
 
 ## E2E Playwright (Chromium, dev server + SQLite lokal)
 

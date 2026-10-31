@@ -221,10 +221,9 @@ describe('repair: parent links are org-scoped', () => {
     );
     const cB = await mkCourse(db, orgB, tB, 'CB');
     const tokP = (await login(app, 'pa@l.test')).access_token;
-    const res = await app.request(
-      `/api/v1/courses/${cB}/progress?student_id=${sV}`,
-      { headers: authHeader(tokP) }
-    );
+    const res = await app.request(`/api/v1/courses/${cB}/progress?student_id=${sV}`, {
+      headers: authHeader(tokP),
+    });
     expect(res.status).toBe(403);
   });
 });
@@ -295,12 +294,20 @@ describe('repair: draft visibility and instructor scoping', () => {
       nowIso()
     );
     const tokIn = (await login(app, 'sin@de.test')).access_token;
-    for (const p of [`/api/v1/courses/${draft}`, `/api/v1/quizzes?course_id=${draft}`, `/api/v1/assignments?course_id=${draft}`]) {
+    for (const p of [
+      `/api/v1/courses/${draft}`,
+      `/api/v1/quizzes?course_id=${draft}`,
+      `/api/v1/assignments?course_id=${draft}`,
+    ]) {
       const r = await app.request(p, { headers: authHeader(tokIn) });
       expect(r.status).toBe(200);
     }
     const tokOut = (await login(app, 'sout@de.test')).access_token;
-    for (const p of [`/api/v1/courses/${draft}`, `/api/v1/quizzes?course_id=${draft}`, `/api/v1/assignments?course_id=${draft}`]) {
+    for (const p of [
+      `/api/v1/courses/${draft}`,
+      `/api/v1/quizzes?course_id=${draft}`,
+      `/api/v1/assignments?course_id=${draft}`,
+    ]) {
       const r = await app.request(p, { headers: authHeader(tokOut) });
       expect(r.status).toBe(404);
     }
@@ -352,7 +359,10 @@ describe('repair: xapi requires an org', () => {
     const res = await app.request('/api/v1/xapi/statements', {
       method: 'POST',
       headers: { ...authHeader(tok), 'content-type': 'application/json' },
-      body: JSON.stringify({ verb: { id: 'http://example.com/v' }, object: { id: 'http://example.com/o' } }),
+      body: JSON.stringify({
+        verb: { id: 'http://example.com/v' },
+        object: { id: 'http://example.com/o' },
+      }),
     });
     expect(res.status).toBe(400);
   });

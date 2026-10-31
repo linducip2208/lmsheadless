@@ -31,6 +31,13 @@ function lang(): string {
 applyLocaleDir(lang());
 let t: WebDict = getDict(lang());
 
+let deferredPrompt: { prompt: () => void } | null = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e as unknown as { prompt: () => void };
+  document.getElementById('install-btn')?.classList.remove('d-none');
+});
+
 const META: Record<string, [string, string]> = {
   '/': [
     'LMS Headless — API-first learning platform',
@@ -60,8 +67,9 @@ function header(active = ''): string {
     <a href="#main" class="visually-hidden-focusable">${t.skip}</a>
     <a class="navbar-brand" href="#/"><span class="brand-mark">L</span> LMS Headless</a>
     <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span class="navbar-toggler-icon"></span></button>
-    <div class="collapse navbar-collapse" id="nav"><ul class="navbar-nav ms-auto align-items-md-center">
+    <div class="collapse navbar-collapse" id="nav"><ul class="navbar-nav ms-auto align-items-md-center flex-wrap">
     ${link('/features', t.features)}${link('/catalog', t.catalog)}${link('/solutions', t.solutions)}${link('/pricing', t.pricing)}${link('/documentation', t.docs)}${link('/about', t.about)}${link('/contact', t.contact)}
+    <li class="nav-item ms-md-2"><button id="install-btn" class="btn btn-sm btn-outline-primary d-none">${t.installApp}</button></li>
     <li class="nav-item ms-md-2"><select id="lang-sel" class="form-select form-select-sm" aria-label="Language"><option value="en"${lang() === 'en' ? ' selected' : ''}>EN</option><option value="id"${lang() === 'id' ? ' selected' : ''}>ID</option><option value="ar"${lang() === 'ar' ? ' selected' : ''}>AR</option></select></li>
     <li class="nav-item ms-md-2"><a class="btn btn-outline-primary" href="#/login">${t.signIn}</a></li>
     <li class="nav-item ms-md-2 mt-2 mt-md-0"><a class="btn btn-primary" href="#/register">${t.getStarted}</a></li>
@@ -631,6 +639,11 @@ async function router(): Promise<void> {
     body = `<div class="container-xl py-5"><div class="alert alert-warning">${t.pageNotFound} <a href="#/">${t.home}</a></div></div>`;
   app.innerHTML = `${header(path)}<main id="main">${body}</main>${footer()}`;
   window.scrollTo(0, 0);
+  if (deferredPrompt) document.getElementById('install-btn')?.classList.remove('d-none');
+  (document.getElementById('install-btn') as HTMLButtonElement | null)?.addEventListener(
+    'click',
+    () => deferredPrompt?.prompt()
+  );
   (document.getElementById('lang-sel') as HTMLSelectElement | null)?.addEventListener(
     'change',
     (e) => {

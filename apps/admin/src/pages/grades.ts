@@ -1,4 +1,14 @@
-import { call, loadingHtml, errorHtml, toast, modalForm, currentOrgId, pageHeader, t, esc } from '../lib.js';
+import {
+  call,
+  loadingHtml,
+  errorHtml,
+  toast,
+  modalForm,
+  currentOrgId,
+  pageHeader,
+  t,
+  esc,
+} from '../lib.js';
 
 export async function renderGrades(el: HTMLElement): Promise<void> {
   const d = t();

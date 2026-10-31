@@ -6,14 +6,14 @@ Sumber kebenaran implementasi: `apps/api/src/access.ts` (`orgRole`, `canAccessOr
 
 ## Peran
 
-| Peran | Cakupan |
-|---|---|
-| `super_admin` | Lintas organisasi. Kelola tenant, domain, white-label, admin org, role/permission, pengaturan platform, audit, monitoring. |
+| Peran                | Cakupan                                                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `super_admin`        | Lintas organisasi. Kelola tenant, domain, white-label, admin org, role/permission, pengaturan platform, audit, monitoring.                                      |
 | `organization_admin` | Satu organisasi: profil, branding, tahun ajaran/semester/departemen/kelas/mapel, pengguna, course builder, kuis, tugas, absensi, sertifikat, laporan, commerce. |
-| `teacher` | Org-wide mengajar (lihat catatan): kursus/kelas yang terlihat, materi, kuis, grading, absensi, progres. Daftar `/instructor/courses` hanya assignment. |
-| `student` | Milik sendiri: enroll, materi, kuis, tugas, nilai (sesuai kebijakan rilis), absensi riwayat, sertifikat. |
-| `parent` | Hanya anak tertaut (`parent_links`, dicek **per organisasi**): progres, nilai, absensi, tugas, pengumuman, sertifikat. Tidak bisa ubah apa pun. |
-| `staff` | Operasional sesuai kewenangan: **baca** (orders, laporan, absensi, pengumuman). Mutasi uang (cancel/refund/confirm) hanya buyer + privileged. |
+| `teacher`            | Org-wide mengajar (lihat catatan): kursus/kelas yang terlihat, materi, kuis, grading, absensi, progres. Daftar `/instructor/courses` hanya assignment.          |
+| `student`            | Milik sendiri: enroll, materi, kuis, tugas, nilai (sesuai kebijakan rilis), absensi riwayat, sertifikat.                                                        |
+| `parent`             | Hanya anak tertaut (`parent_links`, dicek **per organisasi**): progres, nilai, absensi, tugas, pengumuman, sertifikat. Tidak bisa ubah apa pun.                 |
+| `staff`              | Operasional sesuai kewenangan: **baca** (orders, laporan, absensi, pengumuman). Mutasi uang (cancel/refund/confirm) hanya buyer + privileged.                   |
 
 ## Keputusan desain yang disengaja
 

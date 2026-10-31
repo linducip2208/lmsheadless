@@ -245,15 +245,13 @@ for (const ip of [
   const server = http.createServer(handle);
   server.on('upgrade', handleUpgrade);
   server.on('error', (err) => {
-     
     console.error(`[gateway] listen ${ip}:${GATEWAY_PORT} failed: ${err.message}`);
     process.exitCode = 1;
   });
   server.listen(GATEWAY_PORT, ip, () => {
-     
     console.log(`[gateway] listening on http://${ip}:${GATEWAY_PORT}`);
   });
   servers.push(server);
 }
- 
+
 console.log(`[gateway] hub -> http://localhost:${GATEWAY_PORT}/ (API :${API_PORT})`);

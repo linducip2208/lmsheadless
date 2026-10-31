@@ -18,7 +18,10 @@ export async function renderScorm(el: HTMLElement): Promise<void> {
     return;
   }
   el.innerHTML =
-    pageHeader({ title: d.scorm, desc: 'Impor paket SCORM 1.2, player sandbox, tracking progres.' }) +
+    pageHeader({
+      title: d.scorm,
+      desc: 'Impor paket SCORM 1.2, player sandbox, tracking progres.',
+    }) +
     `<div class="card mb-3"><div class="card-body"><form id="sc-form" class="d-flex gap-2 flex-wrap align-items-end">
     <div><label class="form-label" for="sc-file">SCORM 1.2 .zip</label><input id="sc-file" type="file" accept=".zip" class="form-control" required></div>
     <div><label class="form-label" for="sc-course">${d.courses} ID</label><input id="sc-course" class="form-control"></div>

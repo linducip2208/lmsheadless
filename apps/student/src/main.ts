@@ -92,10 +92,7 @@ function shell(): void {
   const me = getMe();
   void flushQueue(
     (a, okAction) =>
-      toast(
-        okAction ? d.pendingSynced : d.retryOnline,
-        okAction ? 'success' : 'warning'
-      ),
+      toast(okAction ? d.pendingSynced : d.retryOnline, okAction ? 'success' : 'warning'),
     me?.id ?? null
   );
   (document.getElementById('install-btn') as HTMLButtonElement).addEventListener('click', () =>
@@ -141,13 +138,15 @@ async function home(el: HTMLElement): Promise<void> {
       }
       <h3 class="mt-4">${d.upcoming}</h3><div id="upcoming">${loading('')}</div>
       <h3 class="mt-4">${d.announcements}</h3>
-      ${(notifs as { title: string; body: string }[])
-        .slice(0, 5)
-        .map(
-          (n) =>
-            `<div class="alert alert-info"><strong>${esc(n.title)}</strong><br>${esc(n.body)}</div>`
-        )
-        .join('') || `<p class="text-muted">${d.empty}</p>`}`;
+      ${
+        (notifs as { title: string; body: string }[])
+          .slice(0, 5)
+          .map(
+            (n) =>
+              `<div class="alert alert-info"><strong>${esc(n.title)}</strong><br>${esc(n.body)}</div>`
+          )
+          .join('') || `<p class="text-muted">${d.empty}</p>`
+      }`;
     // Upcoming: assignments across enrolled courses.
     const box = el.querySelector('#upcoming') as HTMLElement;
     const items: string[] = [];

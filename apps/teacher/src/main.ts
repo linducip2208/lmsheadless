@@ -26,6 +26,13 @@ const d = getDict(locale);
 const client: ApiClient = createClient({ orgKey: 'teacher-org', loginRedirect: '#/login' });
 const { call, login, logout, ensureMe, getMe, currentOrg, setCurrentOrg, myOrgs } = client;
 
+let deferredPrompt: { prompt: () => void } | null = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e as unknown as { prompt: () => void };
+  document.getElementById('install-btn')?.classList.remove('d-none');
+});
+
 function loading(msg = d.loading): string {
   return `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status"></div><span>${msg}</span></div>`;
 }
@@ -118,13 +125,18 @@ function shell(): void {
     ).join('')}
     </ul></div></div></aside>
     <div class="page-wrapper"><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
-    <h2 class="mb-0" id="title"></h2><div class="ms-auto d-flex gap-2 align-items-center">${onlineIndicatorHtml()}${themeToggleHtml(THEME_KEY)}
+    <h2 class="mb-0" id="title"></h2><div class="ms-auto d-flex gap-2 align-items-center flex-wrap">${onlineIndicatorHtml()}
+    <button id="install-btn" class="btn btn-sm btn-outline-primary d-none">${d.installApp}</button>${themeToggleHtml(THEME_KEY)}
     <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language"><option value="id"${locale === 'id' ? ' selected' : ''}>ID</option><option value="en"${locale === 'en' ? ' selected' : ''}>EN</option><option value="ar"${locale === 'ar' ? ' selected' : ''}>AR</option></select>
     <button id="out" class="btn btn-sm btn-outline-danger">${d.logout}</button></div></div></header>
     <div class="page-body"><div class="container-xl py-3" id="view"></div></div></div></div>`;
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
   bindOnlineIndicator();
+  (document.getElementById('install-btn') as HTMLButtonElement | null)?.addEventListener(
+    'click',
+    () => deferredPrompt?.prompt()
+  );
   (document.getElementById('lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
     localStorage.setItem('teacher-locale', (e.target as HTMLSelectElement).value);
     location.reload();
@@ -683,7 +695,14 @@ async function attendanceView(el: HTMLElement): Promise<void> {
               (
                 s
               ) => `<div class="d-flex gap-2 align-items-center mb-1"><span style="min-width:140px">${esc(s.student_name)}</span>
-          <select class="form-select w-auto" data-s="${s.student_id}">${[{ v: 'present', l: d.present }, { v: 'absent', l: d.absent }, { v: 'late', l: d.late }, { v: 'excused', l: d.excused }].map((o) => `<option value="${o.v}">${o.l}</option>`).join('')}</select></div>`
+          <select class="form-select w-auto" data-s="${s.student_id}">${[
+            { v: 'present', l: d.present },
+            { v: 'absent', l: d.absent },
+            { v: 'late', l: d.late },
+            { v: 'excused', l: d.excused },
+          ]
+            .map((o) => `<option value="${o.v}">${o.l}</option>`)
+            .join('')}</select></div>`
             )
             .join('') || d.noEnrolledStudents
         }

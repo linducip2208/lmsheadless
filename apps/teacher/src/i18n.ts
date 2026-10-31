@@ -122,6 +122,7 @@ export const en = {
   contentDocument: 'Document',
   contentImage: 'Image',
   contentExternal: 'External',
+  installApp: 'Install app',
 };
 export const id: Record<keyof typeof en, string> = {
   dashboard: 'Dasbor',
@@ -247,6 +248,7 @@ export const id: Record<keyof typeof en, string> = {
   contentDocument: 'Dokumen',
   contentImage: 'Gambar',
   contentExternal: 'Eksternal',
+  installApp: 'Pasang aplikasi',
 };
 export const ar: Record<keyof typeof en, string> = {
   ...en,
