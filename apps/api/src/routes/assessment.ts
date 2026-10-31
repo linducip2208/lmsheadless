@@ -11,7 +11,7 @@ import { execute, queryAll, queryFirst } from '../db.js';
 import { created, fail, ok } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
-import { hasEntitlement, orgSetting } from '../access.js';
+import { canSeeCourseContent, hasEntitlement, orgSetting } from '../access.js';
 import { purgeQuizCopiesForOrg } from '../maintenance.js';
 import { logActivity } from './growth.js';
 import { pickMinor } from './commerce.js';
@@ -126,6 +126,8 @@ assess.get('/quizzes', requireAuth(), async (c) => {
   const orgId = await courseOrg(db, courseId);
   if (!orgId || !canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  if (!(await canSeeCourseContent(db, user, courseId)))
+    return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const rows = await queryAll(
     db,
     'SELECT * FROM quizzes WHERE course_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',
@@ -1027,6 +1029,8 @@ assess.get('/assignments', requireAuth(), async (c) => {
   const orgId = await courseOrg(db, courseId);
   if (!orgId || !canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  if (!(await canSeeCourseContent(db, user, courseId)))
+    return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const rows = await queryAll(
     db,
     'SELECT * FROM assignments WHERE course_id = ? ORDER BY created_at DESC, id DESC LIMIT 200',

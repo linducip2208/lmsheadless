@@ -36,9 +36,9 @@ ALTER TABLE courses ADD COLUMN review_status TEXT NOT NULL DEFAULT 'none';
 ALTER TABLE lessons ADD COLUMN audio_url TEXT;
 ALTER TABLE orders ADD COLUMN affiliate_id TEXT;
 ALTER TABLE submissions ADD COLUMN rubric_breakdown TEXT;
-ALTER TABLE questions ADD COLUMN attempt_id TEXT;
-ALTER TABLE users ADD COLUMN failed_login_count INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE users ADD COLUMN locked_until TEXT;
+-- (questions.attempt_id, users.failed_login_count/locked_until ship in 024
+-- and are intentionally absent here: D1 aborts a migration file on the first
+-- duplicate column, while local reruns tolerate it.)
 -- Per-org slug uniqueness (mirrors applyPostPatchConstraints): normalize
 -- duplicates first so the index can never fail on a dirty database.
 UPDATE courses SET slug = slug || '-' || substr(id, 1, 8) WHERE id IN (

@@ -133,7 +133,7 @@ test('parent link lifecycle: linked child visible, revoked link shows empty stat
   });
   expect(revoke.status()).toBe(200);
   await page.reload();
-  await expect(page.locator('#view', { hasText: 'No linked students' })).toBeVisible({
+  await expect(page.locator('#view', { hasText: /No linked students|Belum ada siswa tertaut/ })).toBeVisible({
     timeout: 15000,
   });
 

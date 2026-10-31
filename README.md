@@ -55,6 +55,35 @@ Details: `docs/architecture.md`, `docs/cloudflare.md`.
 npm install
 npm run db:migrate   # builds ./.data/lms.db from migrations/
 npm run db:seed      # demo org + users + course + quiz + assignment
+npm run dev:all      # API + all 5 portals + single-port gateway (recommended)
+```
+
+`dev:all` boots everything with one command (API `:8787`, admin `:5173`,
+student `:5174`, teacher `:5175`, parent `:5176`, web `:5177`, plus a gateway
+on `:8080`). Open the hub at `http://localhost:8080/` — every portal is
+reachable on that **one port** via loopback IPs (no DNS/hosts changes needed):
+
+| Portal  | Single-port URL                                     | Direct (Vite)           |
+| ------- | --------------------------------------------------- | ----------------------- |
+| Hub     | `http://localhost:8080/` = `http://127.0.0.1:8080/` | —                       |
+| Admin   | `http://127.0.0.2:8080/`                            | `http://localhost:5173` |
+| Student | `http://127.0.0.3:8080/`                            | `http://localhost:5174` |
+| Teacher | `http://127.0.0.4:8080/`                            | `http://localhost:5175` |
+| Parent  | `http://127.0.0.5:8080/`                            | `http://localhost:5176` |
+| Web     | `http://127.0.0.6:8080/`                            | `http://localhost:5177` |
+
+`/api/*` and `/health` on any of those origins proxy to the API, so each
+portal still behaves like a same-origin app (no CORS). Each `127.0.0.x` origin
+keeps its own cookies — handy for staying logged in as admin + teacher +
+student side by side. HMR websockets are forwarded, so hot reload keeps
+working through the gateway. If port `8080` is already taken on your machine
+(some dev tools squat it), pick another: `set GATEWAY_PORT=8090 && npm run dev:all`
+(PowerShell) — then the hub lives at `http://localhost:8090/` and portals at
+`http://127.0.0.2:8090/` … `http://127.0.0.6:8090/`.
+
+Prefer running pieces manually? The classic two-step still works:
+
+```bash
 npm run dev          # API on :8787
 npm run dev:admin    # Admin on :5173 (also: dev:teacher :5175, dev:student :5174, ...)
 ```
@@ -129,7 +158,7 @@ documented in `docs/white-label.md`). Tenant isolation is tested
 ## Testing
 
 ```bash
-npm test            # 191 tests: auth, RBAC matrix, tenant isolation, IDOR,
+npm test            # 200 tests (35 files): auth, RBAC matrix, tenant isolation, IDOR,
                     # courses, quiz (scoring/expiry/limits/pools/manual),
                     # assignments, attendance, certificates, files, setup, search,
                     # idempotency, CORS, rate limiting, authoring, banks, cohorts,
@@ -142,7 +171,7 @@ npm run build
 npm run audit       # migrations, FK/indexes, secrets, CDN, envelope, RBAC, PWA, guards
 npm run contract    # every frontend API path resolves to a backend route (182 refs)
 npm run drill       # R2/D1 restore drill (inventory + integrity_check)
-npm run test:e2e    # 81 Playwright browser tests (incl. 7 axe a11y; seeded DB, auto-boot servers) + 6 visual baselines (opt-in)
+npm run test:e2e    # 81 passed + 6 skipped Playwright browser tests (incl. 7 axe a11y; seeded DB, auto-boot servers) + 6 visual baselines (opt-in)
 ```
 
 ## Security

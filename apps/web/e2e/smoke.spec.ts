@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 // Browser E2E: public site + real API integration (dev DB must be migrated + seeded).
-test('home renders and switches to Indonesian', async ({ page }) => {
+test('home renders Indonesian by default and switches to English', async ({ page }) => {
   await page.goto('/#/');
-  await expect(page.getByRole('heading', { name: /headless LMS/i }).first()).toBeVisible();
-  await page.selectOption('#lang-sel', 'id');
   await expect(page.getByRole('heading', { name: /untuk sekolah/i }).first()).toBeVisible();
+  await page.selectOption('#lang-sel', 'en');
+  await expect(page.getByRole('heading', { name: /headless LMS/i }).first()).toBeVisible();
 });
 
 test('catalog shows a published public course from the live API', async ({ page, request }) => {

@@ -100,7 +100,7 @@ test('admin revenue + search: cards match server, query finds fixtures', async (
   const byStatus = ((await rev.json()) as { data: { by_status: { status: string; n: number }[] } })
     .data.by_status;
   // Static cards always render; dynamic status cards mirror the server rows.
-  await expect(page.locator('#c-body', { hasText: 'commissions' })).toBeVisible({
+  await expect(page.locator('#c-body', { hasText: /commissions|Komisi/i })).toBeVisible({
     timeout: 15000,
   });
   for (const s of byStatus.slice(0, 3)) {

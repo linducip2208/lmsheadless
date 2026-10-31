@@ -6,7 +6,7 @@ import { created, fail, ok, paginationMeta } from '../respond.js';
 import { canAccessOrg, orgRole, requireAuth } from '../middleware/common.js';
 import { audit } from '../auditlog.js';
 import { logActivity } from './growth.js';
-import { isPrivileged, wantsNotification } from '../access.js';
+import { canSeeCourseContent, isPrivileged, wantsNotification } from '../access.js';
 import { minor, pickMinor } from './commerce.js';
 import { snapshotCourse } from './authoring.js';
 import type { AppVars, AuthUser } from '../types.js';
@@ -202,13 +202,9 @@ courses.get('/courses/:id', requireAuth(), async (c) => {
   const orgId = (row as { organization_id: string }).organization_id;
   if (!canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  // Drafts are not browsable by learners: same rule as GET /courses.
-  // 404 (not 403) so draft existence is not disclosed.
-  if (
-    (row as { status: string }).status === 'draft' &&
-    !user.isSuperAdmin &&
-    !canTeach(user, orgId)
-  )
+  // Drafts are not browsable, but enrolled learners keep access: the product
+  // flow enrolls before publishing. 404 (not 403) hides draft existence.
+  if (!(await canSeeCourseContent(c.get('db'), user, c.req.param('id'))))
     return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   return ok(c, row);
 });
@@ -470,6 +466,8 @@ courses.get('/courses/sections/:sectionId/lessons', requireAuth(), async (c) => 
   const orgId = await courseOrg(db, sec.course_id);
   if (!orgId || !canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  if (!(await canSeeCourseContent(db, user, sec.course_id)))
+    return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   const rows = await queryAll(
     db,
     'SELECT * FROM lessons WHERE section_id = ? ORDER BY position ASC LIMIT 1000',

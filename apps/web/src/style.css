@@ -15,6 +15,9 @@
 body { color: var(--web-ink); background: #fff; }
 main#main { display: block; }
 
+/* A11y: keep Tabler muted text at WCAG AA contrast on light surfaces. */
+html:not([data-bs-theme="dark"]) .text-muted { color: #565d6b !important; }
+
 /* ---- Nav ---- */
 .site-nav {
   position: sticky; top: 0; z-index: 100;

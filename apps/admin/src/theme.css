@@ -30,6 +30,11 @@ body { background: var(--lms-bg); color: var(--lms-text); }
 .page-wrapper { background: var(--lms-bg); min-height: 100vh; }
 .page-body .container-xl { max-width: 1280px; }
 
+/* ---- A11y: Tabler's muted tone falls below WCAG AA 4.5:1 on light
+   surfaces (flagged by axe on empty states). Dark mode keeps Tabler's
+   own tokens. ---- */
+html:not([data-bs-theme="dark"]) .text-muted { color: #565d6b !important; }
+
 /* ---- Sidebar ---- */
 #sidebar {
   width: var(--lms-sidebar-w);

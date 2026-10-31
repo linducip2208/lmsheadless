@@ -265,6 +265,47 @@ describe('repair: draft visibility and instructor scoping', () => {
     expect(tDetail.status).toBe(200);
   });
 
+  it('enrolled students keep draft access (enroll-before-publish flow)', async () => {
+    const { app, db } = await setup();
+    const org = await mkOrg(db, 'de');
+    const t = await mkUser(db, 't@de.test', 'teacher', org);
+    const sIn = await mkUser(db, 'sin@de.test', 'student', org);
+    await mkUser(db, 'sout@de.test', 'student', org);
+    const draft = newId();
+    await execute(
+      db,
+      'INSERT INTO courses (id, organization_id, code, title, status, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      draft,
+      org,
+      'DRAFT2',
+      'Draft course 2',
+      'draft',
+      t,
+      nowIso(),
+      nowIso()
+    );
+    await execute(
+      db,
+      "INSERT INTO enrollments (id, course_id, student_id, status, enrolled_at, created_at, updated_at) VALUES (?, ?, ?, 'active', ?, ?, ?)",
+      newId(),
+      draft,
+      sIn,
+      nowIso(),
+      nowIso(),
+      nowIso()
+    );
+    const tokIn = (await login(app, 'sin@de.test')).access_token;
+    for (const p of [`/api/v1/courses/${draft}`, `/api/v1/quizzes?course_id=${draft}`, `/api/v1/assignments?course_id=${draft}`]) {
+      const r = await app.request(p, { headers: authHeader(tokIn) });
+      expect(r.status).toBe(200);
+    }
+    const tokOut = (await login(app, 'sout@de.test')).access_token;
+    for (const p of [`/api/v1/courses/${draft}`, `/api/v1/quizzes?course_id=${draft}`, `/api/v1/assignments?course_id=${draft}`]) {
+      const r = await app.request(p, { headers: authHeader(tokOut) });
+      expect(r.status).toBe(404);
+    }
+  });
+
   it('instructor courses are pinned to the requested org', async () => {
     const { app, db } = await setup();
     const orgA = await mkOrg(db, 'iA');

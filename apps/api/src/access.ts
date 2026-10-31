@@ -1,6 +1,6 @@
 import { queryFirst } from './db.js';
 import type { D1Like } from './db.js';
-import { orgRole } from './middleware/common.js';
+import { canAccessOrg, orgRole } from './middleware/common.js';
 import type { AuthUser } from './types.js';
 
 export async function orgSetting(db: D1Like, orgId: string, key: string): Promise<string> {
@@ -89,6 +89,33 @@ export function canTeach(user: AuthUser, orgId: string): boolean {
 export function isPrivileged(user: AuthUser, orgId: string): boolean {
   const r = orgRole(user, orgId);
   return r === 'super_admin' || r === 'organization_admin';
+}
+
+// Course content visibility: published and archived courses are readable by
+// org members; drafts additionally require a teaching/admin role, super-admin
+// rights, or an active enrollment (the product flow enrolls students before
+// publishing, so enrolled learners must not be locked out of drafts).
+export async function canSeeCourseContent(
+  db: D1Like,
+  user: AuthUser,
+  courseId: string
+): Promise<boolean> {
+  const orgId = await courseOrg(db, courseId);
+  if (!orgId || !canAccessOrg(user, orgId)) return false;
+  const row = await queryFirst<{ status: string }>(
+    db,
+    'SELECT status FROM courses WHERE id = ?',
+    courseId
+  );
+  if (!row || row.status !== 'draft') return true;
+  if (user.isSuperAdmin || canTeach(user, orgId)) return true;
+  const en = await queryFirst(
+    db,
+    "SELECT id FROM enrollments WHERE course_id = ? AND student_id = ? AND status = 'active'",
+    courseId,
+    user.id
+  );
+  return !!en;
 }
 
 // Notification preference gate: producers must consult this before writing to

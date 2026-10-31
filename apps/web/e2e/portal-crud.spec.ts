@@ -261,7 +261,7 @@ test('parent: linked child visible with detail, empty state honest', async ({ pa
   await page.locator('#f #p, #f input[type="password"]').first().fill(PASS);
   await page.locator('#f button[type="submit"], #f button').first().click();
   await page.waitForURL('**#/', { timeout: 15000 });
-  await expect(page.locator('#view', { hasText: 'No linked students' })).toBeVisible({
+  await expect(page.locator('#view', { hasText: /No linked students|Belum ada siswa tertaut/ })).toBeVisible({
     timeout: 15000,
   });
   expect(pageErrors).toEqual([]);

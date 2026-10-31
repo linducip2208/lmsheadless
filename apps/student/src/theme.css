@@ -20,6 +20,9 @@
 body { background: var(--lms-bg); color: var(--lms-text); }
 .page-wrapper { background: var(--lms-bg); min-height: 100vh; }
 
+/* A11y: keep muted text at WCAG AA contrast on light surfaces. */
+html:not([data-bs-theme="dark"]) .text-muted { color: #565d6b !important; }
+
 /* Topbar */
 .navbar-brand { font-weight: 800; letter-spacing: -0.01em; }
 

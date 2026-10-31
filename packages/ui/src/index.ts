@@ -80,7 +80,10 @@ export async function api<T = unknown>(
   } catch {
     // Non-DOM runtimes (tests, SSR): leave the query untouched.
   }
-  const url = Object.keys(q).length ? `${path}?${new URLSearchParams(q).toString()}` : path;
+  // NOTE: paths may already carry a query string (e.g. login?cookie=1),
+  // so the locale is appended with the correct separator.
+  const sep = path.includes('?') ? '&' : '?';
+  const url = Object.keys(q).length ? `${path}${sep}${new URLSearchParams(q).toString()}` : path;
   const headers: Record<string, string> = {
     ...(opts.headers as Record<string, string> | undefined),
   };
