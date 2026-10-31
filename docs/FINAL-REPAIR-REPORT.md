@@ -80,7 +80,7 @@ verify; setup terkunci; login produksi terverifikasi; tidak ada secret di repo
 
 ## 9. Test
 
-- API: **199/199** (35 file, termasuk 8 baru).
+- API: **200/200** (36 file, termasuk 9 baru).
 - Gates: typecheck ✓, lint ✓, contract 182 ✓, audit ✓, static-audit ✓,
   build 6 workspace ✓, migrate rerun ✓, seed fresh ✓.
 - E2E Playwright: **81 passed, 6 skipped, 0 failed** (lihat testing-report.md).

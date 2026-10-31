@@ -2,7 +2,7 @@
 
 ## API (vitest, SQLite :memory: per test)
 
-- **199/199 lolos, 35 file** (~10 detik). Termasuk 8 regression test baru
+- **200/200 lolos, 36 file** (~10 detik). Termasuk 9 regression test baru
   `security-repair.test.ts`: isolasi grade lintas-org, row-scope
   student-progress, bank anti-siswa, roster tanpa email, parent-link
   per-org, draf 404 + tak ter-list, instructor-scoping, xAPI 400 tanpa org.
