@@ -24,6 +24,9 @@ export const en = {
   loading: 'Loading…',
   failed: 'Failed',
   skip: 'Skip to content',
+  session: 'Session',
+  date: 'Date',
+  status: 'Status',
 };
 
 export type ParentDict = typeof en;
@@ -54,6 +57,9 @@ export const id: Record<keyof ParentDict, string> = {
   loading: 'Memuat…',
   failed: 'Gagal',
   skip: 'Lewati ke konten',
+  session: 'Sesi',
+  date: 'Tanggal',
+  status: 'Status',
 };
 
 export const ar: Record<keyof typeof en, string> = {

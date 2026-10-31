@@ -1,0 +1,52 @@
+/* LMS Student — role theme (teal accent, mobile-first). No E2E selectors altered. */
+
+:root {
+  --lms-primary: #206bc4;
+  --lms-primary-dark: #1a5aa3;
+  --lms-accent: #0ca678;
+  --lms-bg: #f4f7fb;
+  --lms-surface: #ffffff;
+  --lms-border: #e6e9f0;
+  --lms-text: #1d273b;
+  --lms-muted: #626c83;
+  --lms-success: #1c7a3a;
+  --lms-warning: #8a5a00;
+  --lms-danger: #c01a1a;
+  --lms-radius: 14px;
+  --lms-shadow-sm: 0 1px 2px rgb(29 39 59 / 0.06);
+  --lms-shadow: 0 1px 3px rgb(29 39 59 / 0.08), 0 8px 24px -8px rgb(29 39 59 / 0.16);
+}
+
+body { background: var(--lms-bg); color: var(--lms-text); }
+.page-wrapper { background: var(--lms-bg); min-height: 100vh; }
+
+/* Topbar */
+.navbar-brand { font-weight: 800; letter-spacing: -0.01em; }
+
+/* Course cards & progress */
+.card { border: 1px solid var(--lms-border); border-radius: var(--lms-radius); box-shadow: var(--lms-shadow-sm); }
+.card:hover { box-shadow: var(--lms-shadow); }
+.progress { height: 10px; border-radius: 99px; background: #e6f4ee; }
+.progress-bar { border-radius: 99px; background: linear-gradient(90deg, var(--lms-accent), #34c98e); }
+.h1 { letter-spacing: -0.02em; }
+.subheader { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; color: var(--lms-muted); }
+
+/* Buttons & forms */
+.btn-primary { background: linear-gradient(135deg, var(--lms-primary), var(--lms-accent)); border: 0; }
+.form-control:focus, .form-select:focus { border-color: var(--lms-accent); box-shadow: 0 0 0 0.2rem rgb(12 166 120 / 0.15); }
+
+/* Bottom mobile nav */
+.navbar.fixed-bottom { box-shadow: 0 -2px 12px rgb(29 39 59 / 0.08); padding-bottom: env(safe-area-inset-bottom); }
+.navbar.fixed-bottom .btn { color: var(--lms-muted); font-weight: 600; }
+.navbar.fixed-bottom .btn.active, .navbar.fixed-bottom .btn:active { color: var(--lms-accent); }
+
+/* Badges for scores */
+.badge { border-radius: 99px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+@media (max-width: 767px) {
+  .page-body .container-xl { padding-inline: 0.9rem; }
+  .card-body { padding: 0.9rem; }
+}

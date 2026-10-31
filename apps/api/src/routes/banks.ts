@@ -163,9 +163,10 @@ banks.get('/question-banks/:id/questions', requireAuth(), async (c) => {
   );
   if (!bank || !canAccessOrg(user, bank.organization_id))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const role = (user.memberships.find((m) => m.organization_id === bank.organization_id)?.role ??
-    '') as string;
-  void role;
+  // Bank contents (prompts + points) are teaching material: students and
+  // parents must not read them, mirroring quiz question protection.
+  if (!canTeach(user, bank.organization_id))
+    return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
   const questions = await queryAll<{
     id: string;
     type: string;

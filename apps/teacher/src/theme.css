@@ -1,0 +1,62 @@
+/* LMS Teacher — role theme (violet accent). Tokens mirror admin; pages use
+   Tabler classes + these enhancements. No E2E selectors are altered. */
+
+:root {
+  --lms-primary: #206bc4;
+  --lms-primary-dark: #1a5aa3;
+  --lms-accent: #7048e8;
+  --lms-bg: #f4f6fb;
+  --lms-surface: #ffffff;
+  --lms-border: #e6e9f0;
+  --lms-text: #1d273b;
+  --lms-muted: #626c83;
+  --lms-success: #1c7a3a;
+  --lms-warning: #8a5a00;
+  --lms-danger: #c01a1a;
+  --lms-radius: 12px;
+  --lms-shadow-sm: 0 1px 2px rgb(29 39 59 / 0.06);
+  --lms-shadow: 0 1px 3px rgb(29 39 59 / 0.08), 0 4px 16px -4px rgb(29 39 59 / 0.1);
+}
+
+body { background: var(--lms-bg); color: var(--lms-text); }
+.page-wrapper { background: var(--lms-bg); min-height: 100vh; }
+
+/* Sidebar */
+.navbar-vertical .navbar-brand { font-weight: 800; letter-spacing: -0.01em; }
+.navbar-vertical .nav-link { border-radius: 9px; margin: 1px 0.65rem; font-weight: 500; }
+.navbar-vertical .nav-link:hover { background: #f1eefe; color: #4c2fd9; }
+.navbar-vertical .nav-link.active {
+  background: linear-gradient(135deg, rgb(32 107 196 / 0.12), rgb(112 72 232 / 0.14));
+  color: var(--lms-primary-dark);
+  box-shadow: inset 3px 0 0 var(--lms-accent);
+}
+
+/* Cards & stats */
+.card { border: 1px solid var(--lms-border); border-radius: var(--lms-radius); box-shadow: var(--lms-shadow-sm); }
+.card-header { border-bottom: 1px solid var(--lms-border); }
+.h1 { letter-spacing: -0.02em; }
+.subheader { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; color: var(--lms-muted); }
+
+/* Progress + grading accents */
+.progress { height: 8px; border-radius: 99px; background: #e9edf5; }
+.progress-bar { border-radius: 99px; background: linear-gradient(90deg, var(--lms-primary), var(--lms-accent)); }
+.list-group-item-action:hover { background: #f6f4ff; }
+
+/* Tables & forms */
+.table thead th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.04em; color: var(--lms-muted); border-bottom: 2px solid var(--lms-border); }
+.form-control:focus, .form-select:focus { border-color: var(--lms-accent); box-shadow: 0 0 0 0.2rem rgb(112 72 232 / 0.15); }
+.btn-primary { background: linear-gradient(135deg, var(--lms-primary), var(--lms-accent)); border: 0; box-shadow: var(--lms-shadow-sm); }
+
+/* Login */
+#app > .row .card { border-radius: 16px; box-shadow: var(--lms-shadow); border-top: 4px solid var(--lms-accent); }
+
+/* Skeleton shimmer for loading states */
+@keyframes lms-shimmer { from { opacity: 0.55; } to { opacity: 1; } }
+.spinner-border { color: var(--lms-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+@media (max-width: 767px) {
+  .page-body .container-xl { padding-inline: 0.9rem; }
+}

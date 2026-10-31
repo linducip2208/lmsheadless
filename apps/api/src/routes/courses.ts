@@ -41,7 +41,12 @@ courses.get('/instructor/courses', requireAuth(), async (c) => {
     'SELECT co.* FROM courses co JOIN course_instructors ci ON ci.course_id = co.id WHERE ci.user_id = ? AND co.deleted_at IS NULL ORDER BY co.created_at DESC',
     user.id
   );
-  if (assigned.length || !orgId) return ok(c, assigned);
+  // Pin assignments to the requested org: without this, assignments from
+  // every org leak into org-scoped callers.
+  const scoped = orgId
+    ? assigned.filter((a) => (a as { organization_id: string }).organization_id === orgId)
+    : assigned;
+  if (scoped.length || !orgId) return ok(c, scoped);
   // Fallback: org admins see all org courses here.
   const role = orgRole(user, orgId);
   if (role === 'super_admin' || role === 'organization_admin') {
@@ -83,6 +88,22 @@ courses.get('/courses', requireAuth(), async (c) => {
   if (q) {
     where += ' AND (title LIKE ? OR code LIKE ?)';
     params.push(`%${q}%`, `%${q}%`);
+  }
+  // Drafts are visible only to teaching/admin actors of their org.
+  // Students and parents browse published courses; archived stays visible
+  // as learning history.
+  if (!user.isSuperAdmin) {
+    const teachingOrgs = user.memberships
+      .filter((m) =>
+        (['super_admin', 'organization_admin', 'teacher', 'staff'] as string[]).includes(m.role)
+      )
+      .map((m) => m.organization_id);
+    if (teachingOrgs.length) {
+      where += ` AND (status != 'draft' OR organization_id IN (${teachingOrgs.map(() => '?').join(',')}))`;
+      params.push(...teachingOrgs);
+    } else {
+      where += " AND status != 'draft'";
+    }
   }
   if (status && ['draft', 'published', 'archived'].includes(status)) {
     where += ' AND status = ?';
@@ -181,6 +202,14 @@ courses.get('/courses/:id', requireAuth(), async (c) => {
   const orgId = (row as { organization_id: string }).organization_id;
   if (!canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  // Drafts are not browsable by learners: same rule as GET /courses.
+  // 404 (not 403) so draft existence is not disclosed.
+  if (
+    (row as { status: string }).status === 'draft' &&
+    !user.isSuperAdmin &&
+    !canTeach(user, orgId)
+  )
+    return fail(c, 404, 'NOT_FOUND', t('not_found', c.get('lang')));
   return ok(c, row);
 });
 
@@ -1018,9 +1047,10 @@ courses.get('/courses/:id/progress', requireAuth(), async (c) => {
     if (role === 'parent') {
       const link = await queryFirst(
         db,
-        'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+        'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ? AND organization_id = ?',
         user.id,
-        studentId
+        studentId,
+        orgId
       );
       if (!link) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
     }

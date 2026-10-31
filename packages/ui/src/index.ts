@@ -68,7 +68,19 @@ export async function api<T = unknown>(
   opts: RequestInit = {},
   query?: Record<string, string>
 ): Promise<T> {
-  const url = query ? `${path}?${new URLSearchParams(query).toString()}` : path;
+  const q: Record<string, string> = { ...(query ?? {}) };
+  // Forward the portal locale so server messages (validation, errors)
+  // match the UI language. documentElement.lang is set by every portal's
+  // i18n bootstrap; default portals ship Indonesian ('id').
+  try {
+    if (typeof document !== 'undefined') {
+      const dl = document.documentElement.lang;
+      if ((dl === 'id' || dl === 'ar') && !('lang' in q)) q.lang = dl;
+    }
+  } catch {
+    // Non-DOM runtimes (tests, SSR): leave the query untouched.
+  }
+  const url = Object.keys(q).length ? `${path}?${new URLSearchParams(q).toString()}` : path;
   const headers: Record<string, string> = {
     ...(opts.headers as Record<string, string> | undefined),
   };

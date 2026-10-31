@@ -1,0 +1,50 @@
+/* LMS Parent — role theme (warm highlight, calm monitoring view). No E2E selectors altered. */
+
+:root {
+  --lms-primary: #206bc4;
+  --lms-primary-dark: #1a5aa3;
+  --lms-accent: #e8590c;
+  --lms-bg: #f6f5f2;
+  --lms-surface: #ffffff;
+  --lms-border: #e8e4db;
+  --lms-text: #1d273b;
+  --lms-muted: #626c83;
+  --lms-success: #1c7a3a;
+  --lms-warning: #8a5a00;
+  --lms-danger: #c01a1a;
+  --lms-radius: 12px;
+  --lms-shadow-sm: 0 1px 2px rgb(29 39 59 / 0.06);
+  --lms-shadow: 0 1px 3px rgb(29 39 59 / 0.08), 0 4px 16px -4px rgb(29 39 59 / 0.1);
+}
+
+body { background: var(--lms-bg); color: var(--lms-text); }
+.page-wrapper { background: var(--lms-bg); min-height: 100vh; }
+
+.navbar-brand { font-weight: 800; letter-spacing: -0.01em; }
+
+/* Child selector cards */
+.card { border: 1px solid var(--lms-border); border-radius: var(--lms-radius); box-shadow: var(--lms-shadow-sm); }
+.card-header { border-bottom: 1px solid var(--lms-border); }
+a.card:hover, .list-group-item-action:hover { border-color: var(--lms-accent); }
+
+/* Progress & tables */
+.progress { height: 8px; border-radius: 99px; background: #f3ece2; }
+.progress-bar { border-radius: 99px; background: linear-gradient(90deg, var(--lms-primary), var(--lms-accent)); }
+.table thead th { text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.04em; color: var(--lms-muted); border-bottom: 2px solid var(--lms-border); }
+.table tbody tr:nth-child(even) { background: rgb(32 107 196 / 0.025); }
+
+.btn-primary { background: linear-gradient(135deg, var(--lms-primary), #4c8fd6); border: 0; }
+.form-control:focus, .form-select:focus { border-color: var(--lms-primary); box-shadow: 0 0 0 0.2rem rgb(32 107 196 / 0.15); }
+
+/* Login */
+#app > .row .card { border-radius: 16px; box-shadow: var(--lms-shadow); border-top: 4px solid var(--lms-accent); }
+
+@keyframes lms-shimmer { from { opacity: 0.55; } to { opacity: 1; } }
+.spinner-border { color: var(--lms-primary); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+@media (max-width: 767px) {
+  .page-body .container-xl { padding-inline: 0.9rem; }
+}

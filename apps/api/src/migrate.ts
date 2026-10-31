@@ -34,6 +34,7 @@ export async function runMigrations(db: D1Like, dir?: string): Promise<string[]>
     }
   }
   await applyColumnPatches(db);
+  await applyPostPatchConstraints(db);
   return files;
 }
 
@@ -86,6 +87,29 @@ async function applyColumnPatches(db: D1Like): Promise<void> {
     } catch {
       // Table may not exist yet in exotic setups; base migrations create it.
     }
+  }
+}
+
+// Hardening constraints that can only run AFTER column patches (the columns
+// may not exist while numbered migration files execute).
+async function applyPostPatchConstraints(db: D1Like): Promise<void> {
+  try {
+    const info = await db.prepare('PRAGMA table_info(courses)').all<{ name: string }>();
+    if (!info.results.some((c) => c.name === 'slug')) return;
+    // Normalize duplicate slugs per org (keep the earliest created row), so
+    // the unique index below can never fail a boot on a dirty database.
+    await db.exec(`UPDATE courses SET slug = slug || '-' || substr(id, 1, 8) WHERE id IN (
+      SELECT id FROM (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY organization_id, slug ORDER BY created_at, id) AS rn
+        FROM courses WHERE slug IS NOT NULL
+      ) WHERE rn > 1
+    )`);
+    await db.exec(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_courses_org_slug ON courses(organization_id, slug)'
+    );
+  } catch (e) {
+    // Never break boot on a hardening constraint; surface for operators.
+    console.warn('[migrate] post-patch constraint skipped:', e instanceof Error ? e.message : e);
   }
 }
 

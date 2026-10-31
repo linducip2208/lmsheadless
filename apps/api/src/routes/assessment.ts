@@ -1291,9 +1291,10 @@ assess.get('/grades', requireAuth(), async (c) => {
       if (role === 'parent') {
         const link = await queryFirst(
           db,
-          'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+          'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ? AND organization_id = ?',
           user.id,
-          studentId
+          studentId,
+          orgId
         );
         if (!link) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
       }
@@ -1306,28 +1307,41 @@ assess.get('/grades', requireAuth(), async (c) => {
     );
     return ok(c, rows);
   }
-  // All grades for a student: the authorization decision is made BEFORE
-  // reading any rows, so the endpoint cannot be used as an existence oracle
-  // ("200 empty" vs "403") for other students' grade records.
+  // All grades for a student: scope rows to the organizations where the
+  // requester may actually see the victim (shared orgs with a teaching/admin
+  // role, or orgs linked via parent_links). A teacher in org A can no longer
+  // pull the victim's grades from org B through a shared membership.
   if (studentId !== user.id && !user.isSuperAdmin) {
-    const link = await queryFirst(
-      db,
-      'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
-      user.id,
-      studentId
-    );
-    if (!link) {
-      const victimOrgs = await queryAll<{ organization_id: string }>(
+    const victimOrgIds = (
+      await queryAll<{ organization_id: string }>(
         db,
         'SELECT organization_id FROM organization_members WHERE user_id = ?',
         studentId
-      );
-      const allowed = victimOrgs.some((m) => {
-        const r = orgRole(user, m.organization_id);
-        return !!r && r !== 'student' && r !== 'parent';
-      });
-      if (!allowed) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
-    }
+      )
+    ).map((m) => m.organization_id);
+    const linkOrgIds = (
+      await queryAll<{ organization_id: string }>(
+        db,
+        'SELECT organization_id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+        user.id,
+        studentId
+      )
+    ).map((l) => l.organization_id);
+    const allowed = victimOrgIds.filter(
+      (o) =>
+        linkOrgIds.includes(o) ||
+        (['teacher', 'organization_admin', 'staff'] as string[]).includes(
+          orgRole(user, o) ?? ''
+        )
+    );
+    if (!allowed.length) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    const rows = await queryAll(
+      db,
+      `SELECT g.* FROM grades g JOIN courses co ON co.id = g.course_id WHERE g.student_id = ? AND co.organization_id IN (${allowed.map(() => '?').join(',')}) ORDER BY g.created_at DESC, g.id DESC LIMIT 200`,
+      studentId,
+      ...allowed
+    );
+    return ok(c, rows);
   }
   const rows = await queryAll(
     db,

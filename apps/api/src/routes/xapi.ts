@@ -57,6 +57,12 @@ xapi.post('/xapi/statements', requireAuth(), async (c) => {
       : (user.memberships[0]?.organization_id ?? null);
   if (orgId && !canAccessOrg(user, orgId))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+  // Orphan statements (organization_id NULL) are rejected: every learning
+  // record must belong to a tenant the writer can access.
+  if (!orgId)
+    return fail(c, 400, 'VALIDATION_ERROR', t('validation_failed', c.get('lang')), {
+      field: 'organization_id',
+    });
   const db = c.get('db');
   const statementId = body.id ?? crypto.randomUUID();
   // The actor is ALWAYS the authenticated user: client-supplied actor identity

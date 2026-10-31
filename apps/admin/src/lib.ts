@@ -16,7 +16,7 @@ export type { ApiClient };
 export type { Me } from '@lms/ui';
 
 export function lang(): string {
-  return localStorage.getItem('admin-locale') ?? 'en';
+  return localStorage.getItem('admin-locale') ?? 'id';
 }
 
 applyLocaleDir(lang());

@@ -9,3 +9,5 @@ blob-report/
 *.db
 *.db-journal
 .env
+.wrangler/
+apps/api/.wrangler/

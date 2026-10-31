@@ -1,5 +1,6 @@
 import '@tabler/core/dist/css/tabler.min.css';
 import '@lms/ui/contrast.css';
+import './theme.css';
 import {
   createClient,
   applyTheme,
@@ -13,8 +14,8 @@ import { getDict, applyLocaleDir, type ParentDict } from './i18n.js';
 
 const THEME_KEY = 'parent-theme';
 applyTheme(THEME_KEY);
-applyLocaleDir(localStorage.getItem('parent-locale') ?? 'en');
-let d: ParentDict = getDict(localStorage.getItem('parent-locale') ?? 'en');
+applyLocaleDir(localStorage.getItem('parent-locale') ?? 'id');
+let d: ParentDict = getDict(localStorage.getItem('parent-locale') ?? 'id');
 const client: ApiClient = createClient({ orgKey: 'parent-org', loginRedirect: '#/login' });
 const { call, login, logout, ensureMe, getMe } = client;
 
@@ -29,14 +30,14 @@ async function loginPage(root: HTMLElement): Promise<void> {
     <label class="form-label" for="p">${d.password}</label><input id="p" type="password" class="form-control mb-3" required>
     <div id="err"></div><button class="btn btn-primary w-100">${d.signIn}</button></form>
     <div class="mt-2"><select id="login-lang" class="form-select form-select-sm w-auto" aria-label="Language">
-    <option value="en"${(localStorage.getItem('parent-locale') ?? 'en') === 'en' ? ' selected' : ''}>EN</option>
+    <option value="en"${(localStorage.getItem('parent-locale') ?? 'id') === 'en' ? ' selected' : ''}>EN</option>
     <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option>
     <option value="ar"${localStorage.getItem('parent-locale') === 'ar' ? ' selected' : ''}>AR</option></select></div></div></div></div></div>`;
   (root.querySelector('#login-lang') as HTMLSelectElement).addEventListener('change', (e) => {
     const v = (e.target as HTMLSelectElement).value;
     localStorage.setItem('parent-locale', v);
     applyLocaleDir(v);
-    d = getDict(localStorage.getItem('parent-locale') ?? 'en');
+    d = getDict(localStorage.getItem('parent-locale') ?? 'id');
     void loginPage(root);
   });
   (root.querySelector('#f') as HTMLFormElement).addEventListener('submit', async (e) => {
@@ -61,7 +62,7 @@ interface Child {
 }
 
 async function childDetail(el: HTMLElement, orgId: string, child: Child): Promise<void> {
-  el.innerHTML = `<p>${d.loading}</p>`;
+  el.innerHTML = `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status"></div><span>${d.loading}</span></div>`;
   try {
     const [rep, att] = await Promise.all([
       call<{
@@ -115,7 +116,7 @@ async function childDetail(el: HTMLElement, orgId: string, child: Child): Promis
           .join('') || `<p class="text-muted">${d.noGrades}</p>`
       }</div></div></div>
       <div class="col-md-6"><div class="card"><div class="card-header"><h3 class="card-title">${d.attendance} (${Number(att.attendance_pct)}%)</h3></div>
-      <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>Session</th><th>Date</th><th>Status</th></tr></thead><tbody>
+      <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>${d.session}</th><th>${d.date}</th><th>${d.status}</th></tr></thead><tbody>
       ${
         (att.records as { status: string; title: string; session_date: string }[])
           .slice(0, 30)
@@ -133,7 +134,7 @@ async function childDetail(el: HTMLElement, orgId: string, child: Child): Promis
 }
 
 async function home(el: HTMLElement): Promise<void> {
-  el.innerHTML = `<p>${d.loading}</p>`;
+  el.innerHTML = `<div class="d-flex align-items-center gap-2 py-4"><div class="spinner-border spinner-border-sm" role="status"></div><span>${d.loading}</span></div>`;
   try {
     const me = getMe();
     const orgId = me?.memberships[0]?.organization_id;
@@ -185,7 +186,7 @@ async function home(el: HTMLElement): Promise<void> {
 }
 
 async function router(): Promise<void> {
-  const loc = localStorage.getItem('parent-locale') ?? 'en';
+  const loc = localStorage.getItem('parent-locale') ?? 'id';
   applyLocaleDir(loc);
   d = getDict(loc);
   const app = document.getElementById('app') as HTMLElement;
@@ -203,7 +204,7 @@ async function router(): Promise<void> {
     <a class="navbar-brand" href="#/">${d.title}</a>
     <div class="ms-auto d-flex gap-2 align-items-center"><span class="text-muted small">${esc(me.name)}</span>${themeToggleHtml(THEME_KEY)}
     <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language">
-    <option value="en"${(localStorage.getItem('parent-locale') ?? 'en') === 'en' ? ' selected' : ''}>EN</option>
+    <option value="en"${(localStorage.getItem('parent-locale') ?? 'id') === 'en' ? ' selected' : ''}>EN</option>
     <option value="id"${localStorage.getItem('parent-locale') === 'id' ? ' selected' : ''}>ID</option>
     <option value="ar"${localStorage.getItem('parent-locale') === 'ar' ? ' selected' : ''}>AR</option></select>
     <button id="out" class="btn btn-sm btn-outline-danger">${d.logout}</button></div></div></header>

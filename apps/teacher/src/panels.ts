@@ -2,7 +2,7 @@ import { toast, modalForm, esc, confirmDialog } from '@lms/ui';
 import type { ApiClient } from '@lms/ui';
 import { getDict } from './i18n.js';
 
-const t = () => getDict(localStorage.getItem('teacher-locale') ?? 'en');
+const t = () => getDict(localStorage.getItem('teacher-locale') ?? 'id');
 export async function banksView(
   el: HTMLElement,
   client: ApiClient,

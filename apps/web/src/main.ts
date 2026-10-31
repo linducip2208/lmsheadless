@@ -26,7 +26,7 @@ try {
 }
 
 function lang(): string {
-  return localStorage.getItem('web-locale') ?? 'en';
+  return localStorage.getItem('web-locale') ?? 'id';
 }
 applyLocaleDir(lang());
 let t: WebDict = getDict(lang());
@@ -90,19 +90,19 @@ function cta(): string {
 function shotDashboard(): string {
   return `<figure class="shot"><div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span></div>
     <img src="/showcase-dashboard.png" alt="Admin dashboard with real statistics, course completion, activity and quick actions" loading="lazy">
-    <figcaption>Panel admin — statistik, penyelesaian kursus, dan aksi cepat (data demo).</figcaption></figure>`;
+    <figcaption>${lang() === 'id' ? t.shotDashboardCap : 'Admin panel — statistics, course completion, and quick actions (demo data).'}</figcaption></figure>`;
 }
 
 function shotOrgs(): string {
   return `<figure class="shot"><div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span></div>
     <img src="/showcase-orgs.png" alt="Organizations management with branding and domain settings" loading="lazy">
-    <figcaption>Manajemen organisasi — anggota, branding white-label, domain (data demo).</figcaption></figure>`;
+    <figcaption>${lang() === 'id' ? t.shotOrgsCap : 'Organization management — members, white-label branding, domains (demo data).'}</figcaption></figure>`;
 }
 
 function shotMobile(): string {
   return `<figure class="shot" style="max-width:300px;margin-inline:auto"><div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span></div>
     <img src="/showcase-mobile.png" alt="Admin dashboard on a mobile phone" loading="lazy">
-    <figcaption>Responsif penuh di layar ponsel (data demo).</figcaption></figure>`;
+    <figcaption>${lang() === 'id' ? t.shotMobileCap : 'Fully responsive on mobile screens (demo data).'}</figcaption></figure>`;
 }
 
 function home(): string {
@@ -208,9 +208,9 @@ function home(): string {
     <div class="price-grid">
     ${(
       [
-        [t.startFree, t.pricingLead, ['Full source', 'SQLite + local files', 'Community docs'], false],
-        ['Cloud', 'Managed hosting', ['Workers + D1 + R2', 'White-label onboarding', 'Email support'], true],
-        ['Enterprise', 'Groups & companies', ['Custom domains', 'SSO & integrations', 'SLA & training'], false],
+        [t.startFree, t.pricingLead, t.pricingSelfBullets.split('|'), false],
+        ['Cloud', 'Managed hosting', t.pricingCloudBullets.split('|'), true],
+        ['Enterprise', 'Groups & companies', t.pricingEntBullets.split('|'), false],
       ] as [string, string, string[], boolean][]
     )
       .map(
@@ -394,9 +394,9 @@ function pricingPage(): string {
   return `<div class="container-xl py-4"><h1>${t.pricing}</h1><p class="text-muted">${t.pricingLead}</p>
   <div class="row row-cards">
   ${[
-    [t.startFree, t.pricingLead, ['3 organizations', 'White-label', 'PWA portals']],
-    ['Growth', t.solutions, ['Unlimited courses*', 'Certificates', 'Reports']],
-    ['Enterprise', t.corporate, ['Custom domains', 'SSO', 'SLA']],
+    [t.startFree, t.pricingLead, t.pricingPageSelfBullets.split('|')],
+    ['Growth', t.solutions, t.pricingPageGrowthBullets.split('|')],
+    ['Enterprise', t.corporate, t.pricingPageEntBullets.split('|')],
   ]
     .map(
       ([x, s, pts]) =>
@@ -513,7 +513,7 @@ async function verifyEmailPage(token: string): Promise<string> {
     });
     const j = (await res.json()) as { success: boolean };
     return j.success
-      ? `<div class="container-xl py-5"><div class="alert alert-success">Email verified. <a href="#/login">${t.signIn}</a></div></div>`
+      ? `<div class="container-xl py-5"><div class="alert alert-success">${t.emailVerified} <a href="#/login">${t.signIn}</a></div></div>`
       : `<div class="container-xl py-5"><div class="alert alert-danger">${t.verifyFail}</div></div>`;
   } catch {
     return `<div class="container-xl py-5"><div class="alert alert-danger">${t.verifyServiceDown}</div></div>`;

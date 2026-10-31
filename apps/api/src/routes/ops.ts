@@ -444,9 +444,10 @@ ops.get('/api/v1/certificates/:id/pdf', requireAuth(), async (c) => {
   if (!allowed && role === 'parent') {
     const link = await queryFirst(
       db,
-      'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+      'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ? AND organization_id = ?',
       user.id,
-      cert.student_id
+      cert.student_id,
+      cert.organization_id
     );
     parentOk = !!link;
   }
@@ -860,36 +861,59 @@ ops.get('/api/v1/reports/student-progress', requireAuth(), async (c) => {
   const url = new URL(c.req.url);
   const studentId = url.searchParams.get('student_id') ?? user.id;
   const db = c.get('db');
+  const requestedOrg = url.searchParams.get('organization_id');
+  // Effective tenant scope for every row below. Cross-user reads pin to one
+  // explicitly requested (and accessible) org; self-views default to the
+  // requester's own orgs; super-admins may read across (audited).
+  let scopeOrgs: string[] | null;
   if (studentId !== user.id) {
-    const orgId = url.searchParams.get('organization_id');
-    if (!orgId || !canAccessOrg(user, orgId))
+    if (!requestedOrg || !canAccessOrg(user, requestedOrg))
       return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-    const role = orgRole(user, orgId);
+    const role = orgRole(user, requestedOrg);
     if (role === 'student') return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
     if (role === 'parent') {
       const link = await queryFirst(
         db,
-        'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+        'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ? AND organization_id = ?',
         user.id,
-        studentId
+        studentId,
+        requestedOrg
       );
       if (!link) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
     }
+    scopeOrgs = [requestedOrg];
+  } else if (requestedOrg) {
+    if (!canAccessOrg(user, requestedOrg))
+      return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
+    scopeOrgs = [requestedOrg];
+  } else if (user.isSuperAdmin) {
+    scopeOrgs = null;
+  } else {
+    scopeOrgs = user.memberships.map((m) => m.organization_id);
+    if (!scopeOrgs.length) return ok(c, { enrollments: [], grades: [], quiz_attempts: [], upcoming_assignments: [], upcoming_quizzes: [] });
   }
+  const orgFilter = scopeOrgs === null ? '' : ` AND co.organization_id IN (${scopeOrgs.map(() => '?').join(',')})`;
+  const orgParams: string[] = scopeOrgs ?? [];
+  // Row-level tenant scope: the org gate above is mandatory, but child rows
+  // live in other tables without their own organization_id, so every query
+  // below is pinned to the requested org through its course.
   const enrollments = await queryAll(
     db,
-    'SELECT e.*, co.title as course_title FROM enrollments e JOIN courses co ON co.id = e.course_id WHERE e.student_id = ?',
-    studentId
+    `SELECT e.*, co.title as course_title FROM enrollments e JOIN courses co ON co.id = e.course_id WHERE e.student_id = ?${orgFilter}`,
+    studentId,
+    ...orgParams
   );
   const grades = await queryAll(
     db,
-    'SELECT * FROM grades WHERE student_id = ? ORDER BY created_at DESC, id DESC LIMIT 100',
-    studentId
+    `SELECT g.* FROM grades g JOIN courses co ON co.id = g.course_id WHERE g.student_id = ?${orgFilter} ORDER BY g.created_at DESC, g.id DESC LIMIT 100`,
+    studentId,
+    ...orgParams
   );
   const attempts = await queryAll(
     db,
-    'SELECT qa.*, q.title as quiz_title FROM quiz_attempts qa JOIN quizzes q ON q.id = qa.quiz_id WHERE qa.student_id = ? ORDER BY qa.created_at DESC, qa.id DESC LIMIT 100',
-    studentId
+    `SELECT qa.*, q.title as quiz_title FROM quiz_attempts qa JOIN quizzes q ON q.id = qa.quiz_id JOIN courses co ON co.id = q.course_id WHERE qa.student_id = ?${orgFilter} ORDER BY qa.created_at DESC, qa.id DESC LIMIT 100`,
+    studentId,
+    ...orgParams
   );
   // Upcoming work: open assignments + quizzes in enrolled, unfinished courses.
   const upcoming_assignments = await queryAll(
@@ -898,9 +922,10 @@ ops.get('/api/v1/reports/student-progress', requireAuth(), async (c) => {
      JOIN courses co ON co.id = a.course_id
      JOIN enrollments e ON e.course_id = a.course_id AND e.student_id = ? AND e.status = 'active'
      LEFT JOIN submissions s ON s.assignment_id = a.id AND s.student_id = ?
-     WHERE s.id IS NULL ORDER BY a.due_at ASC LIMIT 20`,
+     WHERE s.id IS NULL${orgFilter} ORDER BY a.due_at ASC LIMIT 20`,
     studentId,
-    studentId
+    studentId,
+    ...orgParams
   );
   const upcoming_quizzes = await queryAll(
     db,
@@ -908,9 +933,10 @@ ops.get('/api/v1/reports/student-progress', requireAuth(), async (c) => {
      JOIN enrollments e ON e.course_id = q.course_id AND e.student_id = ? AND e.status = 'active'
      JOIN courses co ON co.id = q.course_id
      LEFT JOIN quiz_attempts qa ON qa.quiz_id = q.id AND qa.student_id = ? AND qa.status IN ('submitted','graded')
-     WHERE qa.id IS NULL ORDER BY q.created_at ASC LIMIT 20`,
+     WHERE qa.id IS NULL${orgFilter} ORDER BY q.created_at ASC LIMIT 20`,
     studentId,
-    studentId
+    studentId,
+    ...orgParams
   );
   return ok(c, {
     enrollments,
@@ -1192,9 +1218,10 @@ ops.get('/api/v1/attendance/student', requireAuth(), async (c) => {
     if (role === 'parent') {
       const link = await queryFirst(
         c.get('db'),
-        'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ?',
+        'SELECT id FROM parent_links WHERE parent_id = ? AND student_id = ? AND organization_id = ?',
         user.id,
-        studentId
+        studentId,
+        orgId
       );
       if (!link) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
     }

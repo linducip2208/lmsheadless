@@ -148,6 +148,16 @@ export const en = {
   failed: 'Failed',
   skip: 'Skip to content',
   courses: 'Courses',
+  emailVerified: 'Email verified.',
+  shotDashboardCap: 'Admin panel — statistics, course completion, and quick actions (demo data).',
+  shotOrgsCap: 'Organization management — members, white-label branding, domains (demo data).',
+  shotMobileCap: 'Fully responsive on mobile screens (demo data).',
+  pricingSelfBullets: 'Full source|SQLite + local files|Community docs',
+  pricingCloudBullets: 'Workers + D1 + R2|White-label onboarding|Email support',
+  pricingEntBullets: 'Custom domains|SSO & integrations|SLA & training',
+  pricingPageSelfBullets: '3 organizations|White-label|PWA portals',
+  pricingPageGrowthBullets: 'Unlimited courses*|Certificates|Reports',
+  pricingPageEntBullets: 'Custom domains|SSO|SLA',
 };
 
 export type WebDict = typeof en;
@@ -302,6 +312,16 @@ export const id: Record<keyof WebDict, string> = {
   failed: 'Gagal',
   skip: 'Lewati ke konten',
   courses: 'Kursus',
+  emailVerified: 'Email terverifikasi.',
+  shotDashboardCap: 'Panel admin — statistik, penyelesaian kursus, dan aksi cepat (data demo).',
+  shotOrgsCap: 'Manajemen organisasi — anggota, branding white-label, domain (data demo).',
+  shotMobileCap: 'Responsif penuh di layar ponsel (data demo).',
+  pricingSelfBullets: 'Sumber penuh|SQLite + berkas lokal|Docs komunitas',
+  pricingCloudBullets: 'Workers + D1 + R2|Onboarding white-label|Dukungan surel',
+  pricingEntBullets: 'Domain kustom|SSO & integrasi|SLA & pelatihan',
+  pricingPageSelfBullets: '3 organisasi|White-label|Portal PWA',
+  pricingPageGrowthBullets: 'Kursus tanpa batas*|Sertifikat|Laporan',
+  pricingPageEntBullets: 'Domain kustom|SSO|SLA',
 };
 
 export const ar: Record<keyof typeof en, string> = {

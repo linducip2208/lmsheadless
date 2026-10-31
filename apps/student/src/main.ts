@@ -1,5 +1,6 @@
 import '@tabler/core/dist/css/tabler.min.css';
 import '@lms/ui/contrast.css';
+import './theme.css';
 import {
   createClient,
   applyTheme,
@@ -21,7 +22,7 @@ import { getDict, applyLocaleDir } from './i18n.js';
 
 const THEME_KEY = 'student-theme';
 applyTheme(THEME_KEY);
-const locale = localStorage.getItem('student-locale') ?? 'en';
+const locale = localStorage.getItem('student-locale') ?? 'id';
 applyLocaleDir(locale);
 const d = getDict(locale);
 const client: ApiClient = createClient({ orgKey: 'student-org', loginRedirect: '#/login' });
@@ -44,10 +45,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 async function loginPage(root: HTMLElement): Promise<void> {
   root.innerHTML = `<div class="row justify-content-center"><div class="col-md-4"><div class="card"><div class="card-body">
-    <h2 class="card-title">${d.login}</h2><p class="text-muted">Student portal — use your organization account.</p>
+    <h2 class="card-title">${d.login}</h2><p class="text-muted">${d.login}.</p>
     <form id="f"><label class="form-label" for="e">${d.email}</label><input id="e" type="email" class="form-control mb-2" required>
     <label class="form-label" for="p">${d.password}</label><input id="p" type="password" class="form-control mb-3" required>
-    <div id="err"></div><button class="btn btn-primary w-100">${d.login}</button></form></div></div></div></div>`;
+    <div id="err"></div><button class="btn btn-primary w-100">${d.login}</button></form>
+    <div class="mt-2"><select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language"><option value="id"${locale === 'id' ? ' selected' : ''}>ID</option><option value="en"${locale === 'en' ? ' selected' : ''}>EN</option><option value="ar"${locale === 'ar' ? ' selected' : ''}>AR</option></select></div></div></div></div></div>`;
+  (root.querySelector('#lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
+    localStorage.setItem('student-locale', (e.target as HTMLSelectElement).value);
+    location.reload();
+  });
   (root.querySelector('#f') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
@@ -67,8 +73,9 @@ function shell(): void {
   app.innerHTML = `<div class="page"><a href="#view" class="visually-hidden-focusable">${d.skip}</a><header class="navbar sticky-top bg-white border-bottom"><div class="container-xl d-flex gap-2 align-items-center">
     <a class="navbar-brand" href="#/"><span class="brand-mark" style="display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;color:#fff;font-weight:800;background:linear-gradient(135deg,#206bc4,#4263eb);margin-inline-end:8px">L</span>LMS Student</a>
     <div class="ms-auto d-flex gap-2 align-items-center">${onlineIndicatorHtml()}
-    <button id="install-btn" class="btn btn-sm btn-outline-primary d-none">Install app</button>
+    <button id="install-btn" class="btn btn-sm btn-outline-primary d-none">${d.installApp}</button>
     ${themeToggleHtml(THEME_KEY)}
+    <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language"><option value="id"${locale === 'id' ? ' selected' : ''}>ID</option><option value="en"${locale === 'en' ? ' selected' : ''}>EN</option><option value="ar"${locale === 'ar' ? ' selected' : ''}>AR</option></select>
     <button id="out" class="btn btn-sm btn-outline-danger">${d.logout}</button></div></div></header>
     <div class="page-wrapper"><div class="page-body"><div class="container-xl py-3 pb-5" id="view"></div></div></div>
     <nav class="navbar fixed-bottom bg-white border-top d-md-none" aria-label="Primary">
@@ -86,7 +93,7 @@ function shell(): void {
   void flushQueue(
     (a, okAction) =>
       toast(
-        okAction ? 'Pending action synced' : 'Will retry when online',
+        okAction ? d.pendingSynced : d.retryOnline,
         okAction ? 'success' : 'warning'
       ),
     me?.id ?? null
@@ -94,6 +101,10 @@ function shell(): void {
   (document.getElementById('install-btn') as HTMLButtonElement).addEventListener('click', () =>
     deferredPrompt?.prompt()
   );
+  (document.getElementById('lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
+    localStorage.setItem('student-locale', (e.target as HTMLSelectElement).value);
+    location.reload();
+  });
   (document.getElementById('out') as HTMLButtonElement).addEventListener(
     'click',
     () => void logout()
@@ -116,7 +127,7 @@ async function home(el: HTMLElement): Promise<void> {
       <a class="btn btn-sm btn-outline-primary" href="#/shop">🛍 ${d.shop}</a>
       <a class="btn btn-sm btn-outline-primary" href="#/live">📡 ${d.live}</a>
       <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a>
-      <a class="btn btn-sm btn-outline-primary" href="#/tutor">🤖 AI Tutor</a></div>
+      <a class="btn btn-sm btn-outline-primary" href="#/tutor">🤖 ${d.aiTutor}</a></div>
       <h3 class="mt-3">${d.enrolled}</h3>
       ${
         (rep.enrollments as { course_title: string; progress_percent: number; course_id: string }[])
@@ -136,7 +147,7 @@ async function home(el: HTMLElement): Promise<void> {
           (n) =>
             `<div class="alert alert-info"><strong>${esc(n.title)}</strong><br>${esc(n.body)}</div>`
         )
-        .join('')}`;
+        .join('') || `<p class="text-muted">${d.empty}</p>`}`;
     // Upcoming: assignments across enrolled courses.
     const box = el.querySelector('#upcoming') as HTMLElement;
     const items: string[] = [];
@@ -148,7 +159,7 @@ async function home(el: HTMLElement): Promise<void> {
       ).catch(() => [])) as { id: string; title: string; due_at: string | null }[];
       for (const a of asg)
         items.push(
-          `<div class="card card-body mb-2 py-2">${esc(a.title)} <span class="text-muted">· ${esc(enr.course_title)} · due ${esc(a.due_at ?? '—')}</span> <a class="btn btn-sm btn-outline-primary ms-2" href="#/courses/${enr.course_id}">Open</a></div>`
+          `<div class="card card-body mb-2 py-2">${esc(a.title)} <span class="text-muted">· ${esc(enr.course_title)} · ${d.due} ${esc(a.due_at ?? '—')}</span> <a class="btn btn-sm btn-outline-primary ms-2" href="#/courses/${enr.course_id}">${d.open}</a></div>`
         );
     }
     box.innerHTML = items.join('') || `<p class="text-muted">${d.empty}</p>`;
@@ -308,7 +319,7 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
             ${q.type === 'single_choice' ? q.options.map((o) => `<label class="form-check"><input type="radio" class="form-check-input" name="q_${q.id}" value="${o.id}">${esc(o.label)}</label>`).join('') : ''}
             ${q.type === 'matching' ? q.options.map((o) => `<div class="d-flex gap-2 align-items-center mb-1"><span style="min-width:120px">${esc(o.label)}</span><input class="form-control" name="qm_${q.id}_${o.id}" placeholder="${d.answer}"></div>`).join('') : ''}
             ${q.type === 'ordering' ? `<div class="small text-muted mb-1">${d.orderHelp}</div>` + q.options.map((o) => `<div class="d-flex gap-2 align-items-center mb-1"><input type="number" min="1" max="${q.options.length}" class="form-control w-auto" name="qo_${q.id}_${o.id}" placeholder="#"><span>${esc(o.label)}</span></div>`).join('') : ''}
-            ${q.type === 'true_false' ? `<select class="form-select" name="q_${q.id}"><option value="">—</option><option value="true">true</option><option value="false">false</option></select>` : ''}
+            ${q.type === 'true_false' ? `<select class="form-select" name="q_${q.id}"><option value="">—</option><option value="true">${d.trueLabel}</option><option value="false">${d.falseLabel}</option></select>` : ''}
             ${q.type === 'short_answer' || q.type === 'essay' ? `<textarea class="form-control" name="q_${q.id}" rows="${q.type === 'essay' ? 5 : 2}" placeholder="${d.answer}"></textarea>` : ''}
             </div>`
               )
@@ -718,7 +729,7 @@ async function shopView(el: HTMLElement): Promise<void> {
           : ''
       }
       <div class="card mt-3"><div class="card-body"><form id="gift-f" class="d-flex gap-2">
-      <input id="gift-code" class="form-control" placeholder="Gift code" required><button class="btn btn-outline-primary">${d.redeem}</button></form></div></div>`;
+      <input id="gift-code" class="form-control" placeholder="${d.giftCodePh}" required><button class="btn btn-outline-primary">${d.redeem}</button></form></div></div>`;
     el.querySelectorAll('[data-enroll]').forEach((b) =>
       b.addEventListener('click', async () => {
         try {
@@ -1002,7 +1013,7 @@ async function tutorView(el: HTMLElement): Promise<void> {
       {},
       orgId ? { organization_id: orgId, per_page: '100' } : { per_page: '100' }
     ).catch(() => [])) as { id: string; title: string }[];
-    el.innerHTML = `<h2>🤖 AI Tutor</h2><p class="text-muted">${d.tutorNote}</p>
+    el.innerHTML = `<h2>🤖 ${d.aiTutor}</h2><p class="text-muted">${d.tutorNote}</p>
       <div class="card mb-3"><div class="card-body d-flex gap-2 flex-wrap align-items-end">
       <div><label class="form-label">${d.courseOptional}</label><select id="tu-course" class="form-select"><option value="">${d.allMyCourses}</option>${courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('')}</select></div>
       <form id="tu-ask" class="d-flex gap-2 flex-fill"><input id="tu-q" class="form-control" placeholder="${d.askPlaceholder}" required maxlength="2000"><button class="btn btn-primary">${d.ask}</button></form></div></div>
@@ -1030,9 +1041,9 @@ async function tutorView(el: HTMLElement): Promise<void> {
           grounded: boolean;
           sources: { title: string }[];
         };
-        out.innerHTML = `<div class="card"><div class="card-body"><span class="badge ${r.grounded ? 'bg-green' : 'bg-yellow'}">${r.grounded ? 'course-grounded' : 'general knowledge'}</span>
+        out.innerHTML = `<div class="card"><div class="card-body"><span class="badge ${r.grounded ? 'bg-green' : 'bg-yellow'}">${r.grounded ? d.grounded : d.generalKnowledge}</span>
           <p class="mt-2">${esc(r.answer.slice(0, 4000))}</p>
-          ${r.sources.length ? `<div class="small text-muted">Sources: ${r.sources.map((s) => esc(s.title)).join(', ')}</div>` : ''}</div></div>`;
+          ${r.sources.length ? `<div class="small text-muted">${d.sourcesLabel} ${r.sources.map((s) => esc(s.title)).join(', ')}</div>` : ''}</div></div>`;
       } catch (err) {
         out.innerHTML = `<div class="alert alert-danger">${esc(err instanceof Error ? err.message : 'Failed')}</div>`;
       }
@@ -1053,7 +1064,7 @@ async function exercisesView(el: HTMLElement, courseId: string): Promise<void> {
       .map(
         (x) => `<div class="card mb-2"><div class="card-body">
     <h3 class="card-title">${esc(x.title)}</h3><span class="badge bg-blue">${esc(x.language)}</span>
-    <form data-ex="${x.id}" class="mt-2"><textarea name="code" class="form-control mb-2" rows="6" placeholder="// your code"></textarea>
+    <form data-ex="${x.id}" class="mt-2"><textarea name="code" class="form-control mb-2" rows="6" placeholder="${d.codePh}"></textarea>
     <button class="btn btn-sm btn-primary">${d.submit} (review)</button></form></div></div>`
       )
       .join('') || `<p class="text-muted">${d.empty}</p>`
@@ -1104,7 +1115,7 @@ async function moreView(el: HTMLElement): Promise<void> {
       <a class="btn btn-sm btn-outline-primary" href="#/shop">🛍 ${d.shop}</a>
       <a class="btn btn-sm btn-outline-primary" href="#/live">📡 ${d.live}</a>
       <a class="btn btn-sm btn-outline-primary" href="#/programs">🗺 ${d.programs}</a>
-      <a class="btn btn-sm btn-outline-primary" href="#/tutor">🤖 AI Tutor</a></div>
+      <a class="btn btn-sm btn-outline-primary" href="#/tutor">🤖 ${d.aiTutor}</a></div>
       <div class="card mb-3"><div class="card-header"><h3 class="card-title">${d.myAttendance} (${(att as { attendance_pct: number }).attendance_pct}%)</h3></div>
       <div class="card-body p-0"><div class="table-responsive"><table class="table card-table"><thead><tr><th>${d.session}</th><th>${d.date}</th><th>${d.status}</th></tr></thead><tbody>
       ${
@@ -1143,7 +1154,7 @@ async function moreView(el: HTMLElement): Promise<void> {
     (el.querySelector('#push-btn') as HTMLButtonElement).addEventListener('click', async () => {
       const r = await subscribePush();
       (el.querySelector('#push-st') as HTMLElement).textContent =
-        r === 'subscribed' ? 'Enabled.' : r === 'no-keys' ? 'Not configured on this server.' : r;
+        r === 'subscribed' ? d.pushEnabled : r === 'no-keys' ? d.pushNoKeys : r;
     });
     const reloadMore = () => moreView(el);
     (el.querySelector('#notif-all') as HTMLButtonElement)?.addEventListener('click', async () => {

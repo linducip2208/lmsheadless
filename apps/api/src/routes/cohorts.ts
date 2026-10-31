@@ -141,11 +141,44 @@ cohorts.get('/cohorts/:id/members', requireAuth(), async (c) => {
   );
   if (!cohort || !canAccessOrg(user, cohort.organization_id))
     return fail(c, 403, 'TENANT_DENIED', t('tenant_denied', c.get('lang')));
-  const rows = await queryAll(
-    db,
-    'SELECT u.id, u.name, u.email, cm.role FROM cohort_members cm JOIN users u ON u.id = cm.user_id WHERE cm.cohort_id = ?',
-    c.req.param('id')
-  );
+  // Roster privacy: teaching/admin actors see contact details; students see
+  // only fellow members they share the cohort with (no emails); parents see
+  // only cohorts containing a linked child (no emails).
+  const role = orgRole(user, cohort.organization_id);
+  const full = user.isSuperAdmin || canTeach(user, cohort.organization_id);
+  if (!full) {
+    if (role === 'student') {
+      const me = await queryFirst(
+        db,
+        'SELECT id FROM cohort_members WHERE cohort_id = ? AND user_id = ?',
+        c.req.param('id'),
+        user.id
+      );
+      if (!me) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    } else if (role === 'parent') {
+      const child = await queryFirst(
+        db,
+        'SELECT cm.id FROM cohort_members cm JOIN parent_links pl ON pl.student_id = cm.user_id WHERE cm.cohort_id = ? AND pl.parent_id = ? AND pl.organization_id = ?',
+        c.req.param('id'),
+        user.id,
+        cohort.organization_id
+      );
+      if (!child) return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    } else {
+      return fail(c, 403, 'FORBIDDEN', t('forbidden', c.get('lang')));
+    }
+  }
+  const rows = full
+    ? await queryAll(
+        db,
+        'SELECT u.id, u.name, u.email, cm.role FROM cohort_members cm JOIN users u ON u.id = cm.user_id WHERE cm.cohort_id = ?',
+        c.req.param('id')
+      )
+    : await queryAll(
+        db,
+        'SELECT u.id, u.name, cm.role FROM cohort_members cm JOIN users u ON u.id = cm.user_id WHERE cm.cohort_id = ?',
+        c.req.param('id')
+      );
   return ok(c, rows);
 });
 

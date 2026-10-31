@@ -63,6 +63,9 @@ export function createApp(env: AppEnv, db: D1Like) {
   ]) {
     app.use(p, rateLimit({ prefix: 'auth' }));
   }
+  // Public certificate verification is an unauthenticated oracle: throttle it
+  // per IP so certificate numbers cannot be enumerated at speed.
+  app.use('/api/v1/certificates/verify/*', rateLimit({ prefix: 'verify', max: 60 }));
   app.use('/api/*', maintenance());
   app.use('/api/*', idempotency());
 

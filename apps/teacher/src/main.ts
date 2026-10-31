@@ -1,5 +1,6 @@
 import '@tabler/core/dist/css/tabler.min.css';
 import '@lms/ui/contrast.css';
+import './theme.css';
 import {
   createClient,
   applyTheme,
@@ -19,7 +20,7 @@ import { banksView, liveView, cohortsView, aiView, exercisesView } from './panel
 
 const THEME_KEY = 'teacher-theme';
 applyTheme(THEME_KEY);
-const locale = localStorage.getItem('teacher-locale') ?? 'en';
+const locale = localStorage.getItem('teacher-locale') ?? 'id';
 applyLocaleDir(locale);
 const d = getDict(locale);
 const client: ApiClient = createClient({ orgKey: 'teacher-org', loginRedirect: '#/login' });
@@ -73,10 +74,15 @@ function navFlat(): NavEntry[] {
 
 async function loginPage(root: HTMLElement): Promise<void> {
   root.innerHTML = `<div class="row justify-content-center"><div class="col-md-4"><div class="card"><div class="card-body">
-    <h2 class="card-title">LMS Teacher</h2><p class="text-muted">${d.login} — use your teacher account.</p>
+    <h2 class="card-title">LMS Teacher</h2><p class="text-muted">${d.login}.</p>
     <form id="f"><label class="form-label" for="e">${d.email}</label><input id="e" type="email" class="form-control mb-2" required>
     <label class="form-label" for="p">${d.password}</label><input id="p" type="password" class="form-control mb-3" required>
-    <div id="err"></div><button class="btn btn-primary w-100">${d.login}</button></form></div></div></div></div>`;
+    <div id="err"></div><button class="btn btn-primary w-100">${d.login}</button></form>
+    <div class="mt-2"><select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language"><option value="id"${locale === 'id' ? ' selected' : ''}>ID</option><option value="en"${locale === 'en' ? ' selected' : ''}>EN</option><option value="ar"${locale === 'ar' ? ' selected' : ''}>AR</option></select></div></div></div></div></div>`;
+  (root.querySelector('#lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
+    localStorage.setItem('teacher-locale', (e.target as HTMLSelectElement).value);
+    location.reload();
+  });
   (root.querySelector('#f') as HTMLFormElement).addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
@@ -113,11 +119,16 @@ function shell(): void {
     </ul></div></div></aside>
     <div class="page-wrapper"><header class="navbar sticky-top bg-white"><div class="container-xl d-flex gap-2 align-items-center">
     <h2 class="mb-0" id="title"></h2><div class="ms-auto d-flex gap-2 align-items-center">${onlineIndicatorHtml()}${themeToggleHtml(THEME_KEY)}
+    <select id="lang-sel" class="form-select form-select-sm w-auto" aria-label="Language"><option value="id"${locale === 'id' ? ' selected' : ''}>ID</option><option value="en"${locale === 'en' ? ' selected' : ''}>EN</option><option value="ar"${locale === 'ar' ? ' selected' : ''}>AR</option></select>
     <button id="out" class="btn btn-sm btn-outline-danger">${d.logout}</button></div></div></header>
     <div class="page-body"><div class="container-xl py-3" id="view"></div></div></div></div>`;
   bindThemeToggles(THEME_KEY);
   bindSwUpdates();
   bindOnlineIndicator();
+  (document.getElementById('lang-sel') as HTMLSelectElement).addEventListener('change', (e) => {
+    localStorage.setItem('teacher-locale', (e.target as HTMLSelectElement).value);
+    location.reload();
+  });
   (document.getElementById('out') as HTMLButtonElement).addEventListener(
     'click',
     () => void logout()
@@ -198,7 +209,7 @@ async function renderCourseExercises(el: HTMLElement, courseId: string): Promise
                   `<div class="border rounded p-2 mb-1"><strong>${esc(s.student_name)}</strong> <span class="badge bg-yellow">${esc(s.status)}</span>
             <pre class="small mt-1">${esc(s.code.slice(0, 800))}</pre>
             <form data-exfb="${s.id}" class="d-flex gap-1 mt-1"><input name="feedback" class="form-control form-control-sm" placeholder="${d.feedback}" required>
-            <select name="status" class="form-select form-select-sm w-auto"><option value="reviewed">reviewed</option><option value="approved">approved</option><option value="needs_work">needs_work</option></select>
+            <select name="status" class="form-select form-select-sm w-auto"><option value="reviewed">${d.reviewed}</option><option value="approved">${d.approved}</option><option value="needs_work">${d.needsWork}</option></select>
             <button class="btn btn-sm btn-primary">${d.send}</button></form></div>`
               )
               .join('')
@@ -306,7 +317,16 @@ async function courseDetail(el: HTMLElement, courseId: string): Promise<void> {
               label: d.type,
               options: ['text', 'video', 'document', 'image', 'external'].map((x) => ({
                 value: x,
-                label: x,
+                label:
+                  x === 'text'
+                    ? d.contentText
+                    : x === 'video'
+                      ? d.contentVideo
+                      : x === 'document'
+                        ? d.contentDocument
+                        : x === 'image'
+                          ? d.contentImage
+                          : d.contentExternal,
               })),
             },
             { name: 'body', label: d.body, type: 'textarea' },
@@ -357,7 +377,7 @@ async function grading(el: HTMLElement): Promise<void> {
   try {
     const orgId = currentOrg();
     if (!orgId) {
-      el.innerHTML = '<div class="alert alert-warning">No organization.</div>';
+      el.innerHTML = `<div class="alert alert-warning">${d.noOrg}</div>`;
       return;
     }
     const q = (await call<{
@@ -441,8 +461,8 @@ async function grading(el: HTMLElement): Promise<void> {
               .map(
                 (a) => `<div class="mb-2"><strong>${esc(a.prompt.slice(0, 160))}</strong>
             <span class="badge bg-blue">${esc(a.type)}</span>
-            <div class="small">Answer: ${esc(a.option_label ?? (a.answer_text ?? '—').slice(0, 500))}</div>
-            <div class="small text-muted">Awarded: ${Number(a.points_awarded)}/${Number(a.points)}${a.is_correct === 1 ? ' ✓' : a.is_correct === 0 ? ' ✗' : ' (pending)'}</div>
+            <div class="small">${d.answerLabel} ${esc(a.option_label ?? (a.answer_text ?? '—').slice(0, 500))}</div>
+            <div class="small text-muted">${d.awardedLabel} ${Number(a.points_awarded)}/${Number(a.points)}${a.is_correct === 1 ? ' ✓' : a.is_correct === 0 ? ' ✗' : ' (pending)'}</div>
             <form data-manual="${a.question_id}:${id}" class="d-flex gap-1 mt-1">
             <input type="number" name="points" min="0" max="${a.points}" step="0.5" class="form-control form-control-sm w-auto" placeholder="${d.score}" required>
             <button class="btn btn-sm btn-outline-primary">${d.grade}</button></form></div>`
@@ -512,7 +532,7 @@ async function studentsView(el: HTMLElement): Promise<void> {
   try {
     const orgId = currentOrg();
     if (!orgId) {
-      el.innerHTML = '<div class="alert alert-warning">No organization.</div>';
+      el.innerHTML = '<div class="alert alert-warning">${d.noOrg}</div>';
       return;
     }
     const courses = (await call<{ id: string; title: string }[]>(
@@ -558,7 +578,7 @@ async function studentsView(el: HTMLElement): Promise<void> {
             .closest('.card')
             ?.parentElement?.querySelector('[data-det]') as HTMLElement | null;
           if (box)
-            box.innerHTML = `<div class="alert alert-info">Progress ${Number(rep.progress?.percent ?? 0)}% — ${rep.lessons.filter((l) => l.is_completed).length}/${rep.lessons.length} lessons done.</div>`;
+            box.innerHTML = `<div class="alert alert-info">Progress ${Number(rep.progress?.percent ?? 0)}% — ${d.lessonsDone.replace('{done}', String(rep.lessons.filter((l) => l.is_completed).length)).replace('{total}', String(rep.lessons.length))}</div>`;
         } catch (err) {
           toast(err instanceof Error ? err.message : d.failed, 'danger');
         }
@@ -574,7 +594,7 @@ async function attendanceView(el: HTMLElement): Promise<void> {
   try {
     const orgId = currentOrg();
     if (!orgId) {
-      el.innerHTML = '<div class="alert alert-warning">No organization.</div>';
+      el.innerHTML = '<div class="alert alert-warning">${d.noOrg}</div>';
       return;
     }
     const courses = (await call<{ id: string; title: string }[]>(
@@ -663,11 +683,11 @@ async function attendanceView(el: HTMLElement): Promise<void> {
               (
                 s
               ) => `<div class="d-flex gap-2 align-items-center mb-1"><span style="min-width:140px">${esc(s.student_name)}</span>
-          <select class="form-select w-auto" data-s="${s.student_id}">${['present', 'absent', 'late', 'excused'].map((o) => `<option>${o}</option>`).join('')}</select></div>`
+          <select class="form-select w-auto" data-s="${s.student_id}">${[{ v: 'present', l: d.present }, { v: 'absent', l: d.absent }, { v: 'late', l: d.late }, { v: 'excused', l: d.excused }].map((o) => `<option value="${o.v}">${o.l}</option>`).join('')}</select></div>`
             )
             .join('') || d.noEnrolledStudents
         }
-          ${enr.length ? '<button class="btn btn-primary mt-2" id="at-save">Save</button>' : ''}</div>`;
+          ${enr.length ? `<button class="btn btn-primary mt-2" id="at-save">${d.save}</button>` : ''}</div>`;
         box.querySelector('#at-save')?.addEventListener('click', async () => {
           try {
             const records = enr.map((s) => ({
@@ -736,13 +756,14 @@ async function router(): Promise<void> {
   try {
     if (route === '/' || route === '') await dashboard(view);
     else if (route === '/courses') {
+      view.innerHTML = loading();
       const orgId = currentOrg();
       const courses = (await call<{ id: string; title: string; code: string }[]>(
         '/api/v1/instructor/courses',
         {},
         orgId ? { organization_id: orgId } : {}
       )) as { id: string; title: string; code: string }[];
-      view.innerHTML = `<div class="row row-cards">${courses.map((c) => `<div class="col-md-4"><div class="card">      <div class="card-body"><h3>${esc(c.title)}</h3><p class="text-muted">${esc(c.code)}</p><a class="btn btn-primary" href="#/courses/${c.id}">${d.open}</a></div></div></div>`).join('')}</div>`;
+      view.innerHTML = `<div class="row row-cards">${courses.map((c) => `<div class="col-md-4"><div class="card">      <div class="card-body"><h3>${esc(c.title)}</h3><p class="text-muted">${esc(c.code)}</p><a class="btn btn-primary" href="#/courses/${c.id}">${d.open}</a></div></div></div>`).join('') || `<div class="col-12"><p class="text-muted">${d.empty}</p></div>`}</div>`;
     } else if (route.startsWith('/courses/')) await courseDetail(view, route.split('/')[2]);
     else if (route.startsWith('/grading')) await grading(view);
     else if (route === '/banks') await banksView(view, client, currentOrg());

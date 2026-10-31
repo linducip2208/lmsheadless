@@ -129,7 +129,7 @@ async function loginPage(root: HTMLElement): Promise<void> {
       <label class="form-label" for="email">${d.email}</label>
       <input id="email" type="email" class="form-control mb-2" required autocomplete="username" aria-required="true">
       <label class="form-label" for="password">${d.password}</label>
-      <div class="input-group mb-3"><input id="password" type="password" class="form-control" required autocomplete="current-password" aria-required="true"><button type="button" class="btn btn-outline-secondary" id="pw-toggle" aria-label="Show password">👁</button></div>
+      <div class="input-group mb-3"><input id="password" type="password" class="form-control" required autocomplete="current-password" aria-required="true"><button type="button" class="btn btn-outline-secondary" id="pw-toggle" aria-label="${d.showPassword}">👁</button></div>
       <div id="login-err" aria-live="assertive"></div>
       <button class="btn btn-primary w-100" type="submit" id="login-btn">${d.login}</button></form>
       <div class="mt-3 d-flex justify-content-between align-items-center gap-2">
@@ -144,7 +144,7 @@ async function loginPage(root: HTMLElement): Promise<void> {
   (root.querySelector('#pw-toggle') as HTMLButtonElement).addEventListener('click', (e) => {
     const inp = root.querySelector('#password') as HTMLInputElement;
     inp.type = inp.type === 'password' ? 'text' : 'password';
-    (e.currentTarget as HTMLButtonElement).setAttribute('aria-label', inp.type === 'password' ? 'Show password' : 'Hide password');
+    (e.currentTarget as HTMLButtonElement).setAttribute('aria-label', inp.type === 'password' ? d.showPassword : d.hidePassword);
   });
   (root.querySelector('#login-lang') as HTMLSelectElement).addEventListener('change', (e) => {
     const v = (e.target as HTMLSelectElement).value;
@@ -290,7 +290,7 @@ async function shell(): Promise<void> {
   bindOnlineIndicator();
   void flushQueue((a, okAction) =>
     toast(
-      okAction ? `Synced pending action (${a.path})` : `Sync failed, will retry (${a.path})`,
+      okAction ? `${t().syncedPending} (${a.path})` : `${t().syncFailed} (${a.path})`,
       okAction ? 'success' : 'warning'
     )
   );
@@ -362,7 +362,7 @@ async function router(): Promise<void> {
   const section = groups.find((g) => g.items.some((n) => n.hash === item.hash))?.section;
   (document.getElementById('crumbs') as HTMLElement).innerHTML = section
     ? `<li class="breadcrumb-item">${section}</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`
-    : `<li class="breadcrumb-item">Home</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`;
+    : `<li class="breadcrumb-item">${t().home}</li><li class="breadcrumb-item active" aria-current="page">${item.title}</li>`;
   document
     .querySelectorAll('[data-nav]')
     .forEach((a) => a.classList.toggle('active', (a as HTMLElement).dataset.nav === item.hash));
@@ -394,7 +394,7 @@ async function router(): Promise<void> {
     else if (route.startsWith('/settings')) await renderSettings(view);
     else await renderDashboard(view);
   } catch (e) {
-    view.innerHTML = `<div class="alert alert-danger" role="alert">${e instanceof Error ? e.message : 'Failed to load page.'}</div>`;
+    view.innerHTML = `<div class="alert alert-danger" role="alert">${e instanceof Error ? e.message : t().failedLoadPage}</div>`;
   }
 }
 

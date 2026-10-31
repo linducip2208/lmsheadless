@@ -573,6 +573,106 @@ async function main() {
     now,
     now
   );
+  // Lived-in demo slice: the demo student has already attempted the quiz,
+  // submitted the assignment (awaiting grading), earned a certificate, asked
+  // in the forum, and the bank is stocked. Existing rows above are untouched.
+  const attemptId = newId();
+  await execute(
+    db,
+    "INSERT INTO quiz_attempts (id, quiz_id, student_id, status, score, passed, started_at, submitted_at, created_at, updated_at) VALUES (?, ?, ?, 'submitted', 50, 0, ?, ?, ?, ?)",
+    attemptId,
+    quizId,
+    studentId,
+    now,
+    now,
+    now,
+    now
+  );
+  await execute(
+    db,
+    'INSERT INTO quiz_answers (id, attempt_id, question_id, answer_text, is_correct, points_awarded, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    newId(),
+    attemptId,
+    q1,
+    'x = 4',
+    1,
+    50,
+    now
+  );
+  await execute(
+    db,
+    'INSERT INTO quiz_answers (id, attempt_id, question_id, answer_text, is_correct, points_awarded, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    newId(),
+    attemptId,
+    q2,
+    'false',
+    0,
+    0,
+    now
+  );
+  await execute(
+    db,
+    "INSERT INTO submissions (id, assignment_id, student_id, body, status, submitted_at, created_at, updated_at) VALUES (?, ?, ?, ?, 'submitted', ?, ?, ?)",
+    newId(),
+    asgId,
+    studentId,
+    'Jawaban: x = 4 untuk nomor 1; pembahasan nomor 2 terlampir.',
+    now,
+    now,
+    now
+  );
+  await execute(
+    db,
+    'INSERT INTO certificates (id, organization_id, course_id, student_id, certificate_number, issued_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    newId(),
+    orgId,
+    courseId,
+    studentId,
+    'CERT-2026-DEMO01',
+    now,
+    now
+  );
+  const threadId = newId();
+  await execute(
+    db,
+    'INSERT INTO discussion_threads (id, course_id, author_id, title, body, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    threadId,
+    courseId,
+    studentId,
+    'Tanya: cara cepat selesaikan persamaan linear?',
+    'Apakah ada trik selain pindah ruas?',
+    now,
+    now
+  );
+  await execute(
+    db,
+    'INSERT INTO discussion_replies (id, thread_id, author_id, body, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+    newId(),
+    threadId,
+    teacherId,
+    'Bisa juga dengan grafik garis, Bu. Lihat materi Bab 1 bagian 3.',
+    now,
+    now
+  );
+  const bankQ = [
+    ['multiple_choice', 'Hasil dari 3x - 5 = 10, x = ?', 'x = 5', 25],
+    ['multiple_choice', 'Gradien garis y = 2x + 1 adalah?', '2', 25],
+    ['true_false', 'Semua persamaan linear punya tepat satu solusi.', 'false', 25],
+  ] as const;
+  for (const [type, prompt, answer, points] of bankQ) {
+    await execute(
+      db,
+      'INSERT INTO bank_questions (id, bank_id, type, prompt, points, correct_answer, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      newId(),
+      bankId,
+      type,
+      prompt,
+      points,
+      answer,
+      now,
+      now
+    );
+  }
   // eslint-disable-next-line no-console
   console.log(
     `Seed done. org=${orgId} course=${courseId}. Demo logins: superadmin/admin/teacher/student/parent/staff@example.com / ${PASS}`

@@ -154,6 +154,12 @@ export const en = {
   attempts: 'Attempts',
   avgScore: 'Avg score',
   passRate: 'Pass rate',
+  showPassword: 'Show password',
+  hidePassword: 'Hide password',
+  syncedPending: 'Synced pending action',
+  syncFailed: 'Sync failed, will retry',
+  home: 'Home',
+  failedLoadPage: 'Failed to load page.',
 };
 export const id: Record<keyof typeof en, string> = {
   dashboard: 'Dasbor',
@@ -311,6 +317,12 @@ export const id: Record<keyof typeof en, string> = {
   attempts: 'Percobaan',
   avgScore: 'Rata-rata nilai',
   passRate: 'Tingkat lulus',
+  showPassword: 'Tampilkan kata sandi',
+  hidePassword: 'Sembunyikan kata sandi',
+  syncedPending: 'Aksi tertunda tersinkron',
+  syncFailed: 'Sinkronisasi gagal, akan dicoba lagi',
+  home: 'Beranda',
+  failedLoadPage: 'Gagal memuat halaman.',
 };
 export const ar = {
   ...en,

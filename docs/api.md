@@ -34,3 +34,18 @@ password/change · password/forgot · password/reset · verify-email`
 
 Live machine-readable contract: `/api/v1/openapi.json` (covered by a test
 that asserts documented core paths exist on the router).
+
+## Authorization notes (enforced server-side)
+
+- Cross-user reads are org-scoped: `reports/student-progress` and
+  `attendance/student` require `organization_id`; `GET /grades` without
+  `course_id` returns only grades in orgs where the requester teaches/
+  administers or is parent-linked; every row is pinned via `JOIN courses`.
+- `question-banks/:id/questions` requires a teaching role (same as writes).
+- `cohorts/:id/members` returns emails only to teaching/admin actors;
+  students see fellow members, parents see cohorts containing a linked child.
+- Parent links are per-organization (`parent_links` unique per
+  parent+student+org); a link in org A never authorizes org B.
+- `GET /courses` hides `draft` from non-teaching roles; draft detail is 404.
+- `POST /xapi/statements` rejects missing `organization_id` (400).
+- Public `certificates/verify/:number` is throttled per IP (60/min).
