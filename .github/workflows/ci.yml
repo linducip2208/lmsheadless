@@ -31,4 +31,4 @@ jobs:
       - run: npm run contract:gaps
       - run: npm run static-audit
       - run: npm run drill
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v3
